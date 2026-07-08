@@ -147,6 +147,8 @@ footer .sig{font-family:'IBM Plex Mono',monospace;color:var(--txt);margin-top:8p
       <div id="rule4x4" class="row" style="justify-content:center;gap:18px;margin:10px 0 4px"></div>
       <p class="lead sm">The footer encodes the iteration count in run-lengths: <span class="mono amber">5 · 5 · 5 · 53 = 6625</span>.</p>
     </div>
+    <p class="lead sm" style="margin-top:16px">The file itself was reassembled from the orbiter's downlink — <b>~13 494 telemetry packets across 26 APIDs</b>, the memory dumps climbing contiguously 0 → 8212 to rebuild <span class="mono">binaire.bin</span> byte-for-byte:</p>
+    <div class="launch" id="launch-signal"></div>
   </div>
 </section>
 
@@ -469,10 +471,12 @@ const TOOLS={
   cone:['margolus-3d-binaire-6625.html','🌌','2D+t space-time','The real bit-plane condensing into the image at t=6625.'],
   frontiers:['asis-frontiers.html','🧭','Frontiers — the information ladder','Bit budget, decodability phase transition, persistent homology, energetics.'],
   designer:['asis-designer.html','✎','Message designer','Inverse anti-cryptography: draw a target, encode it, prove it is blindly decodable.'],
+  apid:['asis-apid.html','📡','Decoding every APID','The full ESA/TGO telemetry session — ~13 494 packets across 26 APIDs, each claim re-verified.'],
 };
 function launchCard(key){ const t=TOOLS[key];
   return `<div class="lcard" data-file="${t[0]}"><span class="em">${t[1]}</span><div class="t">${t[2]}</div><div class="d">${t[3]}</div><span class="go">▸ open in new tab ↗</span></div>`;
 }
+$('launch-signal').innerHTML=launchCard('apid');
 $('launch-clock').innerHTML=launchCard('analysis');
 $('launch-kit').innerHTML=launchCard('kit');
 $('launch-assembly').innerHTML=launchCard('assembly')+launchCard('water');
