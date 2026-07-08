@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>A Sign in Space — assembly laboratory</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Michroma&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap');
+:root{
+  --bg:#060913;--panel:rgba(13,19,34,.93);--line:#223050;--line-soft:#16203a;
+  --txt:#dfe6f5;--txt-dim:#8fa1c7;--amber:#ffc857;--cyan:#52b6e8;--rose:#ff5db0;--green:#7bd88f;
+}
+*{box-sizing:border-box}
+html,body{height:100%;margin:0}
+body{background:var(--bg);color:var(--txt);font-family:'IBM Plex Sans',system-ui,sans-serif;overflow:hidden;-webkit-font-smoothing:antialiased}
+#scene{position:fixed;inset:0;touch-action:none}
+#scene canvas{display:block}
+header{position:fixed;top:14px;left:18px;z-index:10;pointer-events:none;max-width:min(360px,40vw)}
+h1{font-family:'Michroma',sans-serif;font-size:14px;font-weight:400;letter-spacing:.14em;margin:0}
+h1 .t{color:var(--amber)}
+.sub{font-size:11.5px;color:var(--txt-dim);margin-top:4px}
+
+.leftbar{position:fixed;left:18px;top:74px;z-index:11;width:186px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:11px;backdrop-filter:blur(11px);padding:11px 13px;margin-bottom:11px}
+.lbl{font-size:10px;letter-spacing:.09em;text-transform:uppercase;color:var(--txt-dim);margin-bottom:7px}
+.seg{display:flex;flex-direction:column;gap:5px}
+.seg.row{flex-direction:row;flex-wrap:wrap}
+.seg button{background:#101a30;border:1px solid var(--line);color:var(--txt-dim);border-radius:7px;padding:7px 9px;font:inherit;font-size:11.5px;cursor:pointer;text-align:left}
+.seg.row button{flex:1 1 auto;text-align:center;padding:6px 8px;font-size:11px}
+.seg button:hover{border-color:var(--amber);color:var(--amber)}
+.seg button.on{background:var(--amber);border-color:var(--amber);color:#131a2c;font-weight:600}
+.chk{display:flex;gap:8px;align-items:center;font-size:12px;margin:6px 0;cursor:pointer;color:var(--txt)}
+.chk input{accent-color:var(--amber)}
+
+.rightbar{position:fixed;right:16px;top:14px;z-index:11;width:314px;max-height:calc(100vh - 28px);overflow:auto}
+.cardhead{font-family:'Michroma',sans-serif;font-size:11.5px;color:var(--amber);letter-spacing:.05em;margin-bottom:9px}
+table.census{width:100%;border-collapse:collapse;font-family:'IBM Plex Mono',monospace;font-size:11px}
+table.census th{color:var(--txt-dim);font-weight:400;text-align:right;padding:3px 4px;border-bottom:1px solid var(--line-soft)}
+table.census th.l{text-align:left}
+table.census td{text-align:right;padding:4px;color:var(--txt-dim)}
+table.census td.l{text-align:left;color:var(--txt)}
+table.census tr.match td{color:var(--green)}
+table.census tr.cur{background:rgba(255,200,87,.08)}
+table.census tr.cur td.l{color:var(--amber)}
+.badge{display:inline-block;font-size:9px;padding:1px 5px;border-radius:4px;margin-left:5px}
+.badge.ok{background:rgba(123,216,143,.16);color:var(--green)}
+.note{font-size:10.5px;color:var(--txt-dim);line-height:1.55;margin-top:9px}
+.note b{color:var(--amber)} .note .c{color:var(--cyan)}
+.dnum{font-family:'IBM Plex Mono',monospace;font-size:26px;color:var(--rose);text-align:center;margin:4px 0}
+.drow{display:flex;justify-content:space-between;font-family:'IBM Plex Mono',monospace;font-size:11.5px;margin:4px 0;color:var(--txt-dim)}
+.drow .v{color:var(--txt)}
+.exbtns{display:flex;gap:6px;flex-wrap:wrap}
+.exbtns button{flex:1 1 auto;background:#101a30;border:1px solid var(--cyan);color:var(--cyan);border-radius:7px;padding:7px 6px;font:inherit;font-size:11px;cursor:pointer}
+.exbtns button:hover{border-color:var(--amber);color:var(--amber)}
+.sig{font-size:11px;color:var(--txt);line-height:1.5;margin-top:9px;border-top:1px solid var(--line-soft);padding-top:8px}
+
+#sandbox{position:fixed;left:calc(50% + 60px);bottom:16px;transform:translateX(-50%);z-index:12;width:min(660px,calc(100vw - 560px));
+  background:var(--panel);border:1px solid var(--line);border-radius:12px;backdrop-filter:blur(11px);padding:12px 15px;display:none}
+#sandbox.on{display:block}
+.sbrow{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.sbchip{background:#101a30;border:1px solid var(--line);border-radius:7px;padding:6px 10px;font:inherit;font-size:11.5px;cursor:pointer;color:var(--txt)}
+.sbchip:hover{border-color:var(--amber);color:var(--amber)}
+.seq{font-family:'IBM Plex Mono',monospace;font-size:12.5px;color:var(--amber);min-height:18px}
+.sbcensus{font-family:'IBM Plex Mono',monospace;font-size:11.5px;color:var(--txt-dim);margin-top:8px}
+.sbcensus .v{color:var(--txt)} .sbcensus .m{color:var(--green)} .sbcensus .x{color:var(--rose)}
+#legend{position:fixed;left:18px;bottom:16px;z-index:10;background:var(--panel);border:1px solid var(--line);border-radius:8px;
+  backdrop-filter:blur(10px);padding:7px 12px;display:flex;gap:12px;font-family:'IBM Plex Mono',monospace;font-size:10.5px;align-items:center}
+#legend .it{display:flex;gap:5px;align-items:center;color:var(--txt-dim)}
+#legend .dot{width:10px;height:10px;border-radius:50%}
+.lbl3d{display:none;/* hidden until the render loop positions it — prevents a top-left flash on load */position:fixed;z-index:3;pointer-events:none;transform:translate(-50%,-50%);font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--txt);
+  background:rgba(6,9,19,.72);border:1px solid var(--line);border-radius:5px;padding:2px 6px;white-space:nowrap}
+.lbl3d .code{color:var(--amber)} .lbl3d .f{color:var(--txt-dim);font-size:10px}
+#toast{position:fixed;left:50%;top:64px;transform:translateX(-50%);z-index:30;background:#0b1120;border:1px solid var(--cyan);
+  color:var(--txt);border-radius:8px;padding:8px 14px;font-family:'IBM Plex Mono',monospace;font-size:12px;opacity:0;transition:opacity .25s;pointer-events:none}
+#toast.show{opacity:1}
+@media (max-width:900px){#legend{display:none}#sandbox{width:calc(100vw - 220px);left:50%}}
+</style>
+</head>
+<body>
+<div id="scene"></div>
+<div id="toast"></div>
+
+<header>
+  <h1>A SIGN IN SPACE — <span class="t">assembly lab</span></h1>
+  <div class="sub">Kit ⇌ peptide · atom-exact census · Ozma × assembly · self-contained Three.js engine</div>
+</header>
+
+<div class="leftbar">
+  <div class="card">
+    <div class="lbl">Assembly</div>
+    <div class="seg" id="segMode">
+      <button data-m="kit" class="on">Kit — 5 free monomers</button>
+      <button data-m="linear">Linear pentapeptide</button>
+      <button data-m="cyclic">Cyclic pentapeptide</button>
+      <button data-m="sandbox">Ostensive sandbox…</button>
+    </div>
+    <div class="note" id="modeNote"></div>
+  </div>
+  <div class="card">
+    <div class="lbl">View</div>
+    <label class="chk"><input type="checkbox" id="cH" checked> Hydrogens</label>
+    <label class="chk"><input type="checkbox" id="cStereo"> Stereocenter rings</label>
+    <label class="chk"><input type="checkbox" id="cSpin" checked> Spin</label>
+  </div>
+</div>
+
+<div class="rightbar">
+  <div class="card">
+    <div class="cardhead">Atom census — kit or chain?</div>
+    <table class="census" id="censusTable"></table>
+    <div class="note" id="censusNote"></div>
+  </div>
+  <div class="card">
+    <div class="cardhead">Ozma × assembly</div>
+    <div class="dnum" id="diaN">64</div>
+    <div class="note" style="text-align:center;margin-top:0">possible 3D forms of the <b>same 2D constitution</b> — <span id="diaCenters">6</span> stereocenters, the message fixes none.</div>
+    <label class="chk" style="margin-top:9px;justify-content:center"><input type="checkbox" id="cMirror"> View the enantiomer (mirror)</label>
+  </div>
+  <div class="card">
+    <div class="cardhead">Descriptors — <span id="descName" style="color:var(--cyan)"></span></div>
+    <div id="descBody"></div>
+  </div>
+  <div class="card">
+    <div class="cardhead">Export <span style="color:var(--txt-dim);font-weight:normal">· current model</span></div>
+    <div class="exbtns">
+      <button data-x="sdf">MOL/SDF</button>
+      <button data-x="stl">STL (print)</button>
+      <button data-x="png">PNG</button>
+    </div>
+    <div class="sig">Every file signed:<br><b style="color:#ffc857">Etienne Lacoche</b> · Researcher · &lt;etienne.lacoche@pm.me&gt;<br>https://www.asignin.space</div>
+  </div>
+</div>
+
+<div id="sandbox">
+  <div class="lbl">Ostensive sandbox — compose a chain from the 5 building blocks</div>
+  <div class="sbrow" id="sbBlocks"></div>
+  <div class="sbrow" style="margin-top:9px">
+    <div class="seg row" id="sbTopo" style="width:auto">
+      <button data-t="linear" class="on">Linear</button>
+      <button data-t="cyclic">Cyclic</button>
+    </div>
+    <button class="sbchip" id="sbClear">Clear</button>
+    <div class="seq" id="sbSeq" style="flex:1"></div>
+  </div>
+  <div class="sbcensus" id="sbCensus"></div>
+</div>
+
+<div id="legend">
+  <div class="it"><span class="dot" style="background:#4a4f5c"></span>C</div>
+  <div class="it"><span class="dot" style="background:#4f74ff"></span>N</div>
+  <div class="it"><span class="dot" style="background:#ff4d4d"></span>O</div>
+  <div class="it"><span class="dot" style="background:#e6ecf7"></span>H</div>
+  <div class="it"><span class="dot" style="background:#ff5db0"></span>stereo</div>
+</div>
+
+<script id="data" type="application/json">{"decode": {"components": 5, "heavy": 42, "O": 12, "H": 52}, "rows": [{"name": "free-monomer kit (decoded)", "components": 5, "C": 24, "N": 6, "O": 12, "heavy": 42, "H": 52, "match": true}, {"name": "linear pentapeptide", "components": 1, "C": 24, "N": 6, "O": 8, "heavy": 38, "H": 44, "match": false}, {"name": "cyclic pentapeptide", "components": 1, "C": 24, "N": 6, "O": 7, "heavy": 37, "H": 42, "match": false}, {"name": "2-fragment partial (1 bond)", "components": 4, "C": 24, "N": 6, "O": 11, "heavy": 41, "H": 50, "match": false}, {"name": "3-fragment partial (2 bonds)", "components": 3, "C": 24, "N": 6, "O": 10, "heavy": 40, "H": 48, "match": false}], "diastereomers": {"centers": 6, "count": 64}, "descriptors": [{"code": "Abu", "name": "2-aminobutyric acid", "formula": "C4H9NO2", "MW": 103.12, "TPSA": 63.3, "HBD": 2, "HBA": 2, "RotB": 2}, {"code": "Nva", "name": "norvaline", "formula": "C5H11NO2", "MW": 117.15, "TPSA": 63.3, "HBD": 2, "HBA": 2, "RotB": 3}, {"code": "Nle", "name": "norleucine", "formula": "C6H13NO2", "MW": 131.18, "TPSA": 63.3, "HBD": 2, "HBA": 2, "RotB": 4}, {"code": "mAsp", "name": "3-methylaspartic acid", "formula": "C5H9NO4", "MW": 147.13, "TPSA": 100.6, "HBD": 3, "HBA": 3, "RotB": 3}, {"code": "Dab", "name": "2,4-diaminobutyric acid", "formula": "C4H10N2O2", "MW": 118.14, "TPSA": 89.3, "HBD": 3, "HBA": 3, "RotB": 3}, {"code": "PEP", "name": "linear pentapeptide", "formula": "C24H44N6O8", "MW": 544.65, "TPSA": 243.0, "HBD": 8, "HBA": 8, "RotB": 19}], "geom": {"kit": [{"code": "Abu", "name": "2-aminobutyric acid", "formula": "C4H9NO2", "cy": 53, "cx": 64, "atoms": [{"el": "C", "x": -2.11, "y": -0.413, "z": -0.239}, {"el": "C", "x": -0.661, "y": -0.867, "z": -0.132}, {"el": "C", "x": 0.306, "y": 0.258, "z": 0.257}, {"el": "N", "x": 0.333, "y": 1.31, "z": -0.782}, {"el": "C", "x": 1.721, "y": -0.296, "z": 0.483}, {"el": "O", "x": 2.034, "y": -1.443, "z": 0.759}, {"el": "O", "x": 2.674, "y": 0.666, "z": 0.419}, {"el": "H", "x": -2.445, "y": 0.054, "z": 0.692}, {"el": "H", "x": -2.759, "y": -1.272, "z": -0.438}, {"el": "H", "x": -2.249, "y": 0.303, "z": -1.055}, {"el": "H", "x": -0.352, "y": -1.321, "z": -1.082}, {"el": "H", "x": -0.608, "y": -1.666, "z": 0.619}, {"el": "H", "x": -0.006, "y": 0.706, "z": 1.209}, {"el": "H", "x": -0.507, "y": 1.88, "z": -0.707}, {"el": "H", "x": 1.121, "y": 1.929, "z": -0.572}, {"el": "H", "x": 3.506, "y": 0.171, "z": 0.569}], "bonds": [{"a": 0, "b": 1, "order": 1}, {"a": 1, "b": 2, "order": 1}, {"a": 2, "b": 3, "order": 1}, {"a": 2, "b": 4, "order": 1}, {"a": 4, "b": 5, "order": 2}, {"a": 4, "b": 6, "order": 1}, {"a": 0, "b": 7, "order": 1}, {"a": 0, "b": 8, "order": 1}, {"a": 0, "b": 9, "order": 1}, {"a": 1, "b": 10, "order": 1}, {"a": 1, "b": 11, "order": 1}, {"a": 2, "b": 12, "order": 1}, {"a": 3, "b": 13, "order": 1}, {"a": 3, "b": 14, "order": 1}, {"a": 6, "b": 15, "order": 1}], "stereocenters": [2], "wedge": {"2": 12}}, {"code": "Nva", "name": "norvaline", "formula": "C5H11NO2", "cy": 77, "cx": 154, "atoms": [{"el": "C", "x": -2.737, "y": -0.56, "z": -0.066}, {"el": "C", "x": -1.547, "y": 0.384, "z": -0.141}, {"el": "C", "x": -0.223, "y": -0.376, "z": -0.018}, {"el": "C", "x": 1.007, "y": 0.531, "z": -0.158}, {"el": "N", "x": 1.045, "y": 1.534, "z": 0.932}, {"el": "C", "x": 2.293, "y": -0.305, "z": -0.138}, {"el": "O", "x": 3.186, "y": -0.241, "z": 0.693}, {"el": "O", "x": 2.396, "y": -1.149, "z": -1.183}, {"el": "H", "x": -2.705, "y": -1.297, "z": -0.875}, {"el": "H", "x": -2.753, "y": -1.096, "z": 0.888}, {"el": "H", "x": -3.672, "y": 0.002, "z": -0.156}, {"el": "H", "x": -1.577, "y": 0.924, "z": -1.094}, {"el": "H", "x": -1.636, "y": 1.128, "z": 0.658}, {"el": "H", "x": -0.189, "y": -0.906, "z": 0.944}, {"el": "H", "x": -0.19, "y": -1.154, "z": -0.792}, {"el": "H", "x": 0.98, "y": 1.073, "z": -1.11}, {"el": "H", "x": 1.915, "y": 2.064, "z": 0.845}, {"el": "H", "x": 1.147, "y": 1.037, "z": 1.819}, {"el": "H", "x": 3.259, "y": -1.594, "z": -1.046}], "bonds": [{"a": 0, "b": 1, "order": 1}, {"a": 1, "b": 2, "order": 1}, {"a": 2, "b": 3, "order": 1}, {"a": 3, "b": 4, "order": 1}, {"a": 3, "b": 5, "order": 1}, {"a": 5, "b": 6, "order": 2}, {"a": 5, "b": 7, "order": 1}, {"a": 0, "b": 8, "order": 1}, {"a": 0, "b": 9, "order": 1}, {"a": 0, "b": 10, "order": 1}, {"a": 1, "b": 11, "order": 1}, {"a": 1, "b": 12, "order": 1}, {"a": 2, "b": 13, "order": 1}, {"a": 2, "b": 14, "order": 1}, {"a": 3, "b": 15, "order": 1}, {"a": 4, "b": 16, "order": 1}, {"a": 4, "b": 17, "order": 1}, {"a": 7, "b": 18, "order": 1}], "stereocenters": [3], "wedge": {"3": 15}}, {"code": "Nle", "name": "norleucine", "formula": "C6H13NO2", "cy": 144, "cx": 44, "atoms": [{"el": "C", "x": 3.002, "y": 0.47, "z": -0.183}, {"el": "C", "x": 1.785, "y": 1.206, "z": -0.721}, {"el": "C", "x": 0.495, "y": 0.905, "z": 0.047}, {"el": "C", "x": 0.015, "y": -0.542, "z": -0.117}, {"el": "C", "x": -1.271, "y": -0.839, "z": 0.666}, {"el": "N", "x": -1.512, "y": -2.303, "z": 0.638}, {"el": "C", "x": -2.479, "y": -0.122, "z": 0.053}, {"el": "O", "x": -3.228, "y": -0.57, "z": -0.803}, {"el": "O", "x": -2.683, "y": 1.108, "z": 0.561}, {"el": "H", "x": 3.137, "y": 0.661, "z": 0.886}, {"el": "H", "x": 2.919, "y": -0.61, "z": -0.335}, {"el": "H", "x": 3.904, "y": 0.807, "z": -0.703}, {"el": "H", "x": 1.652, "y": 0.967, "z": -1.783}, {"el": "H", "x": 1.979, "y": 2.284, "z": -0.661}, {"el": "H", "x": 0.64, "y": 1.13, "z": 1.111}, {"el": "H", "x": -0.276, "y": 1.591, "z": -0.322}, {"el": "H", "x": 0.803, "y": -1.219, "z": 0.233}, {"el": "H", "x": -0.136, "y": -0.75, "z": -1.184}, {"el": "H", "x": -1.173, "y": -0.541, "z": 1.715}, {"el": "H", "x": -2.379, "y": -2.498, "z": 1.143}, {"el": "H", "x": -1.716, "y": -2.569, "z": -0.329}, {"el": "H", "x": -3.477, "y": 1.434, "z": 0.087}], "bonds": [{"a": 0, "b": 1, "order": 1}, {"a": 1, "b": 2, "order": 1}, {"a": 2, "b": 3, "order": 1}, {"a": 3, "b": 4, "order": 1}, {"a": 4, "b": 5, "order": 1}, {"a": 4, "b": 6, "order": 1}, {"a": 6, "b": 7, "order": 2}, {"a": 6, "b": 8, "order": 1}, {"a": 0, "b": 9, "order": 1}, {"a": 0, "b": 10, "order": 1}, {"a": 0, "b": 11, "order": 1}, {"a": 1, "b": 12, "order": 1}, {"a": 1, "b": 13, "order": 1}, {"a": 2, "b": 14, "order": 1}, {"a": 2, "b": 15, "order": 1}, {"a": 3, "b": 16, "order": 1}, {"a": 3, "b": 17, "order": 1}, {"a": 4, "b": 18, "order": 1}, {"a": 5, "b": 19, "order": 1}, {"a": 5, "b": 20, "order": 1}, {"a": 8, "b": 21, "order": 1}], "stereocenters": [4], "wedge": {"4": 18}}, {"code": "mAsp", "name": "3-methylaspartic acid", "formula": "C5H9NO4", "cy": 157, "cx": 202, "atoms": [{"el": "C", "x": -1.741, "y": -0.927, "z": -0.749}, {"el": "C", "x": -0.703, "y": -0.193, "z": 0.103}, {"el": "C", "x": -1.075, "y": 1.27, "z": 0.121}, {"el": "O", "x": -1.216, "y": 2.0, "z": -0.846}, {"el": "O", "x": -1.257, "y": 1.745, "z": 1.368}, {"el": "C", "x": 0.732, "y": -0.332, "z": -0.425}, {"el": "N", "x": 1.086, "y": -1.759, "z": -0.662}, {"el": "C", "x": 1.722, "y": 0.248, "z": 0.597}, {"el": "O", "x": 2.388, "y": -0.392, "z": 1.397}, {"el": "O", "x": 1.824, "y": 1.589, "z": 0.544}, {"el": "H", "x": -1.673, "y": -0.633, "z": -1.802}, {"el": "H", "x": -1.612, "y": -2.012, "z": -0.687}, {"el": "H", "x": -2.757, "y": -0.695, "z": -0.408}, {"el": "H", "x": -0.767, "y": -0.581, "z": 1.128}, {"el": "H", "x": -1.488, "y": 2.688, "z": 1.231}, {"el": "H", "x": 0.869, "y": 0.2, "z": -1.374}, {"el": "H", "x": 1.138, "y": -2.227, "z": 0.248}, {"el": "H", "x": 2.044, "y": -1.798, "z": -1.016}, {"el": "H", "x": 2.486, "y": 1.81, "z": 1.233}], "bonds": [{"a": 0, "b": 1, "order": 1}, {"a": 1, "b": 2, "order": 1}, {"a": 2, "b": 3, "order": 2}, {"a": 2, "b": 4, "order": 1}, {"a": 1, "b": 5, "order": 1}, {"a": 5, "b": 6, "order": 1}, {"a": 5, "b": 7, "order": 1}, {"a": 7, "b": 8, "order": 2}, {"a": 7, "b": 9, "order": 1}, {"a": 0, "b": 10, "order": 1}, {"a": 0, "b": 11, "order": 1}, {"a": 0, "b": 12, "order": 1}, {"a": 1, "b": 13, "order": 1}, {"a": 4, "b": 14, "order": 1}, {"a": 5, "b": 15, "order": 1}, {"a": 6, "b": 16, "order": 1}, {"a": 6, "b": 17, "order": 1}, {"a": 9, "b": 18, "order": 1}], "stereocenters": [1, 5], "wedge": {"1": 13, "5": 15}}, {"code": "Dab", "name": "2,4-diaminobutyric acid", "formula": "C4H10N2O2", "cy": 189, "cx": 100, "atoms": [{"el": "N", "x": 2.832, "y": 0.557, "z": 0.02}, {"el": "C", "x": 1.658, "y": -0.28, "z": 0.253}, {"el": "C", "x": 0.388, "y": 0.438, "z": -0.203}, {"el": "C", "x": -0.895, "y": -0.34, "z": 0.124}, {"el": "N", "x": -0.911, "y": -1.648, "z": -0.568}, {"el": "C", "x": -2.155, "y": 0.452, "z": -0.262}, {"el": "O", "x": -3.175, "y": -0.012, "z": -0.754}, {"el": "O", "x": -2.113, "y": 1.753, "z": 0.086}, {"el": "H", "x": 3.665, "y": 0.076, "z": 0.358}, {"el": "H", "x": 2.758, "y": 1.419, "z": 0.558}, {"el": "H", "x": 1.787, "y": -1.219, "z": -0.294}, {"el": "H", "x": 1.595, "y": -0.52, "z": 1.32}, {"el": "H", "x": 0.438, "y": 0.637, "z": -1.283}, {"el": "H", "x": 0.347, "y": 1.421, "z": 0.284}, {"el": "H", "x": -0.966, "y": -0.519, "z": 1.204}, {"el": "H", "x": -0.393, "y": -2.335, "z": -0.025}, {"el": "H", "x": -1.879, "y": -1.98, "z": -0.608}, {"el": "H", "x": -2.981, "y": 2.099, "z": -0.211}], "bonds": [{"a": 0, "b": 1, "order": 1}, {"a": 1, "b": 2, "order": 1}, {"a": 2, "b": 3, "order": 1}, {"a": 3, "b": 4, "order": 1}, {"a": 3, "b": 5, "order": 1}, {"a": 5, "b": 6, "order": 2}, {"a": 5, "b": 7, "order": 1}, {"a": 0, "b": 8, "order": 1}, {"a": 0, "b": 9, "order": 1}, {"a": 1, "b": 10, "order": 1}, {"a": 1, "b": 11, "order": 1}, {"a": 2, "b": 12, "order": 1}, {"a": 2, "b": 13, "order": 1}, {"a": 3, "b": 14, "order": 1}, {"a": 4, "b": 15, "order": 1}, {"a": 4, "b": 16, "order": 1}, {"a": 7, "b": 17, "order": 1}], "stereocenters": [3], "wedge": {"3": 14}}], "linear": {"formula": "C24H44N6O8", "atoms": [{"el": "N", "x": -7.183, "y": 2.897, "z": 1.36}, {"el": "C", "x": -7.129, "y": 1.428, "z": 1.208}, {"el": "C", "x": -8.375, "y": 0.903, "z": 0.484}, {"el": "C", "x": -9.667, "y": 1.173, "z": 1.242}, {"el": "C", "x": -5.849, "y": 1.037, "z": 0.427}, {"el": "O", "x": -5.144, "y": 1.869, "z": -0.141}, {"el": "N", "x": -5.58, "y": -0.319, "z": 0.432}, {"el": "C", "x": -4.315, "y": -0.855, "z": -0.078}, {"el": "C", "x": -3.994, "y": -0.473, "z": -1.533}, {"el": "C", "x": -5.142, "y": -0.671, "z": -2.53}, {"el": "C", "x": -5.622, "y": -2.111, "z": -2.623}, {"el": "C", "x": -3.212, "y": -0.524, "z": 0.965}, {"el": "O", "x": -3.485, "y": -0.319, "z": 2.151}, {"el": "N", "x": -1.911, "y": -0.597, "z": 0.537}, {"el": "C", "x": -0.783, "y": -0.252, "z": 1.414}, {"el": "C", "x": -0.414, "y": -1.43, "z": 2.338}, {"el": "C", "x": 0.227, "y": -2.604, "z": 1.597}, {"el": "C", "x": 0.469, "y": -0.954, "z": 3.467}, {"el": "O", "x": 0.875, "y": 0.186, "z": 3.639}, {"el": "O", "x": 0.776, "y": -1.927, "z": 4.344}, {"el": "C", "x": 0.372, "y": 0.172, "z": 0.478}, {"el": "O", "x": 0.392, "y": -0.153, "z": -0.711}, {"el": "N", "x": 1.367, "y": 0.921, "z": 1.061}, {"el": "C", "x": 2.642, "y": 1.135, "z": 0.376}, {"el": "C", "x": 3.259, "y": 2.459, "z": 0.841}, {"el": "C", "x": 4.435, "y": 2.964, "z": 0.004}, {"el": "N", "x": 4.078, "y": 3.317, "z": -1.364}, {"el": "C", "x": 3.545, "y": -0.072, "z": 0.724}, {"el": "O", "x": 3.428, "y": -0.702, "z": 1.775}, {"el": "N", "x": 4.491, "y": -0.383, "z": -0.23}, {"el": "C", "x": 5.488, "y": -1.427, "z": 0.018}, {"el": "C", "x": 5.884, "y": -2.151, "z": -1.28}, {"el": "C", "x": 6.252, "y": -1.283, "z": -2.492}, {"el": "C", "x": 7.462, "y": -0.375, "z": -2.282}, {"el": "C", "x": 7.871, "y": 0.311, "z": -3.577}, {"el": "C", "x": 6.721, "y": -0.935, "z": 0.79}, {"el": "O", "x": 7.691, "y": -1.61, "z": 1.099}, {"el": "O", "x": 6.684, "y": 0.373, "z": 1.127}, {"el": "H", "x": -7.118, "y": 3.302, "z": 0.422}, {"el": "H", "x": -6.307, "y": 3.192, "z": 1.8}, {"el": "H", "x": -7.061, "y": 0.986, "z": 2.209}, {"el": "H", "x": -8.287, "y": -0.18, "z": 0.332}, {"el": "H", "x": -8.444, "y": 1.344, "z": -0.519}, {"el": "H", "x": -9.863, "y": 2.246, "z": 1.336}, {"el": "H", "x": -10.514, "y": 0.725, "z": 0.713}, {"el": "H", "x": -9.629, "y": 0.739, "z": 2.247}, {"el": "H", "x": -5.959, "y": -0.822, "z": 1.226}, {"el": "H", "x": -4.428, "y": -1.946, "z": -0.03}, {"el": "H", "x": -3.654, "y": 0.568, "z": -1.589}, {"el": "H", "x": -3.144, "y": -1.074, "z": -1.88}, {"el": "H", "x": -5.986, "y": -0.02, "z": -2.281}, {"el": "H", "x": -4.793, "y": -0.357, "z": -3.521}, {"el": "H", "x": -6.088, "y": -2.44, "z": -1.689}, {"el": "H", "x": -6.369, "y": -2.207, "z": -3.417}, {"el": "H", "x": -4.794, "y": -2.788, "z": -2.854}, {"el": "H", "x": -1.69, "y": -0.639, "z": -0.454}, {"el": "H", "x": -1.085, "y": 0.627, "z": 1.997}, {"el": "H", "x": -1.335, "y": -1.791, "z": 2.815}, {"el": "H", "x": 0.346, "y": -3.466, "z": 2.263}, {"el": "H", "x": -0.391, "y": -2.927, "z": 0.753}, {"el": "H", "x": 1.223, "y": -2.353, "z": 1.22}, {"el": "H", "x": 1.373, "y": -1.5, "z": 4.994}, {"el": "H", "x": 1.409, "y": 0.913, "z": 2.082}, {"el": "H", "x": 2.456, "y": 1.138, "z": -0.702}, {"el": "H", "x": 2.482, "y": 3.236, "z": 0.852}, {"el": "H", "x": 3.597, "y": 2.357, "z": 1.88}, {"el": "H", "x": 5.246, "y": 2.235, "z": -0.015}, {"el": "H", "x": 4.848, "y": 3.858, "z": 0.485}, {"el": "H", "x": 3.457, "y": 4.128, "z": -1.357}, {"el": "H", "x": 3.557, "y": 2.58, "z": -1.834}, {"el": "H", "x": 4.736, "y": 0.336, "z": -0.898}, {"el": "H", "x": 5.026, "y": -2.168, "z": 0.683}, {"el": "H", "x": 6.71, "y": -2.844, "z": -1.078}, {"el": "H", "x": 5.033, "y": -2.775, "z": -1.585}, {"el": "H", "x": 6.46, "y": -1.96, "z": -3.331}, {"el": "H", "x": 5.388, "y": -0.682, "z": -2.799}, {"el": "H", "x": 7.232, "y": 0.399, "z": -1.544}, {"el": "H", "x": 8.308, "y": -0.958, "z": -1.902}, {"el": "H", "x": 7.054, "y": 0.924, "z": -3.971}, {"el": "H", "x": 8.733, "y": 0.963, "z": -3.404}, {"el": "H", "x": 8.149, "y": -0.423, "z": -4.34}, {"el": "H", "x": 7.515, "y": 0.504, "z": 1.631}], "bonds": [{"a": 0, "b": 1, "order": 1}, {"a": 1, "b": 2, "order": 1}, {"a": 2, "b": 3, "order": 1}, {"a": 1, "b": 4, "order": 1}, {"a": 4, "b": 5, "order": 2}, {"a": 4, "b": 6, "order": 1}, {"a": 6, "b": 7, "order": 1}, {"a": 7, "b": 8, "order": 1}, {"a": 8, "b": 9, "order": 1}, {"a": 9, "b": 10, "order": 1}, {"a": 7, "b": 11, "order": 1}, {"a": 11, "b": 12, "order": 2}, {"a": 11, "b": 13, "order": 1}, {"a": 13, "b": 14, "order": 1}, {"a": 14, "b": 15, "order": 1}, {"a": 15, "b": 16, "order": 1}, {"a": 15, "b": 17, "order": 1}, {"a": 17, "b": 18, "order": 2}, {"a": 17, "b": 19, "order": 1}, {"a": 14, "b": 20, "order": 1}, {"a": 20, "b": 21, "order": 2}, {"a": 20, "b": 22, "order": 1}, {"a": 22, "b": 23, "order": 1}, {"a": 23, "b": 24, "order": 1}, {"a": 24, "b": 25, "order": 1}, {"a": 25, "b": 26, "order": 1}, {"a": 23, "b": 27, "order": 1}, {"a": 27, "b": 28, "order": 2}, {"a": 27, "b": 29, "order": 1}, {"a": 29, "b": 30, "order": 1}, {"a": 30, "b": 31, "order": 1}, {"a": 31, "b": 32, "order": 1}, {"a": 32, "b": 33, "order": 1}, {"a": 33, "b": 34, "order": 1}, {"a": 30, "b": 35, "order": 1}, {"a": 35, "b": 36, "order": 2}, {"a": 35, "b": 37, "order": 1}, {"a": 0, "b": 38, "order": 1}, {"a": 0, "b": 39, "order": 1}, {"a": 1, "b": 40, "order": 1}, {"a": 2, "b": 41, "order": 1}, {"a": 2, "b": 42, "order": 1}, {"a": 3, "b": 43, "order": 1}, {"a": 3, "b": 44, "order": 1}, {"a": 3, "b": 45, "order": 1}, {"a": 6, "b": 46, "order": 1}, {"a": 7, "b": 47, "order": 1}, {"a": 8, "b": 48, "order": 1}, {"a": 8, "b": 49, "order": 1}, {"a": 9, "b": 50, "order": 1}, {"a": 9, "b": 51, "order": 1}, {"a": 10, "b": 52, "order": 1}, {"a": 10, "b": 53, "order": 1}, {"a": 10, "b": 54, "order": 1}, {"a": 13, "b": 55, "order": 1}, {"a": 14, "b": 56, "order": 1}, {"a": 15, "b": 57, "order": 1}, {"a": 16, "b": 58, "order": 1}, {"a": 16, "b": 59, "order": 1}, {"a": 16, "b": 60, "order": 1}, {"a": 19, "b": 61, "order": 1}, {"a": 22, "b": 62, "order": 1}, {"a": 23, "b": 63, "order": 1}, {"a": 24, "b": 64, "order": 1}, {"a": 24, "b": 65, "order": 1}, {"a": 25, "b": 66, "order": 1}, {"a": 25, "b": 67, "order": 1}, {"a": 26, "b": 68, "order": 1}, {"a": 26, "b": 69, "order": 1}, {"a": 29, "b": 70, "order": 1}, {"a": 30, "b": 71, "order": 1}, {"a": 31, "b": 72, "order": 1}, {"a": 31, "b": 73, "order": 1}, {"a": 32, "b": 74, "order": 1}, {"a": 32, "b": 75, "order": 1}, {"a": 33, "b": 76, "order": 1}, {"a": 33, "b": 77, "order": 1}, {"a": 34, "b": 78, "order": 1}, {"a": 34, "b": 79, "order": 1}, {"a": 34, "b": 80, "order": 1}, {"a": 37, "b": 81, "order": 1}], "stereocenters": [1, 7, 14, 15, 23, 30], "wedge": {"1": 40, "7": 47, "14": 56, "15": 57, "23": 63, "30": 71}}, "cyclic": {"formula": "C24H42N6O7", "atoms": [{"el": "N", "x": 1.208, "y": -2.033, "z": -0.793}, {"el": "C", "x": 0.206, "y": -2.79, "z": -1.56}, {"el": "C", "x": 0.495, "y": -4.295, "z": -1.514}, {"el": "C", "x": 1.71, "y": -4.682, "z": -2.347}, {"el": "C", "x": -1.22, "y": -2.548, "z": -1.003}, {"el": "O", "x": -2.221, "y": -2.549, "z": -1.715}, {"el": "N", "x": -1.293, "y": -2.454, "z": 0.37}, {"el": "C", "x": -2.553, "y": -2.212, "z": 1.07}, {"el": "C", "x": -2.554, "y": -2.92, "z": 2.433}, {"el": "C", "x": -2.362, "y": -4.44, "z": 2.366}, {"el": "C", "x": -3.456, "y": -5.159, "z": 1.592}, {"el": "C", "x": -2.792, "y": -0.689, "z": 1.24}, {"el": "O", "x": -3.063, "y": -0.171, "z": 2.32}, {"el": "N", "x": -2.745, "y": 0.049, "z": 0.067}, {"el": "C", "x": -3.228, "y": 1.446, "z": 0.057}, {"el": "C", "x": -3.538, "y": 1.947, "z": -1.362}, {"el": "C", "x": -2.348, "y": 1.926, "z": -2.323}, {"el": "C", "x": -4.129, "y": 3.337, "z": -1.294}, {"el": "O", "x": -3.676, "y": 4.353, "z": -1.794}, {"el": "O", "x": -5.301, "y": 3.366, "z": -0.631}, {"el": "C", "x": -2.229, "y": 2.38, "z": 0.79}, {"el": "O", "x": -2.578, "y": 3.42, "z": 1.339}, {"el": "N", "x": -0.905, "y": 2.007, "z": 0.658}, {"el": "C", "x": 0.106, "y": 2.468, "z": 1.617}, {"el": "C", "x": 0.472, "y": 3.956, "z": 1.52}, {"el": "C", "x": 0.904, "y": 4.436, "z": 0.135}, {"el": "N", "x": 1.106, "y": 5.884, "z": 0.115}, {"el": "C", "x": 1.321, "y": 1.531, "z": 1.47}, {"el": "O", "x": 1.836, "y": 0.949, "z": 2.42}, {"el": "N", "x": 1.772, "y": 1.379, "z": 0.171}, {"el": "C", "x": 2.354, "y": 0.102, "z": -0.232}, {"el": "C", "x": 3.435, "y": 0.269, "z": -1.3}, {"el": "C", "x": 4.647, "y": 1.092, "z": -0.848}, {"el": "C", "x": 5.408, "y": 0.462, "z": 0.319}, {"el": "C", "x": 6.664, "y": 1.252, "z": 0.652}, {"el": "C", "x": 1.151, "y": -0.657, "z": -0.826}, {"el": "O", "x": 0.175, "y": -0.057, "z": -1.281}, {"el": "H", "x": 2.126, "y": -2.446, "z": -0.681}, {"el": "H", "x": 0.222, "y": -2.415, "z": -2.591}, {"el": "H", "x": 0.648, "y": -4.624, "z": -0.478}, {"el": "H", "x": -0.371, "y": -4.85, "z": -1.894}, {"el": "H", "x": 2.624, "y": -4.215, "z": -1.968}, {"el": "H", "x": 1.579, "y": -4.385, "z": -3.392}, {"el": "H", "x": 1.854, "y": -5.767, "z": -2.32}, {"el": "H", "x": -0.43, "y": -2.238, "z": 0.856}, {"el": "H", "x": -3.385, "y": -2.584, "z": 0.461}, {"el": "H", "x": -3.496, "y": -2.706, "z": 2.954}, {"el": "H", "x": -1.755, "y": -2.504, "z": 3.061}, {"el": "H", "x": -1.387, "y": -4.682, "z": 1.928}, {"el": "H", "x": -2.347, "y": -4.829, "z": 3.392}, {"el": "H", "x": -4.446, "y": -4.907, "z": 1.985}, {"el": "H", "x": -3.324, "y": -6.242, "z": 1.676}, {"el": "H", "x": -3.428, "y": -4.904, "z": 0.529}, {"el": "H", "x": -2.773, "y": -0.487, "z": -0.799}, {"el": "H", "x": -4.146, "y": 1.455, "z": 0.662}, {"el": "H", "x": -4.308, "y": 1.3, "z": -1.806}, {"el": "H", "x": -2.649, "y": 2.294, "z": -3.311}, {"el": "H", "x": -1.529, "y": 2.566, "z": -1.98}, {"el": "H", "x": -1.965, "y": 0.911, "z": -2.459}, {"el": "H", "x": -5.538, "y": 4.318, "z": -0.613}, {"el": "H", "x": -0.8, "y": 1.063, "z": 0.288}, {"el": "H", "x": -0.309, "y": 2.281, "z": 2.616}, {"el": "H", "x": 1.279, "y": 4.165, "z": 2.235}, {"el": "H", "x": -0.387, "y": 4.553, "z": 1.849}, {"el": "H", "x": 0.156, "y": 4.179, "z": -0.622}, {"el": "H", "x": 1.848, "y": 3.969, "z": -0.159}, {"el": "H", "x": 1.719, "y": 6.159, "z": 0.882}, {"el": "H", "x": 0.213, "y": 6.345, "z": 0.296}, {"el": "H", "x": 1.156, "y": 1.784, "z": -0.532}, {"el": "H", "x": 2.72, "y": -0.451, "z": 0.638}, {"el": "H", "x": 3.776, "y": -0.72, "z": -1.632}, {"el": "H", "x": 3.005, "y": 0.754, "z": -2.186}, {"el": "H", "x": 4.33, "y": 2.106, "z": -0.578}, {"el": "H", "x": 5.325, "y": 1.196, "z": -1.704}, {"el": "H", "x": 5.686, "y": -0.568, "z": 0.07}, {"el": "H", "x": 4.773, "y": 0.423, "z": 1.211}, {"el": "H", "x": 7.347, "y": 1.284, "z": -0.203}, {"el": "H", "x": 7.192, "y": 0.788, "z": 1.491}, {"el": "H", "x": 6.416, "y": 2.281, "z": 0.933}], "bonds": [{"a": 0, "b": 1, "order": 1}, {"a": 1, "b": 2, "order": 1}, {"a": 2, "b": 3, "order": 1}, {"a": 1, "b": 4, "order": 1}, {"a": 4, "b": 5, "order": 2}, {"a": 4, "b": 6, "order": 1}, {"a": 6, "b": 7, "order": 1}, {"a": 7, "b": 8, "order": 1}, {"a": 8, "b": 9, "order": 1}, {"a": 9, "b": 10, "order": 1}, {"a": 7, "b": 11, "order": 1}, {"a": 11, "b": 12, "order": 2}, {"a": 11, "b": 13, "order": 1}, {"a": 13, "b": 14, "order": 1}, {"a": 14, "b": 15, "order": 1}, {"a": 15, "b": 16, "order": 1}, {"a": 15, "b": 17, "order": 1}, {"a": 17, "b": 18, "order": 2}, {"a": 17, "b": 19, "order": 1}, {"a": 14, "b": 20, "order": 1}, {"a": 20, "b": 21, "order": 2}, {"a": 20, "b": 22, "order": 1}, {"a": 22, "b": 23, "order": 1}, {"a": 23, "b": 24, "order": 1}, {"a": 24, "b": 25, "order": 1}, {"a": 25, "b": 26, "order": 1}, {"a": 23, "b": 27, "order": 1}, {"a": 27, "b": 28, "order": 2}, {"a": 27, "b": 29, "order": 1}, {"a": 29, "b": 30, "order": 1}, {"a": 30, "b": 31, "order": 1}, {"a": 31, "b": 32, "order": 1}, {"a": 32, "b": 33, "order": 1}, {"a": 33, "b": 34, "order": 1}, {"a": 30, "b": 35, "order": 1}, {"a": 35, "b": 36, "order": 2}, {"a": 35, "b": 0, "order": 1}, {"a": 0, "b": 37, "order": 1}, {"a": 1, "b": 38, "order": 1}, {"a": 2, "b": 39, "order": 1}, {"a": 2, "b": 40, "order": 1}, {"a": 3, "b": 41, "order": 1}, {"a": 3, "b": 42, "order": 1}, {"a": 3, "b": 43, "order": 1}, {"a": 6, "b": 44, "order": 1}, {"a": 7, "b": 45, "order": 1}, {"a": 8, "b": 46, "order": 1}, {"a": 8, "b": 47, "order": 1}, {"a": 9, "b": 48, "order": 1}, {"a": 9, "b": 49, "order": 1}, {"a": 10, "b": 50, "order": 1}, {"a": 10, "b": 51, "order": 1}, {"a": 10, "b": 52, "order": 1}, {"a": 13, "b": 53, "order": 1}, {"a": 14, "b": 54, "order": 1}, {"a": 15, "b": 55, "order": 1}, {"a": 16, "b": 56, "order": 1}, {"a": 16, "b": 57, "order": 1}, {"a": 16, "b": 58, "order": 1}, {"a": 19, "b": 59, "order": 1}, {"a": 22, "b": 60, "order": 1}, {"a": 23, "b": 61, "order": 1}, {"a": 24, "b": 62, "order": 1}, {"a": 24, "b": 63, "order": 1}, {"a": 25, "b": 64, "order": 1}, {"a": 25, "b": 65, "order": 1}, {"a": 26, "b": 66, "order": 1}, {"a": 26, "b": 67, "order": 1}, {"a": 29, "b": 68, "order": 1}, {"a": 30, "b": 69, "order": 1}, {"a": 31, "b": 70, "order": 1}, {"a": 31, "b": 71, "order": 1}, {"a": 32, "b": 72, "order": 1}, {"a": 32, "b": 73, "order": 1}, {"a": 33, "b": 74, "order": 1}, {"a": 33, "b": 75, "order": 1}, {"a": 34, "b": 76, "order": 1}, {"a": 34, "b": 77, "order": 1}, {"a": 34, "b": 78, "order": 1}], "stereocenters": [1, 7, 14, 15, 23, 30], "wedge": {"1": 38, "7": 45, "14": 54, "15": 55, "23": 61, "30": 69}}}, "monomer_units": [{"code": "Abu", "C": 4, "N": 1, "O": 2, "H": 9, "COOH": 1, "NH2": 1}, {"code": "Nva", "C": 5, "N": 1, "O": 2, "H": 11, "COOH": 1, "NH2": 1}, {"code": "Nle", "C": 6, "N": 1, "O": 2, "H": 13, "COOH": 1, "NH2": 1}, {"code": "mAsp", "C": 5, "N": 1, "O": 4, "H": 9, "COOH": 2, "NH2": 1}, {"code": "Dab", "C": 4, "N": 2, "O": 2, "H": 10, "COOH": 1, "NH2": 2}]}</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="asis-sota.js"></script>
+<script src="asis-refs.js"></script>
+<script>
+'use strict';
+const D = JSON.parse(document.getElementById('data').textContent);
+const $ = id => document.getElementById(id);
+const CPK = { C:0x4a4f5c, N:0x4f74ff, O:0xff4d4d, H:0xe6ecf7 };
+const RAD = { C:0.40, N:0.38, O:0.37, H:0.24 };
+const MOLSCALE = 1.5, LAYSCALE = 0.235, GRIDC = 128, ROSE = 0xff5db0;
+const SUB={'0':'₀','1':'₁','2':'₂','3':'₃','4':'₄','5':'₅','6':'₆','7':'₇','8':'₈','9':'₉'};
+const sub = f => (f||'').replace(/(\d)/g,d=>SUB[d]);
+const SIG = { author:'Etienne Lacoche', role:'Researcher', email:'etienne.lacoche@pm.me', site:'https://www.asignin.space' };
+
+let scene, camera, renderer, root, STARS = null, POST = null;
+let state = { mode:'kit', H:true, stereo:false, spin:true, mirror:false };
+let groups = [];
+let curMols = [];
+const labels = [];
+
+/* ================= engine (Three.js, from asis-kit-3d.html) ================= */
+function buildScene(){
+  scene = new THREE.Scene();
+  scene.fog = new THREE.FogExp2(0x060913, 0.0016);
+  camera = new THREE.PerspectiveCamera(48, innerWidth/innerHeight, 0.1, 4000);
+  renderer = new THREE.WebGLRenderer({ antialias:true, preserveDrawingBuffer:true });
+  renderer.setPixelRatio(Math.min(devicePixelRatio,2));
+  renderer.setSize(innerWidth, innerHeight);
+  renderer.setClearColor(0x060913, 1);
+  $('scene').appendChild(renderer.domElement);
+  ASISSota.enhance(renderer);
+  ASISSota.nebula(scene, { radius: 1200, top: 0x040810, bottom: 0x03040a, glow: 0x0a1220 });
+  STARS = ASISSota.starfield(scene, { count: 1100, innerRadius: 220, radius: 620, sizeScale: 1.4 });
+  scene.add(new THREE.AmbientLight(0xffffff, 0.58));
+  const key=new THREE.DirectionalLight(0xffffff,0.85); key.position.set(30,50,40); scene.add(key);
+  const rim=new THREE.DirectionalLight(0x8ab6ff,0.5); rim.position.set(-40,20,-30); scene.add(rim);
+  const p=new THREE.PointLight(0xffc857,0.4,300); p.position.set(0,60,0); scene.add(p);
+  root = new THREE.Group(); scene.add(root);
+  POST = ASISSota.composer(renderer, scene, camera, {
+    bloom: { strength: 0.16, radius: 0.45, threshold: 0.88 },
+    grade: { uVignette: 0.42, uGrain: 0.018, uChroma: 0.0007, uSaturation: 1.0 }
+  });
+}
+const SPH = new THREE.SphereGeometry(1,24,18);
+function atomMesh(el,r){
+  const m=new THREE.Mesh(SPH,new THREE.MeshStandardMaterial({color:CPK[el],roughness:0.5,metalness:0.04,emissive:CPK[el],emissiveIntensity:0.035}));
+  m.scale.setScalar(r); return m;
+}
+function cyl(p,q,radius,color){
+  const dir=new THREE.Vector3().subVectors(q,p),len=dir.length();
+  const mesh=new THREE.Mesh(new THREE.CylinderGeometry(radius,radius,len,12,1),new THREE.MeshStandardMaterial({color,roughness:0.55,metalness:0.03}));
+  mesh.position.copy(p).addScaledVector(dir,0.5);
+  mesh.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0),dir.clone().normalize());
+  return mesh;
+}
+function buildMolecule(mol, ax, az){
+  const g = new THREE.Group();
+  const sgn = state.mirror ? -1 : 1;
+  const P = mol.atoms.map(a=> new THREE.Vector3(a.x, a.y, sgn*a.z).multiplyScalar(MOLSCALE));
+  const hMeshes=[], hBondMeshes=[];
+  mol.atoms.forEach((a,i)=>{ const m=atomMesh(a.el, RAD[a.el]); m.position.copy(P[i]); if(a.el==='H') hMeshes.push(m); g.add(m); });
+  mol.bonds.forEach(b=>{
+    const a=mol.atoms[b.a], c=mol.atoms[b.b], pa=P[b.a], pc=P[b.b], mid=new THREE.Vector3().addVectors(pa,pc).multiplyScalar(0.5);
+    const isH=(a.el==='H'||c.el==='H'), made=[];
+    if(b.order===2){
+      const dir=new THREE.Vector3().subVectors(pc,pa).normalize(); let up=new THREE.Vector3(0,1,0); if(Math.abs(dir.dot(up))>0.9) up.set(1,0,0);
+      const off=new THREE.Vector3().crossVectors(dir,up).normalize().multiplyScalar(0.13);
+      [off,off.clone().negate()].forEach(o=>{ const p1=pa.clone().add(o),m1=mid.clone().add(o),p2=pc.clone().add(o);
+        const c1=cyl(p1,m1,0.065,CPK[a.el]),c2=cyl(m1,p2,0.065,CPK[c.el]); g.add(c1);g.add(c2); made.push(c1,c2); });
+    }else{
+      const r=isH?0.075:0.095; const c1=cyl(pa,mid,r,CPK[a.el]),c2=cyl(mid,pc,r,CPK[c.el]); g.add(c1);g.add(c2); made.push(c1,c2);
+    }
+    if(isH) hBondMeshes.push(...made);
+  });
+  const marks=[];
+  (mol.stereocenters||[]).forEach(s=>{
+    const torus=new THREE.Mesh(new THREE.TorusGeometry(0.62,0.055,10,28),new THREE.MeshStandardMaterial({color:ROSE,emissive:ROSE,emissiveIntensity:0.4}));
+    torus.position.copy(P[s]); torus.rotation.x=Math.PI/2; torus.visible=false; g.add(torus);
+    const hI=mol.wedge[s], dir=new THREE.Vector3().subVectors(P[hI],P[s]);
+    const cone=new THREE.Mesh(new THREE.ConeGeometry(0.19,P[s].distanceTo(P[hI]),3),new THREE.MeshStandardMaterial({color:ROSE,emissive:ROSE,emissiveIntensity:0.5,roughness:0.4}));
+    cone.position.copy(P[s]).addScaledVector(dir,0.5); cone.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0),dir.clone().normalize()); cone.visible=false; g.add(cone);
+    marks.push({torus,cone});
+  });
+  g.userData={ hMeshes, hBondMeshes, marks };
+  g.position.set(ax,0,az);
+  return g;
+}
+
+/* ================= camera ================= */
+let theta=0.7, phi=1.02, radius=60;
+const target=new THREE.Vector3(0,0,0);
+const clamp=(v,a,b)=>Math.min(b,Math.max(a,v));
+function updateCam(){ camera.position.set(target.x+radius*Math.sin(phi)*Math.sin(theta),target.y+radius*Math.cos(phi),target.z+radius*Math.sin(phi)*Math.cos(theta)); camera.lookAt(target); }
+function fitCamera(){
+  const box=new THREE.Box3();
+  groups.forEach(g=>{ g.updateWorldMatrix(true,true); g.traverse(o=>{ if(o.isMesh){ box.expandByObject(o); } }); });
+  if(box.isEmpty()){ radius=60; target.set(0,0,0); return updateCam(); }
+  const c=box.getCenter(new THREE.Vector3()), s=box.getSize(new THREE.Vector3());
+  target.copy(c); radius=Math.max(s.x,s.y,s.z)*1.5+8; updateCam();
+}
+function bindOrbit(el){
+  let d=false,lx=0,ly=0;
+  el.addEventListener('pointerdown',e=>{d=true;lx=e.clientX;ly=e.clientY;el.setPointerCapture(e.pointerId);});
+  el.addEventListener('pointerup',()=>d=false);
+  el.addEventListener('pointermove',e=>{ if(!d)return; theta-=(e.clientX-lx)*0.006; phi=clamp(phi-(e.clientY-ly)*0.006,0.12,Math.PI-0.12); lx=e.clientX;ly=e.clientY; updateCam(); });
+  el.addEventListener('wheel',e=>{e.preventDefault(); radius=clamp(radius*Math.pow(1.0016,e.deltaY),6,400); updateCam();},{passive:false});
+}
+
+/* ================= load / render ================= */
+function currentMols(){
+  if(state.mode==='kit') return D.geom.kit.map(m=>({...m}));
+  if(state.mode==='linear') return [{code:'PEP', ...D.geom.linear, cy:128, cx:128}];
+  if(state.mode==='cyclic') return [{code:'CYC', ...D.geom.cyclic, cy:128, cx:128}];
+  return sandboxMols();
+}
+function clearGroups(){ groups.forEach(g=>{ root.remove(g); g.traverse(o=>{ if(o.geometry&&o.geometry!==SPH)o.geometry.dispose(); if(o.material)o.material.dispose(); }); }); groups=[];
+  labels.forEach(l=>l.el.remove()); labels.length=0; }
+function loadMode(mode){
+  state.mode=mode;
+  [...$('segMode').children].forEach(b=>b.classList.toggle('on',b.dataset.m===mode));
+  $('sandbox').classList.toggle('on',mode==='sandbox');
+  clearGroups();
+  curMols = currentMols();
+  const single = curMols.length===1;
+  curMols.forEach(m=>{
+    const ax = single?0:(m.cx-GRIDC)*LAYSCALE, az = single?0:(m.cy-GRIDC)*LAYSCALE;
+    const g=buildMolecule(m,ax,az); groups.push(g); root.add(g);
+    if(state.mode==='kit'){ const el=document.createElement('div'); el.className='lbl3d';
+      el.innerHTML=`<span class="code">${m.code}</span> <span class="f">${sub(m.formula)}</span>`; document.body.appendChild(el);
+      labels.push({el, world:new THREE.Vector3(ax,3.2,az)}); }
+  });
+  applyH(); applyStereo(); fitCamera();
+  renderCensus(); renderDesc(); renderNote();
+}
+function applyH(){ groups.forEach(g=>{ g.userData.hMeshes.forEach(m=>m.visible=state.H); g.userData.hBondMeshes.forEach(m=>m.visible=state.H); }); }
+function applyStereo(){ groups.forEach(g=> g.userData.marks.forEach(k=>{ k.torus.visible=state.stereo; k.cone.visible=state.stereo; })); }
+
+/* ================= census / descriptors / notes ================= */
+function renderCensus(){
+  const dec=D.decode; const curName = state.mode==='linear'?'linear pentapeptide':state.mode==='cyclic'?'cyclic pentapeptide':state.mode==='kit'?'free-monomer kit (decoded)':null;
+  let html=`<tr><th class="l">reading</th><th>·</th><th>heavy</th><th>O</th><th>H</th></tr>`;
+  D.rows.forEach(r=>{ const cur=r.name===curName;
+    html+=`<tr class="${r.match?'match':''} ${cur?'cur':''}"><td class="l">${r.name.replace(' (decoded)','').replace(' pentapeptide','-peptide')}`+
+      (r.match?`<span class="badge ok">✓ decode</span>`:``)+`</td><td>${r.components}</td><td>${r.heavy}</td><td>${r.O}</td><td>${r.H}</td></tr>`; });
+  html+=`<tr style="border-top:1px solid var(--line-soft)"><td class="l" style="color:var(--cyan)">decoded pixels</td><td>${dec.components}</td><td>${dec.heavy}</td><td>${dec.O}</td><td>${dec.H}</td></tr>`;
+  $('censusTable').innerHTML=html;
+  $('censusNote').innerHTML=`Each amide bond is a condensation (<b>−1 O, −2 H</b>) and joins two parts. Among assembly states of these five monomers, <b>only the free kit</b> matches the decode on all four counts — why the message is an unassembled kit, not a chain.<br><span class="c">Note:</span> the census settles kit-vs-chain, <i>not</i> which five monomers — that is forced separately by the drawn bond graph (the census is a coarse invariant many monomer sets share).`;
+}
+function renderDesc(){
+  $('descName').textContent = state.mode==='kit'?'kit':(state.mode==='cyclic'?'cyclic':'linear')+' peptide';
+  let rows;
+  if(state.mode==='kit'){ rows=[['aggregate','C₂₄N₆O₁₂'],['molecules','5 free'],['heavy atoms','42'],['hydrogens','52'],['stereocenters','6']]; }
+  else{ const d=D.descriptors.find(x=>x.code==='PEP'); const f=state.mode==='cyclic'?D.geom.cyclic.formula:d.formula;
+    rows=[['formula',sub(f)],['MW',d.MW+' g/mol'],['TPSA',d.TPSA+' Å²'],['H-bond donors',d.HBD],['H-bond acceptors',d.HBA],['rotatable bonds',d.RotB]]; }
+  let html=rows.map(([k,v])=>`<div class="drow"><span>${k}</span><span class="v">${v}</span></div>`).join('');
+  if(state.mode==='kit' && window.ASIS_REFS){
+    html += '<div style="margin-top:10px;border-top:1px solid var(--line-soft);padding-top:8px;font-size:10px;color:var(--txt-dim)">ChEMBL identity · abiotic status (PubMed)</div>';
+    ['Abu','Nva','Nle','mAsp','Dab'].forEach(code=>{
+      const m=ASIS_REFS.monomers[code], lab=ASIS_REFS.abioticLabel[m.abiotic];
+      html += `<div style="font-size:10.5px;line-height:1.5;margin-top:6px">`+
+              `<b style="color:var(--amber)">${code}</b> `+
+              `<a href="${ASIS_REFS.chemblURL(m.chembl.constitution)}" target="_blank" rel="noopener" style="color:var(--cyan);text-decoration:none">${m.chembl.constitution}</a>`+
+              `<br><span style="color:${lab.col}">● ${lab.txt}</span>`+
+              `<br><span style="color:var(--txt-dim)">${ASIS_REFS.refLink(m.refs[0])}</span></div>`;
+    });
+  }
+  $('descBody').innerHTML=html;
+}
+function renderNote(){
+  $('modeNote').innerHTML={ kit:'The decoded state. Five disconnected monomers — the census proves it is a kit, not a peptide.',
+    linear:'Reference assembly: 4 peptide bonds along Abu–Nva–mAsp–Dab–Nle. The 6 points give this <b>topology, not a direction</b>.',
+    cyclic:'Head-to-tail ring: 5 bonds, one more water than linear.',
+    sandbox:'Compose any chain from the five blocks — the census never returns to the kit once a bond forms.' }[state.mode];
+}
+
+/* ================= sandbox (feature E) ================= */
+let sbSeq=[], sbTopo='linear';
+function sandboxMols(){
+  const codes=sbSeq.map(u=>u.code).sort().join(',');
+  if(codes==='Abu,Dab,Nle,Nva,mAsp') return [{code:'PEP', ...(sbTopo==='cyclic'?D.geom.cyclic:D.geom.linear), cy:128, cx:128}];
+  return D.geom.kit.map(m=>({...m}));
+}
+function sbCensus(){
+  if(sbSeq.length===0){ $('sbSeq').textContent='(empty — this is the kit)'; $('sbCensus').innerHTML=`5 free monomers · <span class="m">this is exactly the decoded kit</span>`; loadMode('sandbox'); return; }
+  let C=0,N=0,O=0,H=0; sbSeq.forEach(u=>{C+=u.C;N+=u.N;O+=u.O;H+=u.H;});
+  const n=sbSeq.length, bonds=sbTopo==='cyclic'?n:(n-1); O-=bonds; H-=2*bonds; const heavy=C+N+O, comp=1, dec=D.decode;
+  $('sbSeq').textContent=sbSeq.map(u=>u.code).join(sbTopo==='cyclic'?' ⟳ ':' – ')+(sbTopo==='cyclic'?' (ring)':'');
+  const match=(comp===dec.components&&heavy===dec.heavy&&O===dec.O&&H===dec.H);
+  $('sbCensus').innerHTML=`C${sub(''+C)}N${sub(''+N)}O${sub(''+O)} · <span class="v">${H} H</span> · ${comp} component · ${bonds} bond${bonds!==1?'s':''}, ${bonds} H₂O released &nbsp;→ &nbsp;`+
+    (match?`<span class="m">matches the decode</span>`:`<span class="x">does not match the decoded kit (5 / 42 / 12 / 52)</span>`);
+  loadMode('sandbox');
+}
+function buildSandbox(){
+  $('sbBlocks').innerHTML='';
+  D.monomer_units.forEach(u=>{ const b=document.createElement('button'); b.className='sbchip';
+    b.innerHTML=`+ ${u.code} <span style="color:var(--txt-dim)">${u.COOH}·COOH ${u.NH2}·NH₂</span>`; b.onclick=()=>{ sbSeq.push(u); sbCensus(); }; $('sbBlocks').appendChild(b); });
+  $('sbClear').onclick=()=>{ sbSeq=[]; sbCensus(); };
+  [...$('sbTopo').children].forEach(x=> x.onclick=()=>{ [...$('sbTopo').children].forEach(y=>y.classList.remove('on')); x.classList.add('on'); sbTopo=x.dataset.t; sbCensus(); });
+}
+
+/* ================= export (feature D) ================= */
+function dl(url,name){ const a=document.createElement('a'); a.href=url; a.download=name; document.body.appendChild(a); a.click(); a.remove(); }
+function toast(m){ const t=$('toast'); t.textContent=m; t.classList.add('show'); clearTimeout(t._h); t._h=setTimeout(()=>t.classList.remove('show'),1800); }
+function fname(ext){ return `asis_${state.mode}${state.mirror?'_enantiomer':''}.${ext}`; }
+const p3=n=>String(n).padStart(3), f10=v=>v.toFixed(4).padStart(10);
+function molToSDF(m){
+  const sgn=state.mirror?-1:1;
+  let s=`ASIS ${m.code||state.mode}\n  ASIS-3D engine\n${SIG.author} · ${SIG.role} <${SIG.email}>  ${SIG.site}\n`;
+  s+=`${p3(m.atoms.length)}${p3(m.bonds.length)}  0  0  0  0  0  0  0  0999 V2000\n`;
+  m.atoms.forEach(a=> s+=`${f10(a.x)}${f10(a.y)}${f10(sgn*a.z)} ${a.el.padEnd(3)} 0  0  0  0  0  0  0  0  0  0  0  0\n`);
+  m.bonds.forEach(b=> s+=`${p3(b.a+1)}${p3(b.b+1)}${p3(b.order)}  0\n`);
+  s+=`M  END\n>  <author>\n${SIG.author} · ${SIG.role} <${SIG.email}>\n\n>  <site>\n${SIG.site}\n\n$$$$\n`;
+  return s;
+}
+function exportSDF(){ const txt=curMols.map(molToSDF).join(''); dl('data:chemical/x-mdl-sdfile;charset=utf-8,'+encodeURIComponent(txt),fname('sdf')); toast('exported '+fname('sdf')); }
+const VDW={C:0.42,N:0.40,O:0.39,H:0.26};
+const cross=(a,b)=>[a[1]*b[2]-a[2]*b[1],a[2]*b[0]-a[0]*b[2],a[0]*b[1]-a[1]*b[0]];
+const norm=a=>{const L=Math.hypot(...a);return a.map(x=>x/L);};
+function ico(cx,cy,cz,r){
+  const t=(1+Math.sqrt(5))/2; let v=[[-1,t,0],[1,t,0],[-1,-t,0],[1,-t,0],[0,-1,t],[0,1,t],[0,-1,-t],[0,1,-t],[t,0,-1],[t,0,1],[-t,0,-1],[-t,0,1]];
+  let f=[[0,11,5],[0,5,1],[0,1,7],[0,7,10],[0,10,11],[1,5,9],[5,11,4],[11,10,2],[10,7,6],[7,1,8],[3,9,4],[3,4,2],[3,2,6],[3,6,8],[3,8,9],[4,9,5],[2,4,11],[6,2,10],[8,6,7],[9,8,1]];
+  const mid={},nf=[]; const m=(a,b)=>{const k=a<b?a+'_'+b:b+'_'+a; if(!(k in mid)){mid[k]=v.length;v.push([(v[a][0]+v[b][0])/2,(v[a][1]+v[b][1])/2,(v[a][2]+v[b][2])/2]);} return mid[k];};
+  f.forEach(([a,b,c])=>{const ab=m(a,b),bc=m(b,c),ca=m(c,a); nf.push([a,ab,ca],[b,bc,ab],[c,ca,bc],[ab,bc,ca]);});
+  return nf.map(tri=>tri.map(i=>{const p=v[i],L=Math.hypot(p[0],p[1],p[2]);return[cx+p[0]/L*r,cy+p[1]/L*r,cz+p[2]/L*r];}));
+}
+function cylT(p,q,r,seg=8){
+  const d=[q[0]-p[0],q[1]-p[1],q[2]-p[2]],L=Math.hypot(...d); if(L<1e-6)return[];
+  const dn=d.map(x=>x/L); let up=Math.abs(dn[2])<0.9?[0,0,1]:[1,0,0]; const u=norm(cross(dn,up)),w=cross(dn,u);
+  const ring=c=>Array.from({length:seg},(_,k)=>{const a=2*Math.PI*k/seg;return[c[0]+r*(Math.cos(a)*u[0]+Math.sin(a)*w[0]),c[1]+r*(Math.cos(a)*u[1]+Math.sin(a)*w[1]),c[2]+r*(Math.cos(a)*u[2]+Math.sin(a)*w[2])];});
+  const r0=ring(p),r1=ring(q),tri=[]; for(let k=0;k<seg;k++){const a=r0[k],b=r0[(k+1)%seg],c=r1[k],e=r1[(k+1)%seg]; tri.push([a,b,c],[b,e,c]);} return tri;
+}
+function exportSTL(){
+  const S=6.0,sgn=state.mirror?-1:1,tris=[];
+  curMols.forEach(m=>{ const ox=curMols.length===1?0:(m.cx-GRIDC)*LAYSCALE/MOLSCALE, oz=curMols.length===1?0:(m.cy-GRIDC)*LAYSCALE/MOLSCALE;
+    const pos=m.atoms.map(a=>[(a.x+ox)*S,a.y*S,(sgn*a.z+oz)*S]);
+    m.atoms.forEach((a,i)=> tris.push(...ico(pos[i][0],pos[i][1],pos[i][2],(VDW[a.el]||0.4)*S)));
+    m.bonds.forEach(b=>{ const a=pos[b.a],c=pos[b.b],mid=[(a[0]+c[0])/2,(a[1]+c[1])/2,(a[2]+c[2])/2]; tris.push(...cylT(a,mid,0.13*S),...cylT(mid,c,0.13*S)); });
+  });
+  const buf=new ArrayBuffer(84+tris.length*50),dv=new DataView(buf);
+  const hdr=`ASIS ${state.mode} ${SIG.site}`; for(let i=0;i<80;i++) dv.setUint8(i,i<hdr.length?hdr.charCodeAt(i):0);
+  dv.setUint32(80,tris.length,true); let o=84;
+  tris.forEach(t=>{ dv.setFloat32(o,0,true);dv.setFloat32(o+4,0,true);dv.setFloat32(o+8,0,true);o+=12; t.forEach(v=>{dv.setFloat32(o,v[0],true);dv.setFloat32(o+4,v[1],true);dv.setFloat32(o+8,v[2],true);o+=12;}); dv.setUint16(o,0,true);o+=2; });
+  dl(URL.createObjectURL(new Blob([buf],{type:'model/stl'})),fname('stl')); toast(`STL: ${tris.length} triangles`);
+}
+function exportPNG(){
+  if(POST) POST.render(); else renderer.render(scene,camera); const src=renderer.domElement,W=src.width,H=src.height,dpr=Math.min(devicePixelRatio,2),bar=Math.round(56*dpr);
+  const cv=document.createElement('canvas'); cv.width=W; cv.height=H+bar; const ctx=cv.getContext('2d');
+  ctx.fillStyle='#060913'; ctx.fillRect(0,0,cv.width,cv.height); ctx.drawImage(src,0,0);
+  ctx.fillStyle='#0b1120'; ctx.fillRect(0,H,W,bar);
+  ctx.fillStyle='#ffc857'; ctx.font=`${Math.round(18*dpr)}px 'IBM Plex Mono',monospace`; ctx.fillText(`A Sign in Space — ${state.mode}`,16*dpr,H+24*dpr);
+  ctx.fillStyle='#8fa1c7'; ctx.font=`${Math.round(14*dpr)}px 'IBM Plex Mono',monospace`; ctx.fillText(`${SIG.author} · ${SIG.role} <${SIG.email}>  ${SIG.site}`,16*dpr,H+44*dpr);
+  dl(cv.toDataURL('image/png'),fname('png')); toast('exported '+fname('png'));
+}
+
+/* ================= UI + loop ================= */
+const _v=new THREE.Vector3();
+function projectLabels(){
+  labels.forEach(l=>{ _v.copy(l.world); root.localToWorld(_v); _v.project(camera);
+    if(_v.z>1){ l.el.style.display='none'; return; } l.el.style.display='block';
+    l.el.style.left=((_v.x*0.5+0.5)*innerWidth)+'px'; l.el.style.top=((-_v.y*0.5+0.5)*innerHeight)+'px'; });
+}
+function animate(){ requestAnimationFrame(animate); if(state.spin) root.rotation.y+=0.0026; projectLabels(); if(STARS) STARS.userData.update(performance.now()); if(POST) POST.render(); else renderer.render(scene,camera); }
+function buildUI(){
+  $('diaN').textContent=D.diastereomers.count; $('diaCenters').textContent=D.diastereomers.centers;
+  [...$('segMode').children].forEach(b=> b.onclick=()=>loadMode(b.dataset.m));
+  $('cH').onchange=e=>{ state.H=e.target.checked; applyH(); };
+  $('cStereo').onchange=e=>{ state.stereo=e.target.checked; applyStereo(); };
+  $('cSpin').onchange=e=>{ state.spin=e.target.checked; };
+  $('cMirror').onchange=e=>{ state.mirror=e.target.checked; loadMode(state.mode); };
+  [...document.querySelectorAll('.exbtns button')].forEach(b=> b.onclick=()=>({sdf:exportSDF,stl:exportSTL,png:exportPNG})[b.dataset.x]());
+  buildSandbox();
+  addEventListener('resize',()=>{ camera.aspect=innerWidth/innerHeight; camera.updateProjectionMatrix(); renderer.setSize(innerWidth,innerHeight); if(POST) POST.setSize(innerWidth,innerHeight); });
+}
+buildScene(); bindOrbit(renderer.domElement); buildUI(); loadMode('kit'); updateCam(); animate();
+</script>
+</body>
+</html>

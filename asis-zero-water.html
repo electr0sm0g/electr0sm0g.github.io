@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>A Sign in Space — the message is at zero water</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Michroma&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap');
+:root{
+  --bg:#060913;--panel:rgba(13,19,34,.92);--line:#223050;--line-soft:#16203a;
+  --txt:#dfe6f5;--txt-dim:#8fa1c7;--amber:#ffc857;--cyan:#52b6e8;--rose:#ff5db0;--green:#7bd88f;
+}
+*{box-sizing:border-box}
+html,body{height:100%;margin:0}
+body{background:var(--bg);color:var(--txt);font-family:'IBM Plex Sans',system-ui,sans-serif;-webkit-font-smoothing:antialiased;
+  min-height:100%;display:flex;flex-direction:column;align-items:center;padding:26px 16px 40px}
+header{text-align:center;max-width:900px;margin-bottom:14px}
+h1{font-family:'Michroma',sans-serif;font-size:16px;font-weight:400;letter-spacing:.13em;margin:0}
+h1 .t{color:var(--amber)}
+.sub{font-size:12px;color:var(--txt-dim);margin-top:6px}
+#figwrap{width:min(1000px,96vw);background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:8px}
+svg{display:block;width:100%;height:auto}
+.cap{width:min(1000px,96vw);font-size:12.5px;line-height:1.62;color:var(--txt-dim);margin-top:16px}
+.cap b{color:var(--amber)} .cap .mono{font-family:'IBM Plex Mono',monospace;color:var(--cyan)}
+.bar{display:flex;gap:8px;margin-top:16px;align-items:center;flex-wrap:wrap}
+.bar button{background:#101a30;border:1px solid var(--cyan);color:var(--cyan);border-radius:8px;padding:8px 14px;font:inherit;font-size:12.5px;cursor:pointer}
+.bar button:hover{border-color:var(--amber);color:var(--amber)}
+.bar .sig{font-size:10px;color:var(--txt-dim);margin-left:auto;text-align:right;line-height:1.5}
+</style>
+</head>
+<body>
+<header>
+  <h1>A SIGN IN SPACE — <span class="t">the message is at zero water</span></h1>
+  <div class="sub">The decoded kit is the unique maximum-composition state; every assembly is ≥1 water away</div>
+</header>
+
+<div id="figwrap"></div>
+
+<div class="cap" id="cap"></div>
+<div class="bar">
+  <button id="png">Export PNG</button>
+  <button id="svg">Export SVG (vector)</button>
+  <div class="sig"><b style="color:#ffc857">Etienne Lacoche</b> · Researcher · &lt;etienne.lacoche@pm.me&gt;<br>https://www.asignin.space</div>
+</div>
+
+<script>
+'use strict';
+const SVGNS='http://www.w3.org/2000/svg';
+const SIG={author:'Etienne Lacoche', role:'Researcher',email:'etienne.lacoche@pm.me',site:'https://www.asignin.space'};
+const SUB={'0':'₀','1':'₁','2':'₂','3':'₃','4':'₄','5':'₅','6':'₆','7':'₇','8':'₈','9':'₉'};
+const sub=s=>String(s).replace(/(\d)/g,d=>SUB[d]);
+
+// waters w = number of amide bonds; each bond is a condensation: -1 O, -2 H, heavy -1
+const NODES=[0,1,2,3,4,5].map(w=>({ w, O:12-w, H:52-2*w, heavy:42-w,
+  comp: w>=4?1:5-w,
+  name: ['the decoded message','1 bond · 4 fragments','2 bonds · 3 fragments','3 bonds · 2 fragments','linear pentapeptide','cyclic pentapeptide'][w],
+  kind: w===0?'kit':(w===4?'linear':(w===5?'cyclic':'partial')) }));
+
+const W=1000,H=560;
+const X0=132,X1=812,Y0=150,Y1=436;          // plot area (O from 12 top to 7 bottom)
+const xFor=w=> X0 + w/5*(X1-X0);
+const yFor=O=> Y1 - (O-7)/5*(Y1-Y0);
+
+function el(tag,attrs,parent){ const n=document.createElementNS(SVGNS,tag); for(const k in attrs) n.setAttribute(k,attrs[k]); if(parent)parent.appendChild(n); return n; }
+function txt(x,y,s,attrs,parent){ const t=el('text',{x,y,...attrs},parent); t.textContent=s; return t; }
+
+function drop(cx,cy,s,fill,parent){ // teardrop glyph
+  const p=el('path',{d:`M ${cx} ${cy-s} C ${cx+s*0.9} ${cy-s*0.1} ${cx+s*0.6} ${cy+s} ${cx} ${cy+s} C ${cx-s*0.6} ${cy+s} ${cx-s*0.9} ${cy-s*0.1} ${cx} ${cy-s} Z`,
+    fill, stroke:'none'},parent); return p; }
+
+function build(){
+  const svg=el('svg',{viewBox:`0 0 ${W} ${H}`,xmlns:SVGNS,'font-family':"'IBM Plex Sans',sans-serif"});
+  el('rect',{x:0,y:0,width:W,height:H,fill:'#060913'},svg);
+
+  // ---- axes / grid ----
+  for(let O=7;O<=12;O++){ const y=yFor(O);
+    el('line',{x1:X0,y1:y,x2:X1,y2:y,stroke:'#16203a','stroke-width':1,opacity: O===12?0.9:0.45},svg);
+    txt(X0-12,y+4,O,{fill:'#8fa1c7','font-size':12,'font-family':"'IBM Plex Mono',monospace",'text-anchor':'end'},svg);
+  }
+  txt(40,(Y0+Y1)/2,'oxygens',{fill:'#8fa1c7','font-size':12.5,'text-anchor':'middle',transform:`rotate(-90 40 ${(Y0+Y1)/2})`},svg);
+  for(let w=0;w<=5;w++){ txt(xFor(w),Y1+26,w,{fill:'#8fa1c7','font-size':13,'font-family':"'IBM Plex Mono',monospace",'text-anchor':'middle'},svg); }
+  txt((X0+X1)/2,Y1+52,'water molecules released during assembly  →',{fill:'#8fa1c7','font-size':12.5,'text-anchor':'middle'},svg);
+
+  // ---- stepped descent path ----
+  let d=`M ${xFor(0)} ${yFor(12)}`;
+  for(let w=1;w<=5;w++){ d+=` L ${xFor(w)} ${yFor(NODES[w-1].O)} L ${xFor(w)} ${yFor(NODES[w].O)}`; }
+  el('path',{d,fill:'none',stroke:'#2b3a5e','stroke-width':2},svg);
+  // straight trend line (each step -1 O)
+  el('path',{d:`M ${xFor(0)} ${yFor(12)} L ${xFor(5)} ${yFor(7)}`,fill:'none',stroke:'#ffc857','stroke-width':1.4,'stroke-dasharray':'2 4',opacity:0.5},svg);
+
+  // ---- water drops between steps ----
+  for(let w=1;w<=5;w++){ const mx=(xFor(w-1)+xFor(w))/2, my=(yFor(NODES[w-1].O)+yFor(NODES[w].O))/2 - 16;
+    drop(mx,my,7,'#52b6e8',svg); txt(mx,my+3,'',{},svg);
+    txt(mx,my-14,'+1 H₂O',{fill:'#52b6e8','font-size':10.5,'font-family':"'IBM Plex Mono',monospace",'text-anchor':'middle'},svg);
+  }
+
+  // ---- nodes ----
+  NODES.forEach(n=>{
+    const x=xFor(n.w),y=yFor(n.O), isMsg=n.kind==='kit';
+    // component glyphs under node (5 dots -> 1 blob)
+    const gy=Y1+72;
+    if(n.comp>1){ for(let i=0;i<n.comp;i++){ el('circle',{cx:x-(n.comp-1)*5+i*10,cy:gy,r:3.1,fill: isMsg?'#ffc857':'#4a5878'},svg); } }
+    else { el('circle',{cx:x,cy:gy,r:6.5,fill:'none',stroke:'#4a5878','stroke-width':1.6},svg); }
+
+    el('circle',{cx:x,cy:y,r:isMsg?11:7,fill: isMsg?'#ffc857':'#0b1120',stroke: isMsg?'#ffc857':'#2b3a5e','stroke-width':2},svg);
+    if(isMsg) el('circle',{cx:x,cy:y,r:19,fill:'none',stroke:'#ffc857','stroke-width':1.4,opacity:0.4},svg);
+
+    // value label (kit gets the rich callout instead)
+    if(!isMsg){
+      const ly=y+34, ta=n.w===5?'end':'middle', lx=n.w===5?x+8:x;
+      const g=el('g',{},svg);
+      txt(lx,ly,`O${sub(n.O)} H${sub(n.H)}`,{fill:'#dfe6f5','font-size':12.5,'font-family':"'IBM Plex Mono',monospace",'text-anchor':ta},g);
+      txt(lx,ly+15,`${n.heavy} heavy · ${n.comp} comp`,{fill:'#8fa1c7','font-size':10.5,'font-family':"'IBM Plex Mono',monospace",'text-anchor':ta},g);
+    }
+  });
+
+  // ---- message callout (to the right of node 0) ----
+  const mx=xFor(0),my=yFor(12);
+  const cg=el('g',{},svg);
+  el('line',{x1:mx,y1:my-12,x2:mx,y2:84,stroke:'#ffc857','stroke-width':1.2},cg);
+  el('rect',{x:mx-6,y:34,width:352,height:50,rx:8,fill:'rgba(255,200,87,.09)',stroke:'#ffc857','stroke-width':1},cg);
+  txt(mx+12,54,'THE MESSAGE — decoded kit · 0 water',{fill:'#ffc857','font-size':13,'font-weight':600},cg);
+  txt(mx+12,73,'C₂₄N₆O₁₂ · 52 H · 42 heavy atoms · 5 free monomers',{fill:'#dfe6f5','font-size':11.5,'font-family':"'IBM Plex Mono',monospace"},cg);
+
+  // ---- headline annotation ----
+  txt(X1+6,yFor(9),'each amide bond',{fill:'#8fa1c7','font-size':11,'text-anchor':'start'},svg);
+  txt(X1+6,yFor(9)+15,'= 1 condensation',{fill:'#8fa1c7','font-size':11,'text-anchor':'start'},svg);
+  txt(X1+6,yFor(9)+30,'−1 O · −2 H',{fill:'#52b6e8','font-size':11,'font-family':"'IBM Plex Mono',monospace",'text-anchor':'start'},svg);
+
+  // 'component count' axis label
+  txt((X0+X1)/2,Y1+90,'components (5 free parts → 1 assembled molecule)',{fill:'#6b7ba0','font-size':11,'text-anchor':'middle'},svg);
+
+  // key readings labels near their nodes
+  const tag=(w,s,color)=>{ const x=xFor(w); txt(x, w<=1?yFor(NODES[w].O)-52:yFor(NODES[w].O)+62, s, {fill:color,'font-size':11.5,'text-anchor':'middle','font-style':'italic'},svg); };
+  tag(4,'linear pentapeptide','#dfe6f5'); tag(5,'cyclic','#dfe6f5');
+
+  document.getElementById('figwrap').innerHTML=''; document.getElementById('figwrap').appendChild(svg);
+  return svg;
+}
+const svg=build();
+
+document.getElementById('cap').innerHTML=
+ `<b>Figure — The decoded message sits at the zero-water fixed point.</b> Peptide-bond formation is a condensation that removes one water per bond (<span class="mono">−1 O, −2 H</span>). The five free monomers (<span class="mono">C₂₄N₆O₁₂ · 52 H · 42 heavy atoms</span>) therefore hold the <b>maximum oxygen and hydrogen</b> of any reading: every covalent assembly — partial (1–3 bonds), linear (4), or cyclic (5) — lies at least one water away and monotonically loses O and H. The six decoded assembly points prescribe <i>where</i> to condense; the message depicts the parts <b>before</b> the reaction, i.e. exactly the state a receiver must not confuse with a finished chain. This is the geometric form of the kit-vs-chain census result.`;
+
+/* ---- export ---- */
+function dl(url,name){ const a=document.createElement('a'); a.href=url; a.download=name; document.body.appendChild(a); a.click(); a.remove(); }
+function svgString(){
+  const clone=svg.cloneNode(true); clone.setAttribute('xmlns',SVGNS);
+  const cmt=document.createComment(` A Sign in Space — zero-water figure | ${SIG.author} · ${SIG.role} <${SIG.email}> | ${SIG.site} `);
+  clone.insertBefore(cmt, clone.firstChild);
+  return '<?xml version="1.0" encoding="UTF-8"?>\n'+new XMLSerializer().serializeToString(clone);
+}
+document.getElementById('svg').onclick=()=> dl('data:image/svg+xml;charset=utf-8,'+encodeURIComponent(svgString()),'asis_zero_water.svg');
+document.getElementById('png').onclick=()=>{
+  const scale=2, img=new Image();
+  img.onload=()=>{
+    const bar=54*scale, cv=document.createElement('canvas'); cv.width=W*scale; cv.height=H*scale+bar;
+    const ctx=cv.getContext('2d'); ctx.fillStyle='#060913'; ctx.fillRect(0,0,cv.width,cv.height);
+    ctx.drawImage(img,0,0,W*scale,H*scale);
+    ctx.fillStyle='#0b1120'; ctx.fillRect(0,H*scale,cv.width,bar);
+    ctx.fillStyle='#ffc857'; ctx.font=`${18*scale}px 'IBM Plex Mono',monospace`;
+    ctx.fillText('A Sign in Space — the message is at zero water',16*scale,H*scale+24*scale);
+    ctx.fillStyle='#8fa1c7'; ctx.font=`${13*scale}px 'IBM Plex Mono',monospace`;
+    ctx.fillText(`${SIG.author} · ${SIG.role} <${SIG.email}>   ${SIG.site}`,16*scale,H*scale+44*scale);
+    dl(cv.toDataURL('image/png'),'asis_zero_water.png');
+  };
+  img.src='data:image/svg+xml;charset=utf-8,'+encodeURIComponent(svgString());
+};
+</script>
+<script src="asis-fx.js"></script>
+<script>try{ ASISFx.aurora({ vignette:0.4 }); }catch(e){}</script>
+</body>
+</html>

@@ -1,0 +1,847 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>A Sign in Space — the 5 amino-acid kit in 3D (generation 6625)</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Michroma&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap');
+:root{
+  --bg:#060913; --panel:rgba(13,19,34,.92); --line:#223050; --line-soft:#16203a;
+  --txt:#dfe6f5; --txt-dim:#8fa1c7; --amber:#ffc857; --cyan:#52b6e8; --rose:#ff5db0;
+  --C:#4a4f5c; --N:#4f74ff; --O:#ff4d4d; --H:#e6ecf7;
+}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{
+  margin:0; overflow:hidden; background:var(--bg); color:var(--txt);
+  font-family:'IBM Plex Sans',system-ui,sans-serif; -webkit-font-smoothing:antialiased;
+}
+#scene{position:fixed; inset:0; touch-action:none}
+#scene canvas{display:block}
+
+header{position:fixed; top:14px; left:18px; z-index:5; pointer-events:none; max-width:56vw}
+h1{font-family:'Michroma',sans-serif; font-size:14px; font-weight:400; letter-spacing:.14em; margin:0}
+h1 .t{color:var(--amber)}
+.sub{font-size:11.5px; color:var(--txt-dim); margin-top:4px; letter-spacing:.02em}
+
+#steps{
+  position:fixed; left:18px; bottom:16px; z-index:6; width:352px;
+  background:var(--panel); border:1px solid var(--line); border-radius:12px;
+  backdrop-filter:blur(11px); padding:14px 16px 15px;
+}
+.stephead{display:flex; justify-content:space-between; align-items:baseline; margin-bottom:8px}
+.stepno{font-family:'IBM Plex Mono',monospace; font-size:11px; color:var(--cyan); letter-spacing:.05em}
+.steptitle{font-family:'Michroma',sans-serif; font-size:12.5px; color:var(--amber); letter-spacing:.06em; margin:2px 0 7px}
+.stepbody{font-size:12px; line-height:1.62; color:var(--txt); min-height:96px}
+.stepbody b{color:var(--amber); font-weight:500}
+.stepbody code{font-family:'IBM Plex Mono',monospace; font-size:11px; color:var(--cyan)}
+.stepbody .dim{color:var(--txt-dim)}
+.navbtns{display:flex; gap:7px; margin-top:11px; align-items:center; position:relative}
+.navbtns button{
+  background:#101a30; color:var(--txt); border:1px solid var(--line);
+  border-radius:7px; padding:7px 11px; font:inherit; font-size:12px; cursor:pointer;
+}
+.navbtns button:hover{border-color:var(--amber); color:var(--amber)}
+.navbtns button:disabled{opacity:.35; cursor:default}
+#stepBar{flex:1; height:4px; background:var(--line-soft); border-radius:2px; overflow:hidden; margin:0 2px}
+#stepFill{height:100%; width:0; background:var(--amber); transition:width .3s ease}
+#exportBtn{border-color:var(--cyan); color:var(--cyan)}
+#exportBtn:hover{border-color:var(--amber); color:var(--amber)}
+
+#exportMenu{
+  position:absolute; bottom:42px; right:0; z-index:9; width:210px;
+  background:#0b1120; border:1px solid var(--line); border-radius:9px; padding:8px;
+  display:none; box-shadow:0 10px 30px rgba(0,0,0,.5);
+}
+#exportMenu.open{display:block}
+#exportMenu .ehead{font-size:10px; letter-spacing:.08em; text-transform:uppercase; color:var(--txt-dim); margin:2px 4px 7px}
+#exportMenu button{
+  display:flex; justify-content:space-between; width:100%; text-align:left; margin:3px 0;
+  background:#101a30; border:1px solid var(--line); color:var(--txt); border-radius:6px;
+  padding:7px 9px; font:inherit; font-size:12px; cursor:pointer;
+}
+#exportMenu button:hover{border-color:var(--amber); color:var(--amber)}
+#exportMenu button .x{color:var(--txt-dim); font-family:'IBM Plex Mono',monospace; font-size:10.5px}
+#exportMenu .sig{font-size:11px; color:var(--txt); line-height:1.5; margin:8px 4px 2px; border-top:1px solid var(--line-soft); padding-top:7px}
+
+#stepAction{margin-top:11px; display:none; border-top:1px solid var(--line-soft); padding-top:11px}
+#stepAction .arow{display:flex; gap:7px; align-items:center; flex-wrap:wrap}
+#stepAction button{
+  background:#101a30; color:var(--txt); border:1px solid var(--line);
+  border-radius:7px; padding:7px 11px; font:inherit; font-size:12px; cursor:pointer;
+}
+#stepAction button:hover{border-color:var(--amber); color:var(--amber)}
+#stepAction button.prim{background:var(--amber); border-color:var(--amber); color:#131a2c; font-weight:600}
+#stepAction button.on{background:var(--rose); border-color:var(--rose); color:#160a12; font-weight:600}
+#asmSlider{flex:1; accent-color:var(--amber); min-width:90px}
+.census{font-family:'IBM Plex Mono',monospace; font-size:11px; color:var(--txt-dim); margin-top:8px}
+.census b{color:var(--amber)}
+.census .arrow{color:var(--cyan)}
+.centerbtns{display:flex; flex-wrap:wrap; gap:5px; margin-top:8px}
+.centerbtns button{font-size:10.5px; padding:5px 7px}
+.centerbtns button.wedge{border-color:var(--rose); color:var(--rose)}
+
+#gear{
+  position:fixed; top:14px; right:14px; z-index:7; background:var(--panel); color:var(--txt);
+  border:1px solid var(--line); border-radius:8px; padding:7px 11px; font:inherit; font-size:12px;
+  cursor:pointer; backdrop-filter:blur(10px);
+}
+#gear:hover{border-color:var(--amber); color:var(--amber)}
+#opts{
+  position:fixed; top:52px; right:14px; z-index:6; width:214px;
+  background:var(--panel); border:1px solid var(--line); border-radius:10px;
+  backdrop-filter:blur(10px); padding:11px 13px; transition:opacity .16s, transform .16s;
+}
+#opts.closed{opacity:0; transform:translateX(20px); pointer-events:none}
+.chk{display:flex; gap:9px; align-items:center; font-size:12.5px; margin:8px 0; cursor:pointer}
+.chk input{accent-color:var(--amber)}
+#opts hr{border:0; border-top:1px solid var(--line-soft); margin:10px 0}
+.focusrow{display:flex; flex-wrap:wrap; gap:5px; margin-top:4px}
+.focusrow button{
+  background:#101a30; border:1px solid var(--line); color:var(--txt-dim);
+  border-radius:6px; padding:5px 8px; font:inherit; font-size:11px; cursor:pointer;
+}
+.focusrow button:hover{border-color:var(--amber); color:var(--amber)}
+.focusrow button.active{background:var(--amber); border-color:var(--amber); color:#131a2c; font-weight:600}
+.optlbl{font-size:10px; letter-spacing:.08em; text-transform:uppercase; color:var(--txt-dim); margin:2px 0}
+
+#legend{
+  position:fixed; top:14px; left:50%; transform:translateX(-50%); z-index:5;
+  background:var(--panel); border:1px solid var(--line); border-radius:8px;
+  backdrop-filter:blur(10px); padding:7px 13px; display:flex; gap:13px;
+  font-family:'IBM Plex Mono',monospace; font-size:11px; align-items:center;
+}
+#legend .it{display:flex; gap:5px; align-items:center; color:var(--txt-dim)}
+#legend .dot{width:11px; height:11px; border-radius:50%; display:inline-block}
+
+#tip{
+  position:fixed; right:16px; bottom:16px; z-index:4; text-align:right;
+  font-size:11px; color:var(--txt-dim); line-height:1.7; pointer-events:none;
+}
+.lbl3d{
+  display:none; /* hidden until the render loop positions it — prevents a top-left flash on load */
+  position:fixed; z-index:3; pointer-events:none; transform:translate(-50%,-50%);
+  font-family:'IBM Plex Mono',monospace; font-size:11px; color:var(--txt);
+  background:rgba(6,9,19,.72); border:1px solid var(--line); border-radius:5px;
+  padding:2px 6px; white-space:nowrap; letter-spacing:.02em;
+}
+.lbl3d .code{color:var(--amber)}
+.lbl3d .f{color:var(--txt-dim); font-size:10px}
+#toast{
+  position:fixed; left:50%; bottom:22px; transform:translateX(-50%); z-index:12;
+  background:#0b1120; border:1px solid var(--cyan); color:var(--txt); border-radius:8px;
+  padding:9px 15px; font-family:'IBM Plex Mono',monospace; font-size:12px; opacity:0;
+  transition:opacity .25s; pointer-events:none;
+}
+#toast.show{opacity:1}
+@media (max-width:760px){
+  #steps{width:min(352px,92vw)} #legend{display:none} #tip{display:none}
+  header{max-width:90vw}
+}
+</style>
+</head>
+<body>
+
+<div id="scene"></div>
+
+<header>
+  <h1>A SIGN IN SPACE — <span class="t">the 5-monomer kit</span></h1>
+  <div class="sub">Decoded at generation 6625 · real MMFF94 geometry · after Lacoche, <i>What a Blind Decoder Can and Cannot Recover</i></div>
+</header>
+
+<div id="legend">
+  <div class="it"><span class="dot" style="background:var(--C)"></span>C</div>
+  <div class="it"><span class="dot" style="background:var(--N)"></span>N</div>
+  <div class="it"><span class="dot" style="background:var(--O)"></span>O</div>
+  <div class="it"><span class="dot" style="background:var(--H)"></span>H</div>
+  <div class="it"><span class="dot" style="background:var(--amber)"></span>point</div>
+  <div class="it"><span class="dot" style="background:var(--rose)"></span>stereo</div>
+</div>
+
+<button id="gear">Settings</button>
+<aside id="opts" class="closed">
+  <label class="chk"><input type="checkbox" id="cH" checked> Hydrogens (52)</label>
+  <label class="chk"><input type="checkbox" id="cPts" checked> 6 assembly points</label>
+  <label class="chk"><input type="checkbox" id="cGraph" checked> Assembly graph</label>
+  <label class="chk"><input type="checkbox" id="cRings"> Stereocenter rings (6)</label>
+  <label class="chk"><input type="checkbox" id="cLabels" checked> Labels</label>
+  <label class="chk"><input type="checkbox" id="cSpin"> Auto-rotate</label>
+  <hr>
+  <div class="optlbl">Focus a molecule</div>
+  <div class="focusrow" id="focusRow"></div>
+</aside>
+
+<section id="steps">
+  <div class="stephead">
+    <span class="stepno" id="stepNo">step 1 / 10</span>
+    <span class="stepno" id="stepTag"></span>
+  </div>
+  <div class="steptitle" id="stepTitle"></div>
+  <div class="stepbody" id="stepBody"></div>
+  <div id="stepAction"></div>
+  <div class="navbtns">
+    <button id="prev">‹ Prev</button>
+    <div id="stepBar"><div id="stepFill"></div></div>
+    <button id="exportBtn">⤓ Export</button>
+    <button id="next">Next ›</button>
+    <div id="exportMenu">
+      <div class="ehead">Export this step</div>
+      <button data-fmt="png">Screenshot (PNG) <span class="x">.png</span></button>
+      <button data-fmt="pdb">Structure — PDB <span class="x">.pdb</span></button>
+      <button data-fmt="sdf">Structure — MOL/SDF <span class="x">.sdf</span></button>
+      <button data-fmt="xyz">Coordinates — XYZ <span class="x">.xyz</span></button>
+      <button data-fmt="smi">Line notation — SMILES <span class="x">.smi</span></button>
+      <button data-fmt="json">Full data — JSON <span class="x">.json</span></button>
+      <div class="sig" id="sigNote"></div>
+    </div>
+  </div>
+</section>
+
+<div id="tip">drag: orbit&nbsp;·&nbsp;wheel: zoom<br>← → : steps&nbsp;·&nbsp;decoded layout (quincunx)</div>
+<div id="toast"></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="asis-sota.js"></script>
+<script id="data" type="application/json">{"monomers": [{"code": "Abu", "name": "acide 2-aminobutyrique", "smiles": "CCC(N)C(=O)O", "formula": "C4H9NO2", "cy": 53, "cx": 64, "atoms": [{"el": "C", "x": -2.11, "y": -0.413, "z": -0.239}, {"el": "C", "x": -0.661, "y": -0.867, "z": -0.132}, {"el": "C", "x": 0.306, "y": 0.258, "z": 0.257}, {"el": "N", "x": 0.333, "y": 1.31, "z": -0.782}, {"el": "C", "x": 1.721, "y": -0.296, "z": 0.483}, {"el": "O", "x": 2.034, "y": -1.443, "z": 0.759}, {"el": "O", "x": 2.674, "y": 0.666, "z": 0.419}, {"el": "H", "x": -2.445, "y": 0.054, "z": 0.692}, {"el": "H", "x": -2.759, "y": -1.272, "z": -0.438}, {"el": "H", "x": -2.249, "y": 0.303, "z": -1.055}, {"el": "H", "x": -0.352, "y": -1.321, "z": -1.082}, {"el": "H", "x": -0.608, "y": -1.666, "z": 0.619}, {"el": "H", "x": -0.006, "y": 0.706, "z": 1.209}, {"el": "H", "x": -0.507, "y": 1.88, "z": -0.707}, {"el": "H", "x": 1.121, "y": 1.929, "z": -0.572}, {"el": "H", "x": 3.506, "y": 0.171, "z": 0.569}], "bonds": [{"a": 0, "b": 1, "order": 1}, {"a": 1, "b": 2, "order": 1}, {"a": 2, "b": 3, "order": 1}, {"a": 2, "b": 4, "order": 1}, {"a": 4, "b": 5, "order": 2}, {"a": 4, "b": 6, "order": 1}, {"a": 0, "b": 7, "order": 1}, {"a": 0, "b": 8, "order": 1}, {"a": 0, "b": 9, "order": 1}, {"a": 1, "b": 10, "order": 1}, {"a": 1, "b": 11, "order": 1}, {"a": 2, "b": 12, "order": 1}, {"a": 3, "b": 13, "order": 1}, {"a": 3, "b": 14, "order": 1}, {"a": 6, "b": 15, "order": 1}], "stereocenters": [2], "wedge": {"2": 12}, "backbone": {"N": 3, "Ca": 2, "C": 4, "Oc": 5, "Oh": 6, "Hoh": 15, "Hn": [13, 14]}, "counts": {"C": 4, "N": 1, "O": 2, "H": 9}, "assembly": {"quat": [0.4191641165090968, 0.18321937116519793, -0.03216256815592566, 0.8886493541721577], "t": [-7.53768011945114, 1.42701846645101, 0.9728358726602377]}}, {"code": "Nva", "name": "norvaline", "smiles": "CCCC(N)C(=O)O", "formula": "C5H11NO2", "cy": 77, "cx": 154, "atoms": [{"el": "C", "x": -2.737, "y": -0.56, "z": -0.066}, {"el": "C", "x": -1.547, "y": 0.384, "z": -0.141}, {"el": "C", "x": -0.223, "y": -0.376, "z": -0.018}, {"el": "C", "x": 1.007, "y": 0.531, "z": -0.158}, {"el": "N", "x": 1.045, "y": 1.534, "z": 0.932}, {"el": "C", "x": 2.293, "y": -0.305, "z": -0.138}, {"el": "O", "x": 3.186, "y": -0.241, "z": 0.693}, {"el": "O", "x": 2.396, "y": -1.149, "z": -1.183}, {"el": "H", "x": -2.705, "y": -1.297, "z": -0.875}, {"el": "H", "x": -2.753, "y": -1.096, "z": 0.888}, {"el": "H", "x": -3.672, "y": 0.002, "z": -0.156}, {"el": "H", "x": -1.577, "y": 0.924, "z": -1.094}, {"el": "H", "x": -1.636, "y": 1.128, "z": 0.658}, {"el": "H", "x": -0.189, "y": -0.906, "z": 0.944}, {"el": "H", "x": -0.19, "y": -1.154, "z": -0.792}, {"el": "H", "x": 0.98, "y": 1.073, "z": -1.11}, {"el": "H", "x": 1.915, "y": 2.064, "z": 0.845}, {"el": "H", "x": 1.147, "y": 1.037, "z": 1.819}, {"el": "H", "x": 3.259, "y": -1.594, "z": -1.046}], "bonds": [{"a": 0, "b": 1, "order": 1}, {"a": 1, "b": 2, "order": 1}, {"a": 2, "b": 3, "order": 1}, {"a": 3, "b": 4, "order": 1}, {"a": 3, "b": 5, "order": 1}, {"a": 5, "b": 6, "order": 2}, {"a": 5, "b": 7, "order": 1}, {"a": 0, "b": 8, "order": 1}, {"a": 0, "b": 9, "order": 1}, {"a": 0, "b": 10, "order": 1}, {"a": 1, "b": 11, "order": 1}, {"a": 1, "b": 12, "order": 1}, {"a": 2, "b": 13, "order": 1}, {"a": 2, "b": 14, "order": 1}, {"a": 3, "b": 15, "order": 1}, {"a": 4, "b": 16, "order": 1}, {"a": 4, "b": 17, "order": 1}, {"a": 7, "b": 18, "order": 1}], "stereocenters": [3], "wedge": {"3": 15}, "backbone": {"N": 4, "Ca": 3, "C": 5, "Oc": 6, "Oh": 7, "Hoh": 18, "Hn": [16, 17]}, "counts": {"C": 5, "N": 1, "O": 2, "H": 11}, "assembly": {"quat": [-0.053920905124319775, -0.3446019953703405, 0.38831060580436433, 0.8529694450548632], "t": [-4.536041806590076, -1.9486285053392711, -0.30046222579195386]}}, {"code": "Nle", "name": "norleucine", "smiles": "CCCCC(N)C(=O)O", "formula": "C6H13NO2", "cy": 144, "cx": 44, "atoms": [{"el": "C", "x": 3.002, "y": 0.47, "z": -0.183}, {"el": "C", "x": 1.785, "y": 1.206, "z": -0.721}, {"el": "C", "x": 0.495, "y": 0.905, "z": 0.047}, {"el": "C", "x": 0.015, "y": -0.542, "z": -0.117}, {"el": "C", "x": -1.271, "y": -0.839, "z": 0.666}, {"el": "N", "x": -1.512, "y": -2.303, "z": 0.638}, {"el": "C", "x": -2.479, "y": -0.122, "z": 0.053}, {"el": "O", "x": -3.228, "y": -0.57, "z": -0.803}, {"el": "O", "x": -2.683, "y": 1.108, "z": 0.561}, {"el": "H", "x": 3.137, "y": 0.661, "z": 0.886}, {"el": "H", "x": 2.919, "y": -0.61, "z": -0.335}, {"el": "H", "x": 3.904, "y": 0.807, "z": -0.703}, {"el": "H", "x": 1.652, "y": 0.967, "z": -1.783}, {"el": "H", "x": 1.979, "y": 2.284, "z": -0.661}, {"el": "H", "x": 0.64, "y": 1.13, "z": 1.111}, {"el": "H", "x": -0.276, "y": 1.591, "z": -0.322}, {"el": "H", "x": 0.803, "y": -1.219, "z": 0.233}, {"el": "H", "x": -0.136, "y": -0.75, "z": -1.184}, {"el": "H", "x": -1.173, "y": -0.541, "z": 1.715}, {"el": "H", "x": -2.379, "y": -2.498, "z": 1.143}, {"el": "H", "x": -1.716, "y": -2.569, "z": -0.329}, {"el": "H", "x": -3.477, "y": 1.434, "z": 0.087}], "bonds": [{"a": 0, "b": 1, "order": 1}, {"a": 1, "b": 2, "order": 1}, {"a": 2, "b": 3, "order": 1}, {"a": 3, "b": 4, "order": 1}, {"a": 4, "b": 5, "order": 1}, {"a": 4, "b": 6, "order": 1}, {"a": 6, "b": 7, "order": 2}, {"a": 6, "b": 8, "order": 1}, {"a": 0, "b": 9, "order": 1}, {"a": 0, "b": 10, "order": 1}, {"a": 0, "b": 11, "order": 1}, {"a": 1, "b": 12, "order": 1}, {"a": 1, "b": 13, "order": 1}, {"a": 2, "b": 14, "order": 1}, {"a": 2, "b": 15, "order": 1}, {"a": 3, "b": 16, "order": 1}, {"a": 3, "b": 17, "order": 1}, {"a": 4, "b": 18, "order": 1}, {"a": 5, "b": 19, "order": 1}, {"a": 5, "b": 20, "order": 1}, {"a": 8, "b": 21, "order": 1}], "stereocenters": [4], "wedge": {"4": 18}, "backbone": {"N": 5, "Ca": 4, "C": 6, "Oc": 7, "Oh": 8, "Hoh": 21, "Hn": [19, 20]}, "counts": {"C": 6, "N": 1, "O": 2, "H": 13}, "assembly": {"quat": [-0.4552258857517108, -0.07100547374794726, 0.7835335434717534, -0.4168966321451852], "t": [6.2262457229208925, -2.424451224345949, -1.1308573355711062]}}, {"code": "mAsp", "name": "acide 3-methylaspartique", "smiles": "CC(C(=O)O)C(N)C(=O)O", "formula": "C5H9NO4", "cy": 157, "cx": 202, "atoms": [{"el": "C", "x": -1.741, "y": -0.927, "z": -0.749}, {"el": "C", "x": -0.703, "y": -0.193, "z": 0.103}, {"el": "C", "x": -1.075, "y": 1.27, "z": 0.121}, {"el": "O", "x": -1.216, "y": 2.0, "z": -0.846}, {"el": "O", "x": -1.257, "y": 1.745, "z": 1.368}, {"el": "C", "x": 0.732, "y": -0.332, "z": -0.425}, {"el": "N", "x": 1.086, "y": -1.759, "z": -0.662}, {"el": "C", "x": 1.722, "y": 0.248, "z": 0.597}, {"el": "O", "x": 2.388, "y": -0.392, "z": 1.397}, {"el": "O", "x": 1.824, "y": 1.589, "z": 0.544}, {"el": "H", "x": -1.673, "y": -0.633, "z": -1.802}, {"el": "H", "x": -1.612, "y": -2.012, "z": -0.687}, {"el": "H", "x": -2.757, "y": -0.695, "z": -0.408}, {"el": "H", "x": -0.767, "y": -0.581, "z": 1.128}, {"el": "H", "x": -1.488, "y": 2.688, "z": 1.231}, {"el": "H", "x": 0.869, "y": 0.2, "z": -1.374}, {"el": "H", "x": 1.138, "y": -2.227, "z": 0.248}, {"el": "H", "x": 2.044, "y": -1.798, "z": -1.016}, {"el": "H", "x": 2.486, "y": 1.81, "z": 1.233}], "bonds": [{"a": 0, "b": 1, "order": 1}, {"a": 1, "b": 2, "order": 1}, {"a": 2, "b": 3, "order": 2}, {"a": 2, "b": 4, "order": 1}, {"a": 1, "b": 5, "order": 1}, {"a": 5, "b": 6, "order": 1}, {"a": 5, "b": 7, "order": 1}, {"a": 7, "b": 8, "order": 2}, {"a": 7, "b": 9, "order": 1}, {"a": 0, "b": 10, "order": 1}, {"a": 0, "b": 11, "order": 1}, {"a": 0, "b": 12, "order": 1}, {"a": 1, "b": 13, "order": 1}, {"a": 4, "b": 14, "order": 1}, {"a": 5, "b": 15, "order": 1}, {"a": 6, "b": 16, "order": 1}, {"a": 6, "b": 17, "order": 1}, {"a": 9, "b": 18, "order": 1}], "stereocenters": [1, 5], "wedge": {"1": 13, "5": 15}, "backbone": {"N": 6, "Ca": 5, "C": 7, "Oc": 8, "Oh": 9, "Hoh": 18, "Hn": [16, 17]}, "counts": {"C": 5, "N": 1, "O": 4, "H": 9}, "assembly": {"quat": [0.49630278008818396, 0.6969713964608223, -0.011879600164139898, 0.5174681614284412], "t": [-0.2587540552662474, -0.8030969124002898, 1.903981905047099]}}, {"code": "Dab", "name": "acide 2,4-diaminobutyrique", "smiles": "NCCC(N)C(=O)O", "formula": "C4H10N2O2", "cy": 189, "cx": 100, "atoms": [{"el": "N", "x": 2.832, "y": 0.557, "z": 0.02}, {"el": "C", "x": 1.658, "y": -0.28, "z": 0.253}, {"el": "C", "x": 0.388, "y": 0.438, "z": -0.203}, {"el": "C", "x": -0.895, "y": -0.34, "z": 0.124}, {"el": "N", "x": -0.911, "y": -1.648, "z": -0.568}, {"el": "C", "x": -2.155, "y": 0.452, "z": -0.262}, {"el": "O", "x": -3.175, "y": -0.012, "z": -0.754}, {"el": "O", "x": -2.113, "y": 1.753, "z": 0.086}, {"el": "H", "x": 3.665, "y": 0.076, "z": 0.358}, {"el": "H", "x": 2.758, "y": 1.419, "z": 0.558}, {"el": "H", "x": 1.787, "y": -1.219, "z": -0.294}, {"el": "H", "x": 1.595, "y": -0.52, "z": 1.32}, {"el": "H", "x": 0.438, "y": 0.637, "z": -1.283}, {"el": "H", "x": 0.347, "y": 1.421, "z": 0.284}, {"el": "H", "x": -0.966, "y": -0.519, "z": 1.204}, {"el": "H", "x": -0.393, "y": -2.335, "z": -0.025}, {"el": "H", "x": -1.879, "y": -1.98, "z": -0.608}, {"el": "H", "x": -2.981, "y": 2.099, "z": -0.211}], "bonds": [{"a": 0, "b": 1, "order": 1}, {"a": 1, "b": 2, "order": 1}, {"a": 2, "b": 3, "order": 1}, {"a": 3, "b": 4, "order": 1}, {"a": 3, "b": 5, "order": 1}, {"a": 5, "b": 6, "order": 2}, {"a": 5, "b": 7, "order": 1}, {"a": 0, "b": 8, "order": 1}, {"a": 0, "b": 9, "order": 1}, {"a": 1, "b": 10, "order": 1}, {"a": 1, "b": 11, "order": 1}, {"a": 2, "b": 12, "order": 1}, {"a": 2, "b": 13, "order": 1}, {"a": 3, "b": 14, "order": 1}, {"a": 4, "b": 15, "order": 1}, {"a": 4, "b": 16, "order": 1}, {"a": 7, "b": 17, "order": 1}], "stereocenters": [3], "wedge": {"3": 14}, "backbone": {"N": 4, "Ca": 3, "C": 5, "Oc": 6, "Oh": 7, "Hoh": 17, "Hn": [15, 16]}, "counts": {"C": 4, "N": 2, "O": 2, "H": 10}, "assembly": {"quat": [0.6695833022003309, 0.7423223089790759, 0.01988465548479079, -0.014845587988518361], "t": [2.892436820192218, 2.0372696310666236, 0.5547807847021855]}}], "chain": ["Abu", "Nva", "mAsp", "Dab", "Nle"], "assembly_points": [{"y": 59.0, "x": 110.0}, {"y": 104.0, "x": 188.0}, {"y": 118.0, "x": 197.0}, {"y": 160.0, "x": 76.0}, {"y": 175.0, "x": 168.0}, {"y": 181.0, "x": 145.0}], "assembly_path": ["Abu", "Nva", "mAsp", "Dab", "Nle"], "junctions": [{"donor": "Abu", "acceptor": "Nva", "donor_C": 4, "acceptor_N": 4, "water": {"donor_O": 6, "donor_H": 15, "acceptor_H": 16}}, {"donor": "Nva", "acceptor": "mAsp", "donor_C": 5, "acceptor_N": 6, "water": {"donor_O": 7, "donor_H": 18, "acceptor_H": 16}}, {"donor": "mAsp", "acceptor": "Dab", "donor_C": 7, "acceptor_N": 4, "water": {"donor_O": 9, "donor_H": 18, "acceptor_H": 15}}, {"donor": "Dab", "acceptor": "Nle", "donor_C": 5, "acceptor_N": 5, "water": {"donor_O": 7, "donor_H": 17, "acceptor_H": 19}}], "peptide_formula": "C24N6O8", "peptide_smiles": "NC(CC)C(=O)NC(CCC)C(=O)NC(C(C)C(=O)O)C(=O)NC(CCN)C(=O)NC(CCCC)C(=O)O", "census": {"histogram": {"1": 58, "3": 95, "6": 24, "7": 6, "8": 12}, "heavy": 42, "C": 24, "N": 6, "O": 12, "H": 52, "bonds": 95, "points": 6, "stereocenters": 6, "aggregate": "C24N6O12", "generation": 6625, "total_pixels": 625}}</script>
+<script>
+'use strict';
+const DATA = JSON.parse(document.getElementById('data').textContent);
+const $ = id => document.getElementById(id);
+const MONO = DATA.monomers;
+const ENAMES = { Abu:'2-aminobutyric acid', Nva:'norvaline', Nle:'norleucine',
+                 mAsp:'3-methylaspartic acid', Dab:'2,4-diaminobutyric acid' };
+MONO.forEach(m => { m.name = ENAMES[m.code] || m.name; });
+const byCode = {}; MONO.forEach(m => byCode[m.code] = m);
+
+/* ===== signature (embedded in every export — edit here) ===== */
+const SIG = {
+  author: 'Etienne Lacoche',
+  role:   'Researcher',
+  email:  'etienne.lacoche@pm.me',
+  site:   'https://www.asignin.space',
+  source: 'A Sign in Space (SETI Institute / ESA, 2023) — generation-6625 decode'
+};
+
+/* ================= chemistry constants ================= */
+const CPK = { C:0x4a4f5c, N:0x4f74ff, O:0xff4d4d, H:0xe6ecf7 };
+const RAD = { C:0.40, N:0.38, O:0.37, H:0.24 };
+const MOLSCALE = 1.5, LAYSCALE = 0.235, GRIDC = 128, ROSE = 0xff5db0;
+const RES3 = { Abu:'ABU', Nva:'NVA', Nle:'NLE', mAsp:'MAS', Dab:'DAB' };
+
+const leaveByCode = {};
+MONO.forEach(m => leaveByCode[m.code] = new Set());
+DATA.junctions.forEach(j => {
+  leaveByCode[j.donor].add(j.water.donor_O);
+  leaveByCode[j.donor].add(j.water.donor_H);
+  leaveByCode[j.acceptor].add(j.water.acceptor_H);
+});
+
+/* ================= scene ================= */
+let scene, camera, renderer, root, STARS = null, POST = null;
+const molGroups = {};
+let pointGroup, graphGroup, ringGroup, waterGroup, pepBondGroup;
+const labels = [];
+
+function buildScene(){
+  scene = new THREE.Scene();
+  scene.fog = new THREE.FogExp2(0x060913, 0.0022);
+  camera = new THREE.PerspectiveCamera(48, innerWidth/innerHeight, 0.1, 4000);
+  renderer = new THREE.WebGLRenderer({ antialias:true, preserveDrawingBuffer:true });
+  renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+  renderer.setSize(innerWidth, innerHeight);
+  renderer.setClearColor(0x060913, 1);
+  $('scene').appendChild(renderer.domElement);
+  ASISSota.enhance(renderer);
+  ASISSota.environment(renderer, scene);
+  ASISSota.nebula(scene, { radius: 1200, top: 0x040810, bottom: 0x03040a, glow: 0x0a1220 });
+  STARS = ASISSota.starfield(scene, { count: 1100, innerRadius: 220, radius: 620, sizeScale: 1.4 });
+  scene.add(new THREE.AmbientLight(0xffffff, 0.58));
+  const key = new THREE.DirectionalLight(0xffffff, 0.85); key.position.set(30,50,40); scene.add(key);
+  const rim = new THREE.DirectionalLight(0x8ab6ff, 0.5); rim.position.set(-40,20,-30); scene.add(rim);
+  const p = new THREE.PointLight(0xffc857, 0.4, 300); p.position.set(0,60,0); scene.add(p);
+  root = new THREE.Group(); scene.add(root);
+  POST = ASISSota.composer(renderer, scene, camera, {
+    bloom: { strength: 0.16, radius: 0.45, threshold: 0.88 },
+    grade: { uVignette: 0.42, uGrain: 0.018, uChroma: 0.0007, uSaturation: 1.0 }
+  });
+}
+
+const SPH = new THREE.SphereGeometry(1, 24, 18);
+function atomMesh(el, r){
+  const m = new THREE.Mesh(SPH, new THREE.MeshStandardMaterial({
+    color: CPK[el], roughness:0.5, metalness:0.04, emissive: CPK[el], emissiveIntensity:0.035 }));
+  m.scale.setScalar(r); return m;
+}
+function cyl(p, q, radius, color){
+  const dir = new THREE.Vector3().subVectors(q, p), len = dir.length();
+  const mesh = new THREE.Mesh(new THREE.CylinderGeometry(radius, radius, len, 12, 1),
+    new THREE.MeshStandardMaterial({ color, roughness:0.55, metalness:0.03 }));
+  mesh.position.copy(p).addScaledVector(dir, 0.5);
+  mesh.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0), dir.clone().normalize());
+  return mesh;
+}
+
+function buildMonomer(mono){
+  const g = new THREE.Group();
+  const sgn = mirror ? -1 : 1;
+  const P = mono.atoms.map(a => new THREE.Vector3(a.x, a.y, sgn*a.z).multiplyScalar(MOLSCALE));
+  const atomMeshes = new Array(mono.atoms.length).fill(null);
+  const leave = leaveByCode[mono.code];
+  mono.atoms.forEach((a, i) => {
+    const m = atomMesh(a.el, RAD[a.el]);
+    m.position.copy(P[i]);
+    m.userData = { isH:a.el==='H', leaving:leave.has(i) };
+    atomMeshes[i] = m; g.add(m);
+  });
+  const bondMeshes = [];
+  mono.bonds.forEach(b => {
+    const a = mono.atoms[b.a], c = mono.atoms[b.b];
+    const pa = P[b.a], pc = P[b.b], mid = new THREE.Vector3().addVectors(pa,pc).multiplyScalar(0.5);
+    const isH = (a.el==='H' || c.el==='H'), leaving = leave.has(b.a) || leave.has(b.b);
+    const made = [];
+    if(b.order === 2){
+      const dir = new THREE.Vector3().subVectors(pc,pa).normalize();
+      let up = new THREE.Vector3(0,1,0); if(Math.abs(dir.dot(up))>0.9) up.set(1,0,0);
+      const off = new THREE.Vector3().crossVectors(dir, up).normalize().multiplyScalar(0.13);
+      [off, off.clone().negate()].forEach(o=>{
+        const p1=pa.clone().add(o), m1=mid.clone().add(o), p2=pc.clone().add(o);
+        const c1=cyl(p1,m1,0.065,CPK[a.el]), c2=cyl(m1,p2,0.065,CPK[c.el]);
+        g.add(c1); g.add(c2); made.push(c1,c2);
+      });
+    }else{
+      const r = isH ? 0.075 : 0.095;
+      const c1=cyl(pa,mid,r,CPK[a.el]), c2=cyl(mid,pc,r,CPK[c.el]);
+      g.add(c1); g.add(c2); made.push(c1,c2);
+    }
+    made.forEach(mesh => mesh.userData = { isH, leaving });
+    bondMeshes.push(...made);
+  });
+  const stereoMarks = [];
+  mono.stereocenters.forEach(s=>{
+    const torus = new THREE.Mesh(new THREE.TorusGeometry(0.62, 0.055, 10, 28),
+      new THREE.MeshStandardMaterial({ color:ROSE, emissive:ROSE, emissiveIntensity:0.4 }));
+    torus.position.copy(P[s]); torus.rotation.x = Math.PI/2; torus.visible = false; g.add(torus);
+    const hIdx = mono.wedge[s];
+    const cone = new THREE.Mesh(new THREE.ConeGeometry(0.19, P[s].distanceTo(P[hIdx]), 3),
+      new THREE.MeshStandardMaterial({ color:ROSE, emissive:ROSE, emissiveIntensity:0.5, roughness:0.4 }));
+    const dir = new THREE.Vector3().subVectors(P[hIdx], P[s]);
+    cone.position.copy(P[s]).addScaledVector(dir, 0.5);
+    cone.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0), dir.clone().normalize());
+    cone.visible = false; g.add(cone);
+    stereoMarks.push({ center:s, hIdx, cone, torus, dash:false });
+  });
+  g.userData = { atomMeshes, bondMeshes, stereoMarks,
+    anchor: new THREE.Vector3((mono.cx-GRIDC)*LAYSCALE, 0, (mono.cy-GRIDC)*LAYSCALE),
+    pepPos: new THREE.Vector3(mono.assembly.t[0], mono.assembly.t[1], mono.assembly.t[2]).multiplyScalar(MOLSCALE),
+    pepQuat: new THREE.Quaternion(mono.assembly.quat[0], mono.assembly.quat[1], mono.assembly.quat[2], mono.assembly.quat[3]) };
+  g.position.copy(g.userData.anchor);
+  return g;
+}
+
+function buildPoints(){
+  pointGroup = new THREE.Group(); graphGroup = new THREE.Group();
+  const octo = new THREE.OctahedronGeometry(0.5);
+  DATA.assembly_points.forEach(p=>{
+    const m = new THREE.Mesh(octo, new THREE.MeshStandardMaterial({
+      color:0xffc857, emissive:0xffc857, emissiveIntensity:0.5, roughness:0.3 }));
+    m.position.set((p.x-GRIDC)*LAYSCALE, 0, (p.y-GRIDC)*LAYSCALE); pointGroup.add(m);
+  });
+  const pts = DATA.assembly_path.map(code=>{
+    const m = byCode[code];
+    return new THREE.Vector3((m.cx-GRIDC)*LAYSCALE, 0, (m.cy-GRIDC)*LAYSCALE);
+  });
+  for(let i=0;i<pts.length-1;i++){
+    const line = new THREE.Line(new THREE.BufferGeometry().setFromPoints([pts[i],pts[i+1]]),
+      new THREE.LineDashedMaterial({ color:0xffc857, dashSize:1.1, gapSize:0.7, transparent:true, opacity:0.55 }));
+    line.computeLineDistances(); graphGroup.add(line);
+  }
+  root.add(graphGroup); root.add(pointGroup);
+}
+
+function buildAssemblyExtras(){
+  waterGroup = new THREE.Group(); waterGroup.visible = false; root.add(waterGroup);
+  pepBondGroup = new THREE.Group(); pepBondGroup.visible = false; root.add(pepBondGroup);
+  DATA.junctions.forEach(()=>{
+    const w = new THREE.Group();
+    const O = atomMesh('O', RAD.O); w.add(O);
+    const H1 = atomMesh('H', RAD.H), H2 = atomMesh('H', RAD.H);
+    H1.position.set(0.5, 0.4, 0); H2.position.set(-0.5, 0.4, 0); w.add(H1); w.add(H2);
+    w.add(cyl(new THREE.Vector3(0,0,0), H1.position, 0.07, CPK.H));
+    w.add(cyl(new THREE.Vector3(0,0,0), H2.position, 0.07, CPK.H));
+    w.traverse(o=>{ if(o.material){ o.material.transparent=true; o.material.opacity=0; } });
+    waterGroup.add(w);
+    const pb = cyl(new THREE.Vector3(0,0,0), new THREE.Vector3(0,1,0), 0.1, 0x9fb2d8);
+    pb.material.transparent = true; pb.material.opacity = 0; pepBondGroup.add(pb);
+  });
+}
+
+function buildLabels(){
+  MONO.forEach(m=>{
+    const el = document.createElement('div');
+    el.className = 'lbl3d';
+    el.innerHTML = `<span class="code">${m.code}</span> <span class="f">${fmt(m.formula)}</span>`;
+    document.body.appendChild(el);
+    labels.push({ el, code:m.code,
+      base:new THREE.Vector3((m.cx-GRIDC)*LAYSCALE, 3.4, (m.cy-GRIDC)*LAYSCALE) });
+  });
+}
+const SUB = {'0':'₀','1':'₁','2':'₂','3':'₃','4':'₄','5':'₅','6':'₆','7':'₇','8':'₈','9':'₉'};
+const fmt = f => f.replace(/(\d)/g, d=>SUB[d]);
+
+/* ================= camera ================= */
+let theta=0.7, phi=1.02, radius=80;
+const target = new THREE.Vector3(0,0,0);
+const clamp=(v,a,b)=>Math.min(b,Math.max(a,v));
+function updateCam(){
+  camera.position.set(
+    target.x + radius*Math.sin(phi)*Math.sin(theta),
+    target.y + radius*Math.cos(phi),
+    target.z + radius*Math.sin(phi)*Math.cos(theta));
+  camera.lookAt(target);
+}
+function bindOrbit(el){
+  let down=false, lx=0, ly=0;
+  el.addEventListener('pointerdown', e=>{ down=true; lx=e.clientX; ly=e.clientY; el.setPointerCapture(e.pointerId); });
+  el.addEventListener('pointerup', ()=> down=false);
+  el.addEventListener('pointermove', e=>{
+    if(!down) return;
+    theta -= (e.clientX-lx)*0.006; phi = clamp(phi-(e.clientY-ly)*0.006, 0.12, Math.PI-0.12);
+    lx=e.clientX; ly=e.clientY; updateCam();
+  });
+  el.addEventListener('wheel', e=>{ e.preventDefault(); radius = clamp(radius*Math.pow(1.0016,e.deltaY), 8, 260); updateCam(); }, {passive:false});
+}
+let focusCode = null, camAnim = null;
+function focusOn(code){
+  focusCode = code;
+  const tgt = code ? molGroups[code].position.clone() : new THREE.Vector3(0,0,0);
+  camAnim = { from:target.clone(), to:tgt, fromR:radius, toR: code?20:80, t:0 };
+  [...$('focusRow').children].forEach(b=> b.classList.toggle('active', b.dataset.code===code));
+}
+
+/* ================= global state ================= */
+let mirror = false, asm = 0, asmTarget = 0, asmPlaying = false, spin = false, wedgesOn = false;
+
+function rebuildMolecules(){
+  Object.values(molGroups).forEach(g=>{
+    root.remove(g);
+    g.traverse(o=>{ if(o.geometry && o.geometry!==SPH) o.geometry.dispose(); if(o.material) o.material.dispose(); });
+  });
+  MONO.forEach(m=>{ const g = buildMonomer(m); molGroups[m.code] = g; root.add(g); });
+  applyH(); applyRings();
+}
+function applyH(){
+  const on = $('cH').checked;
+  Object.values(molGroups).forEach(g=>{
+    g.userData.atomMeshes.forEach(m=>{ if(m && m.userData.isH) m.userData.hHidden = !on; });
+    g.userData.bondMeshes.forEach(m=>{ if(m.userData.isH) m.userData.hHidden = !on; });
+  });
+}
+function applyRings(){
+  const on = $('cRings').checked;
+  Object.values(molGroups).forEach(g=> g.userData.stereoMarks.forEach(s=> s.torus.visible = on));
+}
+function applyWedges(){
+  Object.values(molGroups).forEach(g=> g.userData.stereoMarks.forEach(s=> s.cone.visible = wedgesOn));
+}
+
+/* ================= steps ================= */
+const STEPS = [
+ { tag:'signal → automaton', title:'1 · A kit, not a chain',
+   body:`Evolved <b>6625 generations</b> under the reversible Margolus automaton, the ASIS message resolves <b>five free amino acids</b> and six points, at a conserved 625 active pixels. These are not the 5 residues of a peptide — they are <b>five unassembled monomers</b>, a <b>kit</b>. Each molecule carries its <b>real 3D geometry</b> (MMFF94).`,
+   act:()=>{ setState({H:true,pts:true,graph:true,rings:false,wedges:false,mirror:false,asm:0}); focusOn(null); } },
+ { tag:'size code', title:'2 · From pixel to atom',
+   body:`The 625-pixel census gives the exact size histogram <code>{1:58, 3:95, 6:24, 7:6, 8:12}</code>. By <b>valence</b>: size 6 → <b>carbon</b> (degree 4), 7 → <b style="color:#7d97ff">nitrogen</b> (3), 8 → <b style="color:#ff7d7d">oxygen</b> (2). Only one of the 6 permutations holds. Total: <b>42 heavy atoms — C₂₄N₆O₁₂</b>.`,
+   act:()=>{ setState({H:false,pts:false,graph:false,rings:false,wedges:false,mirror:false,asm:0}); focusOn(null); } },
+ { tag:'bond graph', title:'3 · The drawn bonds',
+   body:`The <b>95 three-pixel dashes</b> are the bonds: 43 join heavy atoms (37 edges, <b>six of them C=O doubles</b>, drawn as double sticks) and 52 join a heteroatom to a hydrogen. Carbon degree fixes the skeletons; nitrogen at the <b>α</b> carbon excludes the δ/ε isomers.`,
+   act:()=>{ setState({H:false,pts:false,graph:false,rings:false,wedges:false,mirror:false,asm:0}); focusOn(null); } },
+ { tag:'H inventory', title:'4 · The 52 intact hydrogens',
+   body:`By heteroatom: <b>34 C–H, 12 N–H, 6 O–H = 52</b>, the exact inventory of the five formulae. The <b>6 carboxyls</b> and <b>6 amino</b> groups are whole: no water removed — the signature of an unreacted kit.`,
+   act:()=>{ setState({H:true,pts:false,graph:false,rings:false,wedges:false,mirror:false,asm:0}); focusOn(null); } },
+ { tag:'forced identities', title:'5 · The five identities',
+   body:`Forced by the graph: <b>Abu</b> C₄H₉NO₂, <b>Nva</b> C₅H₁₁NO₂, <b>Nle</b> C₆H₁₃NO₂ (the <span class="dim">+CH₂</span> ladder), <b>mAsp</b> C₅H₉NO₄ (branched, 2 COOH), <b>Dab</b> C₄H₁₀N₂O₂ (2 NH₂). Click a code (Settings) to focus. All non-proteinogenic — but only <b>Abu·Nva·Nle</b> are the abiotic +CH₂ series (Murchison / Miller–Urey); Dab is cyanobacterial (a BMAA isomer) and mAsp a glutamate-mutase metabolite. Identities in ChEMBL; refs on the home page.`,
+   act:()=>{ setState({H:true,pts:false,graph:false,rings:false,wedges:false,mirror:false,asm:0}); focusOn(null); } },
+ { tag:'atom census', title:'6 · Why a kit and not a peptide',
+   body:`A peptide bond is a <b>condensation</b>: each amide removes one water (−1 O, −2 H) and fuses two components. The decode shows <b>5 disjoint molecules</b>, <b>12 O</b> and <b>52 H intact</b>. A pentapeptide would have only 8 O / 44 H. Only the <b>free-monomer</b> reading matches all four counts.`,
+   act:()=>{ setState({H:true,pts:false,graph:false,rings:false,wedges:false,mirror:false,asm:0}); focusOn(null); } },
+ { tag:'6 points', title:'7 · The assembly graph',
+   body:`The <b>six isolated points</b> sit at the <b>pairwise midpoints</b> of molecules (~13.5 px from the edge). They trace the path <b>Abu–Nva–mAsp–Dab–Nle</b> — a topology, not a direction: <i>assembly instructions</i> laid over the kit, where the 6 COOH and 6 NH₂ are meant to condense.`,
+   act:()=>{ setState({H:false,pts:true,graph:true,rings:false,wedges:false,mirror:false,asm:0}); focusOn(null); } },
+ { tag:'Ozma problem', title:'8 · What stays undecidable',
+   body:`There are <b>6 stereocenters</b> (one each in Abu/Nva/Nle/Dab, two in mAsp), ringed in pink. The message is a <b>2D constitution</b>: the frame fixes the plane and orientation, but <b>not absolute chirality</b>. Step 10 makes it interactive.`,
+   act:()=>{ setState({H:true,pts:true,graph:true,rings:true,wedges:false,mirror:false,asm:0}); focusOn(null); } },
+ { tag:'condensation', title:'9 · Assembly: the kit condenses',
+   body:`Following the 6 points, the monomers draw together and form 4 <b>peptide bonds</b> along <b>Abu–Nva–mAsp–Dab–Nle</b>. Each bond <b>expels one water</b>. Drag the slider: watch the <b>4 H₂O</b> leave and the census shift from kit to peptide. <span class="dim">(Geometry: real monomers superposed on the MMFF94 pentapeptide; bonds ~1.33 Å.)</span>`,
+   act:()=>{ setState({H:true,pts:true,graph:false,rings:false,wedges:false,mirror:false,asm:0}); focusOn(null); showAssembly(); } },
+ { tag:'chirality · both hands', title:'10 · Interactive Ozma: wedge / dash',
+   body:`Each stereocenter carries a <b>wedge</b> (solid, toward you) or a <b>dash</b> (receding). The message fixes <b>neither</b>: click a center to flip its wedge, or <b>view the enantiomer</b> (global mirror image). Both hands are <b>equally consistent</b> with the 625 pixels — chirality is not encodable in 2D.`,
+   act:()=>{ setState({H:true,pts:false,graph:false,rings:true,wedges:true,mirror:false,asm:0}); focusOn(null); showChirality(); } },
+];
+let stepIdx = 0;
+
+function setState(s){
+  $('cH').checked = s.H; applyH();
+  pointGroup.visible = s.pts; $('cPts').checked = s.pts;
+  graphGroup.visible = s.graph; $('cGraph').checked = s.graph;
+  $('cRings').checked = s.rings; applyRings();
+  wedgesOn = s.wedges; applyWedges();
+  if(mirror !== s.mirror){ mirror = s.mirror; rebuildMolecules(); wedgesOn = s.wedges; applyWedges(); }
+  asmTarget = s.asm; asm = s.asm; asmPlaying = false;
+  waterGroup.visible = s.asm>0; pepBondGroup.visible = s.asm>0;
+}
+
+function showAssembly(){
+  const a = $('stepAction'); a.style.display='block';
+  a.innerHTML = `
+    <div class="arow">
+      <button id="asmPlay" class="prim">▶ Assemble</button>
+      <input type="range" id="asmSlider" min="0" max="100" value="0">
+    </div>
+    <div class="census" id="asmCensus"></div>`;
+  $('asmPlay').onclick = ()=>{ asmPlaying = true; asmTarget = (asm>0.5?0:1);
+    $('asmPlay').textContent = asmTarget? '▶ Assemble' : '◀ Disassemble'; };
+  $('asmSlider').oninput = e=>{ asmPlaying=false; asm = asmTarget = +e.target.value/100; };
+  updateCensus();
+}
+function updateCensus(){
+  const el = $('asmCensus'); if(!el) return;
+  const water = Math.round(asm*4);
+  el.innerHTML =
+    `kit <b>C₂₄N₆O₁₂ · 52 H</b> <span class="arrow">→</span> `+
+    `peptide <b>C₂₄N₆O₈ · 44 H</b><br>`+
+    `waters released: <b>${water} / 4</b> H₂O`+
+    (asm>=0.999?`  <span class="arrow">✓ pentapeptide</span>`:``);
+}
+
+function showChirality(){
+  const a = $('stepAction'); a.style.display='block';
+  a.innerHTML = `
+    <div class="arow"><button id="mirrorBtn">↔ View the enantiomer</button></div>
+    <div class="optlbl" style="margin-top:8px">Flip a stereocenter (wedge ⇌ dash)</div>
+    <div class="centerbtns" id="centerBtns"></div>`;
+  $('mirrorBtn').onclick = ()=>{
+    mirror = !mirror; rebuildMolecules(); wedgesOn=true; applyWedges(); applyRings();
+    $('mirrorBtn').classList.toggle('on', mirror);
+    $('mirrorBtn').textContent = mirror ? '↔ Back (left hand)' : '↔ View the enantiomer';
+  };
+  const cb = $('centerBtns');
+  MONO.forEach(m=> m.stereocenters.forEach((s,k)=>{
+    const b = document.createElement('button');
+    b.className = 'wedge'; b.textContent = `${m.code}·${k===0?'α':'β'}`;
+    b.onclick = ()=> toggleWedge(m.code, s, b);
+    cb.appendChild(b);
+  }));
+}
+function toggleWedge(code, center, btn){
+  const g = molGroups[code];
+  const mk = g.userData.stereoMarks.find(x=>x.center===center);
+  if(!mk) return;
+  mk.dash = !mk.dash;
+  mk.cone.material.opacity = mk.dash ? 0.45 : 1;
+  mk.cone.material.transparent = mk.dash;
+  mk.cone.scale.set(mk.dash?0.5:1, 1, mk.dash?0.5:1);
+  if(btn) btn.classList.toggle('wedge', !mk.dash);
+}
+function hideAction(){ $('stepAction').style.display='none'; $('stepAction').innerHTML=''; }
+
+function renderStep(){
+  hideAction();
+  const s = STEPS[stepIdx];
+  $('stepNo').textContent = `step ${stepIdx+1} / ${STEPS.length}`;
+  $('stepTag').textContent = s.tag;
+  $('stepTitle').textContent = s.title;
+  $('stepBody').innerHTML = s.body;
+  $('stepFill').style.width = ((stepIdx+1)/STEPS.length*100)+'%';
+  $('prev').disabled = stepIdx===0; $('next').disabled = stepIdx===STEPS.length-1;
+  s.act();
+}
+
+/* ================= exports (each carries the signature) ================= */
+const nowISO = () => new Date().toISOString();
+const isPeptide = () => asm >= 0.5;
+const EXPORT_ANCHOR = 0.09;   // Å layout spread for the kit
+
+function qrot(q, v){                     // rotate v[3] by quaternion q[x,y,z,w]
+  const [x,y,z,w] = q, [vx,vy,vz] = v;
+  const cx=y*vz-z*vy, cy=z*vx-x*vz, cz=x*vy-y*vx;      // cross(u,v)
+  const t=[2*cx,2*cy,2*cz];
+  const c2x=y*t[2]-z*t[1], c2y=z*t[0]-x*t[2], c2z=x*t[1]-y*t[0];
+  return [vx+w*t[0]+c2x, vy+w*t[1]+c2y, vz+w*t[2]+c2z];
+}
+/* current scene as physical Å molecules (kit → 5 records; peptide → 1 record) */
+function sceneMolecules(){
+  const sgn = mirror ? -1 : 1;
+  if(!isPeptide()){
+    return MONO.map(m=>{
+      const ox = (m.cx-GRIDC)*EXPORT_ANCHOR, oz = (m.cy-GRIDC)*EXPORT_ANCHOR;
+      return { name:`${m.code} ${m.name}`, res:RES3[m.code], smiles:m.smiles, formula:m.formula,
+        atoms: m.atoms.map(a=>({el:a.el, x:a.x+ox, y:a.y, z:sgn*a.z+oz})),
+        bonds: m.bonds.map(b=>({a:b.a,b:b.b,order:b.order})) };
+    });
+  }
+  // assembled pentapeptide: drop leaving atoms, remap, add 4 peptide C–N bonds
+  const atoms=[], idx={}, resSeq={};
+  MONO.forEach((m,mi)=>{ idx[m.code]={};
+    m.atoms.forEach((a,i)=>{
+      if(leaveByCode[m.code].has(i)) return;
+      const p = qrot(m.assembly.quat, [a.x, a.y, sgn*a.z]);
+      idx[m.code][i] = atoms.length; resSeq[m.code] = mi+1;
+      atoms.push({el:a.el, x:p[0]+m.assembly.t[0], y:p[1]+m.assembly.t[1], z:p[2]+m.assembly.t[2],
+                  res:RES3[m.code], resSeq:mi+1});
+    });
+  });
+  const bonds=[];
+  MONO.forEach(m=> m.bonds.forEach(b=>{
+    if(leaveByCode[m.code].has(b.a)||leaveByCode[m.code].has(b.b)) return;
+    bonds.push({a:idx[m.code][b.a], b:idx[m.code][b.b], order:b.order});
+  }));
+  DATA.junctions.forEach(j=> bonds.push({a:idx[j.donor][j.donor_C], b:idx[j.acceptor][j.acceptor_N], order:1}));
+  return [{ name:'Abu-Nva-mAsp-Dab-Nle pentapeptide', res:'PEP', smiles:DATA.peptide_smiles,
+            formula:DATA.peptide_formula, atoms, bonds, peptide:true }];
+}
+const p3 = n => String(n).padStart(3);
+const f10 = v => v.toFixed(4).padStart(10);
+
+function sigLines(pfx){ return [
+  `${pfx}A Sign in Space — generation-6625 decode`,
+  `${pfx}${SIG.author} · ${SIG.role} <${SIG.email}>`,
+  `${pfx}${SIG.site}`,
+  `${pfx}${SIG.source}`,
+  `${pfx}generated ${nowISO()}` ]; }
+
+function toXYZ(mols){
+  return mols.map(m=>{
+    const L = [String(m.atoms.length),
+      `${m.name} | ${SIG.author} · ${SIG.role} <${SIG.email}> | ${SIG.site} | gen-6625 decode`];
+    m.atoms.forEach(a=> L.push(`${a.el.padEnd(2)} ${a.x.toFixed(4)} ${a.y.toFixed(4)} ${a.z.toFixed(4)}`));
+    return L.join('\n');
+  }).join('\n');
+}
+function toSDF(mols){
+  return mols.map(m=>{
+    let s = `${m.name}\n  ASIS-3D  ${nowISO()}\n${SIG.author} · ${SIG.role} <${SIG.email}>  ${SIG.site}\n`;
+    s += `${p3(m.atoms.length)}${p3(m.bonds.length)}  0  0  0  0  0  0  0  0999 V2000\n`;
+    m.atoms.forEach(a=> s += `${f10(a.x)}${f10(a.y)}${f10(a.z)} ${a.el.padEnd(3)} 0  0  0  0  0  0  0  0  0  0  0  0\n`);
+    m.bonds.forEach(b=> s += `${p3(b.a+1)}${p3(b.b+1)}${p3(b.order)}  0\n`);
+    s += 'M  END\n';
+    s += `>  <author>\n${SIG.author} · ${SIG.role} <${SIG.email}>\n\n`;
+    s += `>  <source>\n${SIG.source}\n\n`;
+    s += `>  <site>\n${SIG.site}\n\n`;
+    s += `>  <formula>\n${m.formula}\n\n`;
+    s += '$$$$\n';
+    return s;
+  }).join('');
+}
+function pdbAtom(serial, el, name, res, chain, resSeq, a){
+  const nm = (el.length===1?' '+el:el).padEnd(3);
+  return 'HETATM' + String(serial).padStart(5) + ' ' + (' '+nm).padEnd(4) + ' ' +
+    res.padEnd(3) + ' ' + chain + String(resSeq).padStart(4) + '    ' +
+    a.x.toFixed(3).padStart(8) + a.y.toFixed(3).padStart(8) + a.z.toFixed(3).padStart(8) +
+    '  1.00  0.00' + '          ' + el.padStart(2) + '\n';
+}
+function toPDB(mols){
+  let s = 'HEADER    A SIGN IN SPACE DECODE, GENERATION 6625\n';
+  s += 'TITLE     ' + (isPeptide()?'PENTAPEPTIDE ABU-NVA-MASP-DAB-NLE':'FIVE FREE MONOMERS (KIT)') + '\n';
+  s += 'AUTHOR    ' + SIG.author.toUpperCase() + '\n';
+  sigLines('REMARK   1 ').forEach(l=> s += l + '\n');
+  let serial=1; const chains='ABCDE';
+  mols.forEach((m,mi)=>{
+    m.atoms.forEach(a=>{
+      const res = a.res || m.res, seq = a.resSeq || (mi+1), ch = isPeptide()? 'A' : chains[mi]||'A';
+      s += pdbAtom(serial++, a.el, a.el, res, ch, seq, a);
+    });
+  });
+  s += 'END\n';
+  return s;
+}
+function toSMILES(mols){
+  let s = sigLines('# ').join('\n') + '\n';
+  mols.forEach(m=> s += `${m.smiles}\t${m.name} ${m.formula}\n`);
+  return s;
+}
+function toJSON(){
+  return JSON.stringify({
+    signature:{ author:SIG.author, role:SIG.role, email:SIG.email, site:SIG.site, source:SIG.source, generated:nowISO() },
+    step:{ index:stepIdx+1, of:STEPS.length, title:STEPS[stepIdx].title.replace(/^\d+ · /,'') },
+    census: DATA.census,
+    mode: isPeptide()? 'assembled pentapeptide' : 'unassembled monomer kit',
+    enantiomer: mirror ? 'mirror image (z-inverted)' : 'reference',
+    monomers: MONO.map(m=>({ code:m.code, name:m.name, smiles:m.smiles, formula:m.formula,
+      stereocenters:m.stereocenters.length, decoded_center:{y:m.cy, x:m.cx} })),
+    assembly_path: DATA.assembly_path, assembly_points: DATA.assembly_points,
+    peptide:{ smiles:DATA.peptide_smiles, formula:DATA.peptide_formula, bonds:DATA.junctions.length },
+    structures: sceneMolecules()
+  }, null, 2);
+}
+
+function stamp(){ return isPeptide()? 'peptide' : 'kit'; }
+function fnameBase(){ return `asis_gen6625_step${stepIdx+1}_${stamp()}${mirror?'_enantiomer':''}`; }
+function dl(dataUrl, name){ const a=document.createElement('a'); a.href=dataUrl; a.download=name; document.body.appendChild(a); a.click(); a.remove(); }
+function dlText(text, ext, mime){ dl('data:'+(mime||'text/plain')+';charset=utf-8,'+encodeURIComponent(text), fnameBase()+'.'+ext); }
+function toast(msg){ const t=$('toast'); t.textContent=msg; t.classList.add('show'); clearTimeout(t._h); t._h=setTimeout(()=>t.classList.remove('show'),1900); }
+
+function exportPNG(){
+  if(POST) POST.render(); else renderer.render(scene, camera);
+  const src = renderer.domElement, W = src.width, H = src.height, dpr = Math.min(devicePixelRatio,2);
+  const bar = Math.round(70*dpr);
+  const cv = document.createElement('canvas'); cv.width = W; cv.height = H + bar;
+  const ctx = cv.getContext('2d');
+  ctx.fillStyle = '#060913'; ctx.fillRect(0,0,cv.width,cv.height);
+  ctx.drawImage(src, 0, 0);
+  ctx.fillStyle = '#0b1120'; ctx.fillRect(0, H, W, bar);
+  ctx.fillStyle = '#ffc857'; ctx.font = `${Math.round(20*dpr)}px 'IBM Plex Mono', monospace`;
+  ctx.fillText('A Sign in Space — generation 6625 decode  ·  ' + STEPS[stepIdx].title.replace(/^\d+ · /,''), 18*dpr, H + 28*dpr);
+  ctx.fillStyle = '#8fa1c7'; ctx.font = `${Math.round(15*dpr)}px 'IBM Plex Mono', monospace`;
+  ctx.fillText(`${SIG.author} · ${SIG.role}  <${SIG.email}>   ${SIG.site}`, 18*dpr, H + 52*dpr);
+  dl(cv.toDataURL('image/png'), fnameBase()+'.png');
+  toast('Exported '+fnameBase()+'.png');
+}
+function doExport(fmt){
+  const mols = sceneMolecules();
+  if(fmt==='png'){ exportPNG(); return; }
+  if(fmt==='pdb'){ dlText(toPDB(mols), 'pdb', 'chemical/x-pdb'); }
+  else if(fmt==='sdf'){ dlText(toSDF(mols), 'sdf', 'chemical/x-mdl-sdfile'); }
+  else if(fmt==='xyz'){ dlText(toXYZ(mols), 'xyz'); }
+  else if(fmt==='smi'){ dlText(toSMILES(mols), 'smi'); }
+  else if(fmt==='json'){ dlText(toJSON(), 'json', 'application/json'); }
+  toast('Exported '+fnameBase()+'.'+fmt);
+}
+
+/* ================= build scene ================= */
+function buildAll(){
+  MONO.forEach(m=>{ const g = buildMonomer(m); molGroups[m.code]=g; root.add(g); });
+  buildPoints(); buildAssemblyExtras(); buildLabels();
+  MONO.forEach(m=>{
+    const b = document.createElement('button');
+    b.textContent = m.code; b.dataset.code = m.code;
+    b.onclick = ()=> focusOn(focusCode===m.code?null:m.code);
+    $('focusRow').appendChild(b);
+  });
+}
+
+/* ================= UI ================= */
+function bindUI(){
+  $('gear').onclick = ()=> $('opts').classList.toggle('closed');
+  $('cH').onchange = applyH;
+  $('cPts').onchange = e=> pointGroup.visible = e.target.checked;
+  $('cGraph').onchange = e=> graphGroup.visible = e.target.checked;
+  $('cRings').onchange = applyRings;
+  $('cLabels').onchange = e=> labels.forEach(l=> l.el.style.display = e.target.checked?'block':'none');
+  $('cSpin').onchange = e=> spin = e.target.checked;
+  $('prev').onclick = ()=>{ if(stepIdx>0){ stepIdx--; renderStep(); } };
+  $('next').onclick = ()=>{ if(stepIdx<STEPS.length-1){ stepIdx++; renderStep(); } };
+  $('exportBtn').onclick = (e)=>{ e.stopPropagation(); $('exportMenu').classList.toggle('open'); };
+  $('exportMenu').querySelectorAll('button').forEach(b=>{
+    b.onclick = ()=>{ doExport(b.dataset.fmt); $('exportMenu').classList.remove('open'); };
+  });
+  $('sigNote').innerHTML = `Every file is signed:<br><b style="color:#ffc857">${SIG.author}</b> · ${SIG.role}<br>&lt;${SIG.email}&gt;<br>${SIG.site}`;
+  document.addEventListener('click', e=>{ if(!$('exportMenu').contains(e.target) && e.target!==$('exportBtn')) $('exportMenu').classList.remove('open'); });
+  addEventListener('keydown', e=>{
+    if(e.target.tagName==='INPUT') return;
+    if(e.key==='ArrowLeft' && stepIdx>0){ stepIdx--; renderStep(); }
+    if(e.key==='ArrowRight' && stepIdx<STEPS.length-1){ stepIdx++; renderStep(); }
+  });
+  addEventListener('resize', ()=>{
+    camera.aspect = innerWidth/innerHeight; camera.updateProjectionMatrix();
+    renderer.setSize(innerWidth, innerHeight);
+    if(POST) POST.setSize(innerWidth, innerHeight);
+  });
+}
+
+/* ================= per-frame assembly ================= */
+const _wc = new THREE.Vector3(), _wn = new THREE.Vector3(), _mid = new THREE.Vector3();
+const _qA = new THREE.Quaternion(), _qB = new THREE.Quaternion();
+function worldAtom(g, mono, idx, out){
+  const a = mono.atoms[idx], sgn = mirror?-1:1;
+  out.set(a.x, a.y, sgn*a.z).multiplyScalar(MOLSCALE).applyQuaternion(g.quaternion).add(g.position);
+  return out;
+}
+const ease = t => t<0.5 ? 2*t*t : 1-Math.pow(-2*t+2,2)/2;
+const smooth = (t,a,b)=> clamp((t-a)/(b-a),0,1);
+const bump = (t,a,peak,b)=>{ if(t<=a||t>=b) return 0; return t<peak ? (t-a)/(peak-a) : (b-t)/(b-peak); };
+function applyAssembly(){
+  MONO.forEach(m=>{
+    const g = molGroups[m.code];
+    g.position.lerpVectors(g.userData.anchor, g.userData.pepPos, ease(asm));
+    _qA.identity(); _qB.copy(g.userData.pepQuat);
+    g.quaternion.copy(_qA).slerp(_qB, ease(asm));
+    const f = 1 - smooth(asm, 0.15, 0.75);
+    g.userData.atomMeshes.forEach(mesh=>{ if(mesh && mesh.userData.leaving){ mesh.material.transparent=true; mesh.material.opacity=f; }});
+    g.userData.bondMeshes.forEach(mesh=>{ if(mesh.userData.leaving){ mesh.material.transparent=true; mesh.material.opacity=f; }});
+  });
+  waterGroup.visible = asm>0.001; pepBondGroup.visible = asm>0.001;
+  DATA.junctions.forEach((j, i)=>{
+    const gd = molGroups[j.donor], ga = molGroups[j.acceptor];
+    worldAtom(gd, byCode[j.donor], j.donor_C, _wc);
+    worldAtom(ga, byCode[j.acceptor], j.acceptor_N, _wn);
+    _mid.addVectors(_wc, _wn).multiplyScalar(0.5);
+    const pb = pepBondGroup.children[i], len = _wc.distanceTo(_wn) || 1;
+    pb.position.copy(_mid); pb.scale.set(1, len, 1);
+    pb.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0), new THREE.Vector3().subVectors(_wn,_wc).normalize());
+    pb.material.opacity = smooth(asm, 0.75, 1.0);
+    const w = waterGroup.children[i], drift = smooth(asm, 0.3, 1.0);
+    const dir = new THREE.Vector3(Math.cos(i*1.7), 1.0, Math.sin(i*1.7)).normalize();
+    w.position.copy(_mid).addScaledVector(dir, drift*7);
+    const wf = bump(asm, 0.25, 0.6, 1.0);
+    w.traverse(o=>{ if(o.material){ o.material.transparent=true; o.material.opacity=wf; }});
+    w.scale.setScalar(0.85 + drift*0.5);
+  });
+  if($('asmSlider')) $('asmSlider').value = Math.round(asm*100);
+  updateCensus();
+}
+function applyVisibility(){
+  Object.entries(molGroups).forEach(([code,g])=>{
+    const dim = focusCode && focusCode!==code;
+    g.userData.atomMeshes.forEach(m=>{
+      if(!m) return;
+      if(m.userData.hHidden){ m.visible=false; return; } m.visible=true;
+      if(dim){ m.material.transparent=true; if(!m.userData.leaving) m.material.opacity=0.14; }
+      else if(!m.userData.leaving && asm<0.001){ m.material.opacity=1; m.material.transparent=false; }
+    });
+    g.userData.bondMeshes.forEach(m=>{
+      if(m.userData.hHidden){ m.visible=false; return; } m.visible=true;
+      if(dim){ m.material.transparent=true; if(!m.userData.leaving) m.material.opacity=0.14; }
+      else if(!m.userData.leaving && asm<0.001){ m.material.opacity=1; m.material.transparent=false; }
+    });
+  });
+}
+const _v = new THREE.Vector3();
+function projectLabels(){
+  const on = $('cLabels').checked;
+  labels.forEach(l=>{
+    if(!on){ l.el.style.display='none'; return; }
+    const g = molGroups[l.code];
+    _v.copy(l.base);
+    if(asm>0.01){ _v.copy(g.position).setY(g.position.y+3.4); }
+    _v.project(camera);
+    if(_v.z>1){ l.el.style.display='none'; return; }
+    l.el.style.display='block';
+    l.el.style.left = ((_v.x*0.5+0.5)*innerWidth)+'px';
+    l.el.style.top  = ((-_v.y*0.5+0.5)*innerHeight)+'px';
+    l.el.style.opacity = (focusCode && focusCode!==l.code) ? 0.22 : 1;
+  });
+}
+function animate(){
+  requestAnimationFrame(animate);
+  if(spin) root.rotation.y += 0.0025;
+  if(asmPlaying){ asm += (asmTarget-asm)*0.045; if(Math.abs(asmTarget-asm)<0.002){ asm=asmTarget; asmPlaying=false; } }
+  applyAssembly(); applyVisibility();
+  if(camAnim){
+    camAnim.t = Math.min(1, camAnim.t + 0.045);
+    const e = 1-Math.pow(1-camAnim.t,3);
+    target.lerpVectors(camAnim.from, camAnim.to, e);
+    radius = camAnim.fromR + (camAnim.toR-camAnim.fromR)*e;
+    updateCam(); if(camAnim.t>=1) camAnim=null;
+  }
+  projectLabels();
+  if(STARS) STARS.userData.update(performance.now());
+  if(POST) POST.render(); else renderer.render(scene, camera);
+}
+
+/* ================= start ================= */
+buildScene(); bindOrbit(renderer.domElement); buildAll(); ASISSota.polish(root, { envMapIntensity: 0.25 }); bindUI();
+updateCam(); renderStep(); animate();
+</script>
+</body>
+</html>

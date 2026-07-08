@@ -1,0 +1,1216 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>A Sign in Space — message design studio</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Michroma&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap');
+:root{--bg:#060913;--panel:rgba(13,19,34,.92);--line:#223050;--line-soft:#16203a;--txt:#e6ecf7;--txt-dim:#93a3c7;--amber:#ffc857;--cyan:#52b6e8;--rose:#ff5db0;--green:#7bd88f;--violet:#c79bff}
+*{box-sizing:border-box}html,body{margin:0}
+body{background:var(--bg);color:var(--txt);font-family:'IBM Plex Sans',system-ui,sans-serif;-webkit-font-smoothing:antialiased;padding:22px 16px 60px}
+header{text-align:center;max-width:900px;margin:0 auto}
+h1{font-family:'Michroma',sans-serif;font-weight:400;letter-spacing:.13em;font-size:clamp(16px,3vw,24px);margin:0}
+h1 .t{color:var(--amber)}
+.sub{font-size:12px;color:var(--txt-dim);margin-top:6px;max-width:760px;margin-left:auto;margin-right:auto;line-height:1.55}
+.wrap{max-width:1180px;margin:22px auto 0;display:grid;grid-template-columns:300px 1fr 320px;gap:16px;align-items:start}
+@media(max-width:1080px){.wrap{grid-template-columns:1fr 1fr}}
+@media(max-width:720px){.wrap{grid-template-columns:1fr}}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:15px;margin-bottom:16px}
+.kick{font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.11em;text-transform:uppercase;color:var(--cyan);margin-bottom:9px}
+.lbl{font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--txt-dim);margin:12px 0 6px}
+canvas{display:block;image-rendering:pixelated;background:#000;border:1px solid var(--line);border-radius:8px;width:100%;height:auto}
+canvas.smooth{image-rendering:auto}
+#draw{width:100%;max-width:100%;height:auto;aspect-ratio:1;touch-action:none}
+.rulecat{font-size:9px;letter-spacing:.09em;text-transform:uppercase;color:var(--cyan);opacity:.75;margin:9px 0 4px}
+.rulecat:first-child{margin-top:0}
+#rules .seg{margin-bottom:2px}
+.numin{width:82px;background:#101a30;border:1px solid var(--line);color:var(--amber);font-family:'IBM Plex Mono',monospace;font-size:12px;border-radius:6px;padding:3px 7px;text-align:right}
+.numin:focus{outline:none;border-color:var(--amber)}
+.seg{display:flex;gap:5px;flex-wrap:wrap}
+.seg button{flex:1 1 auto;background:#101a30;border:1px solid var(--line);color:var(--txt-dim);border-radius:7px;padding:6px 7px;font:inherit;font-size:11px;cursor:pointer;white-space:nowrap}
+.seg button:hover{border-color:var(--amber);color:var(--amber)}
+.seg button.on{background:var(--amber);border-color:var(--amber);color:#131a2c;font-weight:600}
+.rowlbl{display:flex;justify-content:space-between;font-size:11px;color:var(--txt-dim);margin:10px 0 3px}
+.rowlbl b{color:var(--amber);font-family:'IBM Plex Mono',monospace}
+input[type=range]{width:100%;accent-color:var(--amber)}
+.btn{width:100%;margin-top:12px;background:var(--amber);border:1px solid var(--amber);color:#131a2c;border-radius:9px;padding:11px;font:inherit;font-size:13px;font-weight:600;cursor:pointer}
+.btn:hover{filter:brightness(1.06)} .btn.sec{background:#101a30;color:var(--cyan);border-color:var(--cyan);font-weight:400}
+.grids{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.gcap{font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--txt-dim);text-align:center;margin-top:5px}
+.hex{font-family:'IBM Plex Mono',monospace;font-size:11px;word-break:break-all;line-height:1.7}
+.hex .h{color:var(--amber)} .hex .f{color:var(--cyan)} .hex .b{color:var(--txt-dim)}
+.chk{margin-top:10px;font-family:'IBM Plex Mono',monospace;font-size:12px;display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-top:1px solid var(--line-soft)}
+.chk .ok{color:var(--green)} .chk .no{color:var(--rose)} .chk .k{color:var(--txt-dim)}
+.note{font-size:11px;color:var(--txt-dim);line-height:1.5;margin-top:10px}
+.note b{color:var(--amber)} .mono{font-family:'IBM Plex Mono',monospace}
+.verdict{margin-top:12px;font-family:'IBM Plex Mono',monospace;font-size:12.5px;padding:10px;border-radius:9px;text-align:center;border:1px solid var(--line)}
+.verdict.ok{border-color:var(--green);color:var(--green);background:rgba(123,216,143,.08)}
+.verdict.no{border-color:var(--rose);color:var(--rose);background:rgba(255,93,176,.08)}
+#progbar{height:7px;margin-top:8px;border-radius:5px;background:rgba(82,182,232,.10);border:1px solid var(--line-soft);overflow:hidden;display:none;position:relative}
+#progbar.on{display:block}
+#progfill{height:100%;width:0;border-radius:5px;background:linear-gradient(90deg,var(--cyan),var(--amber));box-shadow:0 0 8px rgba(82,182,232,.5);transition:width .18s linear}
+#progbar.on::after{content:"";position:absolute;inset:0;background:linear-gradient(90deg,transparent,rgba(255,255,255,.18),transparent);transform:translateX(-100%);animation:progsheen 1.1s ease-in-out infinite}
+@keyframes progsheen{100%{transform:translateX(100%)}}
+.gpub{font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:.04em;color:var(--txt-dim);border:1px solid var(--line);border-radius:5px;padding:1px 6px;margin-left:6px;text-transform:none}
+.gpub.on{color:var(--green);border-color:rgba(123,216,143,.4)}
+.stage2{position:relative}
+#condBanner{position:absolute;top:10px;left:50%;transform:translateX(-50%);font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--amber);background:rgba(6,9,19,.78);border:1px solid var(--amber);border-radius:6px;padding:4px 10px;display:none}
+.lnk{background:none;border:0;color:var(--cyan);font:inherit;font-size:11px;cursor:pointer;padding:0;text-decoration:underline;text-underline-offset:2px}
+.lnk:hover{color:var(--amber)}
+.reclab{display:flex;align-items:center;gap:6px;font-size:10.5px;color:var(--txt-dim);margin-top:8px;cursor:pointer}
+.reclab b{color:var(--amber);font-weight:600} .reclab input{accent-color:var(--amber);margin:0}
+.exbtns{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
+.exbtns button{flex:1 1 auto;background:#101a30;border:1px solid var(--cyan);color:var(--cyan);border-radius:7px;padding:8px 6px;font:inherit;font-size:11px;cursor:pointer}
+.exbtns button:hover{border-color:var(--amber);color:var(--amber)}
+.sig{font-size:11px;color:var(--txt);line-height:1.5;margin-top:9px;border-top:1px solid var(--line-soft);padding-top:8px}
+footer{text-align:center;margin-top:26px;color:var(--txt-dim);font-size:11px}
+footer .sig{border:0}
+#toast{position:fixed;left:50%;top:20px;transform:translateX(-50%);z-index:30;background:#0b1120;border:1px solid var(--cyan);color:var(--txt);border-radius:8px;padding:8px 14px;font-family:'IBM Plex Mono',monospace;font-size:12px;opacity:0;transition:opacity .25s;pointer-events:none}
+#toast.show{opacity:1}
+</style>
+</head>
+<body>
+<div id="toast"></div>
+<header>
+  <h1>A SIGN IN SPACE — <span class="t">message design studio</span></h1>
+  <div class="sub">A full anti-cryptographic encoder: choose the frame, the rule and the scramble depth, then get a real transmittable file that is <b>self-signalling, self-describing and provably blindly decodable</b> — verified by a blind clock, an exact reconstruction that decodes the framed <span class="mono">.bin</span> (same layout as <span class="mono">binaire.bin</span>) back to your target, and a size census.</div>
+</header>
+
+<div class="wrap">
+
+  <!-- LEFT: design -->
+  <div>
+    <div class="card">
+      <div class="kick">1 · target — pixel-art editor</div>
+      <canvas id="draw"></canvas>
+      <div class="lbl">tool</div>
+      <div class="seg" id="tools">
+        <button data-t="pencil" class="on">✏ pencil</button>
+        <button data-t="eraser">⌫ eraser</button>
+        <button data-t="fill">▧ fill</button>
+        <button data-t="line">╱ line</button>
+        <button data-t="rect">▭ rect</button>
+        <button data-t="pan">✋ pan</button>
+      </div>
+      <div class="rowlbl"><span>brush (pixels)</span><span class="mono" id="brushV">2</span></div>
+      <input type="range" id="brush" min="1" max="10" value="2">
+      <div class="seg" style="margin-top:9px">
+        <button id="undo">↶ undo</button>
+        <button id="redo">↷ redo</button>
+        <button id="gridToggle" class="on">▦ grid</button>
+        <button id="symToggle">⇋ mirror</button>
+        <button id="invert">◐ invert</button>
+      </div>
+      <div class="seg" style="margin-top:9px">
+        <button id="zoomOut">➖ zoom</button>
+        <button id="zoomFit">⤢ fit</button>
+        <button id="zoomIn">➕ zoom</button>
+        <span class="mono" id="zoomV" style="flex:1;text-align:right;color:var(--txt-dim);font-size:11px;align-self:center">1.0×</span>
+      </div>
+      <div class="note" style="font-size:10.5px;margin-top:6px">wheel to zoom · <b>pan</b> tool or middle-drag to move · draw fine detail at 256×256.</div>
+      <div class="lbl">import image → pixel art (precise: area-average + linear luminance)</div>
+      <div class="seg" style="margin-bottom:4px"><button id="importBtn">⬆ open image…</button><button id="imgInvert">◑ invert</button></div>
+      <div class="rulecat">fit</div>
+      <div class="seg" id="imgFit" style="margin-bottom:4px"><button data-f="contain" class="on">contain</button><button data-f="cover">cover</button><button data-f="stretch">stretch</button></div>
+      <div class="rulecat">dither</div>
+      <div class="seg" id="imgDither" style="margin-bottom:4px"><button data-d="none" class="on">none</button><button data-d="floyd">Floyd–S</button><button data-d="atkinson">Atkinson</button><button data-d="bayer4">Bayer4</button><button data-d="bayer8">Bayer8</button></div>
+      <div class="rowlbl"><span>threshold <button id="otsuBtn" class="lnk">auto · Otsu</button></span><b id="threshV">128</b></div>
+      <input type="range" id="thresh" min="0" max="255" value="128">
+      <div class="rowlbl"><span>brightness</span><b id="briV">0</b></div><input type="range" id="bri" min="-100" max="100" value="0">
+      <div class="rowlbl"><span>contrast</span><b id="conV">0</b></div><input type="range" id="con" min="-90" max="90" value="0">
+      <div class="rowlbl"><span>gamma</span><b id="gamV">1.00</b></div><input type="range" id="gam" min="30" max="300" value="100">
+      <input type="file" id="fileIn" accept="image/*" style="display:none">
+      <div class="lbl">presets</div>
+      <div class="seg" id="presets"></div>
+      <button class="btn sec" id="clear">Clear canvas</button>
+    </div>
+    <div class="card">
+      <div class="kick">2 · frame &amp; rule</div>
+      <div class="lbl">grid — bit-count self-signalling</div>
+      <div class="seg" id="sizes"></div>
+      <div class="note" id="signal"></div>
+      <div class="lbl" style="margin-top:14px">reversible rule (self-described in the header)</div>
+      <div id="rules"></div>
+      <div class="note" id="ruleDesc"></div>
+      <div class="rowlbl"><span>scramble depth (iterations)</span><input type="number" id="depthNum" class="numin" min="20" max="10000" step="1" value="120"></div>
+      <input type="range" id="depth" min="20" max="10000" step="1" value="120">
+      <div class="note" style="margin-top:4px">Up to <b>10 000</b> iterations — deeper scrambles are stealthier and more error-hardening (and heavier to verify). <span class="mono" style="cursor:pointer;color:var(--cyan)" id="depth6625">set 6625 (real ASIS)</span> <span class="mono" id="depthSafe"></span></div>
+      <button class="btn" id="encode">Encode &amp; verify ▸</button>
+    </div>
+  </div>
+
+  <!-- MIDDLE: message + clock -->
+  <div>
+    <div class="card">
+      <div class="kick">3 · the transmittable message</div>
+      <div class="grids">
+        <div><canvas id="target"></canvas><div class="gcap">target · generation <span id="gT">?</span></div></div>
+        <div><canvas id="encoded"></canvas><div class="gcap">body · generation 0 (transmitted)</div></div>
+      </div>
+      <div class="lbl" style="margin-top:14px">framed file — header · body · footer</div>
+      <div class="hex" id="frame">draw a target and press Encode</div>
+    </div>
+    <div class="card">
+      <div class="kick">4 · blind decodability</div>
+      <div class="lbl">compression clock (no key — only a clock)</div>
+      <canvas id="clock" class="smooth" height="170"></canvas>
+      <div id="verdict" class="verdict">—</div>
+      <div id="progbar"><div id="progfill"></div></div>
+    </div>
+    <div class="card">
+      <div class="kick">4b · watch it condense <span id="gpuBadge" class="gpub">● CPU stepping</span></div>
+      <div class="stage2">
+        <canvas id="cond"></canvas>
+        <div id="condBanner">■ IMAGE — generation <span id="condD">?</span> ■</div>
+      </div>
+      <div class="rowlbl" style="margin-top:10px"><span>generation</span><b id="condGen">0</b></div>
+      <input type="range" id="condScrub" min="0" max="240" step="1" value="0">
+      <div class="rowlbl"><span>speed (gen / s)</span><b id="condSpV">90</b></div>
+      <input type="range" id="condSpeed" min="5" max="600" step="5" value="90">
+      <div class="seg" id="condBtns" style="margin-top:12px">
+        <button id="condPlay" class="on">▶ play</button>
+        <button id="condJump">→ image (D)</button>
+        <button id="condReset">↺ body</button>
+        <button id="condGhost">◐ ghost target</button>
+      </div>
+      <div class="rowlbl" style="margin-top:8px"><span>active pixels <span id="condConsv"></span></span><b id="condPop">—</b></div>
+      <div class="note">The transmitted <b>body</b> (generation 0) evolves forward under the chosen reversible rule and <b>condenses into your target at depth D</b> — the receiver's view, GPU-stepped. <button id="condPop2" class="lnk">pop out to full-screen viewer ↗</button></div>
+      <div class="lbl" style="margin-top:12px">record signed animation (body → target)</div>
+      <div class="rowlbl"><span>resolution (px)</span><b id="recResV">340</b></div>
+      <div class="seg" id="recRes">
+        <button data-r="340" class="on">340</button>
+        <button data-r="512">512</button>
+        <button data-r="768">768</button>
+        <button data-r="1024">1024</button>
+        <button data-r="1440">1440</button>
+        <button data-r="2048" style="border-color:rgba(255,200,87,.4)">2048</button>
+      </div>
+      <div class="rowlbl" style="margin-top:10px"><span>frames</span><b id="recFramesV">60</b></div>
+      <input type="range" id="recFrames" min="2" max="600" step="1" value="60">
+      <label class="reclab"><input type="checkbox" id="recStep"> <b>1 frame / generation</b> — true step-by-step (0 → D)</label>
+      <div class="exbtns" style="margin-top:8px">
+        <button id="recGif">◉ record .gif</button>
+        <button id="recWebm">▶ record .webm</button>
+      </div>
+      <div class="note mono" id="recStatus" style="font-size:10px">Captures the condensation 0 → D with a signature bar. For big resolutions or many frames, <b>.webm</b> is far lighter &amp; faster than <b>.gif</b>.</div>
+    </div>
+  </div>
+
+  <!-- RIGHT: verify + robustness + export -->
+  <div>
+    <div class="card">
+      <div class="kick">5 · verification suite</div>
+      <div class="chk"><span class="k">unique clock minimum</span><span id="vClock">—</span></div>
+      <div class="chk"><span class="k">.bin decodes → target</span><span id="vSha">—</span></div>
+      <div class="chk"><span class="k">exact reconstruction</span><span id="vExact">—</span></div>
+      <div class="lbl" style="margin-top:12px">size census of the decoded target</div>
+      <canvas id="census" height="120"></canvas>
+      <div class="note mono" id="shaHex" style="font-size:9.5px;color:var(--txt-dim)"></div>
+    </div>
+    <div class="card">
+      <div class="kick">6 · channel robustness</div>
+      <div class="rowlbl"><span>bit-flips injected in the body</span><b id="flipV">4</b></div>
+      <input type="range" id="flips" min="0" max="16" value="4">
+      <canvas id="robust" class="smooth" height="150"></canvas>
+      <div class="note">Deeper scramble ⇒ a single flip propagates through more reversible steps. The error-hardening lever: a shorter depth trades stealth for robustness.</div>
+    </div>
+    <div class="card">
+      <div class="kick">7 · export</div>
+      <div class="exbtns">
+        <button data-x="bin">message .bin</button>
+        <button data-x="png">figure .png</button>
+        <button data-x="json">recipe .json</button>
+        <button data-x="gpu">condense viewer ↗</button>
+      </div>
+      <div class="sig">Recipe &amp; figure signed:<br><b style="color:#ffc857">Etienne Lacoche</b> · Researcher · &lt;etienne.lacoche@pm.me&gt;<br>https://www.asignin.space</div>
+    </div>
+    <div class="card">
+      <div class="kick">8 · load &amp; replay a .bin</div>
+      <div class="note">Import <span class="mono">binaire.bin</span> or any designed <span class="mono">.bin</span> — it identifies the rule from the header, the depth from the footer, the grid from the body, then replays the condensation.</div>
+      <input type="file" id="loadBin" accept=".bin,application/octet-stream" style="display:none">
+      <div class="exbtns" style="margin-top:8px">
+        <button id="loadBinBtn">⬆ load .bin</button>
+        <button id="loadPop" disabled>replay in standalone viewer ↗</button>
+      </div>
+      <div class="hex" id="loadInfo" style="margin-top:8px"></div>
+    </div>
+    <div class="card">
+      <div class="kick">9 · frame-sequence &amp; complete mode</div>
+      <div class="note">Encode an animation frame-by-frame — each frame its own signed <span class="mono">.bin</span> in a <span class="mono">.zip</span> — or tile the whole clip into <b>one</b> big <span class="mono">.bin</span> (single header + footer).</div>
+      <div class="rulecat">source</div>
+      <div class="seg" id="seqSrc" style="margin-bottom:4px"><button data-s="cond" class="on">condensation timeline</button><button data-s="gif">GIF file</button><button data-s="video">video file</button></div>
+      <input type="file" id="seqGif" accept="image/gif" style="display:none">
+      <input type="file" id="seqVideo" accept="video/*" style="display:none">
+      <div class="rowlbl"><span>frames (timeline)</span><b id="seqFramesV">24</b></div>
+      <input type="range" id="seqFrames" min="2" max="200" step="1" value="24">
+      <div class="rulecat">cell size (complete mode)</div>
+      <div class="seg" id="seqCell" style="margin-bottom:6px"><button data-c="32" class="on">32</button><button data-c="48">48</button><button data-c="64">64</button></div>
+      <canvas id="seqPreview" height="150"></canvas>
+      <div class="exbtns" style="margin-top:8px"><button id="seqPerFrame">◫ per-frame .bin → zip</button><button id="seqComplete">▦ complete single .bin</button></div>
+      <div class="exbtns" style="margin-top:6px"><button id="seqDecodeBtn">⬆ decode a complete .bin</button></div>
+      <input type="file" id="seqDecode" accept=".bin,application/octet-stream" style="display:none">
+      <div class="note mono" id="seqStatus" style="font-size:10px"></div>
+      <div id="seqThumbs" style="display:flex;flex-wrap:wrap;gap:3px;margin-top:6px"></div>
+    </div>
+  </div>
+</div>
+
+<footer>Operationalising the self-signalling decodability framework · after Lacoche, <i>What a Blind Decoder Can and Cannot Recover</i>
+  <div class="sig"><b style="color:#ffc857">Etienne Lacoche</b> · Researcher · &lt;etienne.lacoche@pm.me&gt; · https://www.asignin.space</div>
+</footer>
+
+<script>
+'use strict';
+const $=id=>document.getElementById(id);
+const SIG={author:'Etienne Lacoche', role:'Researcher',email:'etienne.lacoche@pm.me',site:'https://www.asignin.space'};
+let N=64;
+
+/* ===================== reversible rules (16-state block permutations) ===================== */
+function bits(s){return [s&1,(s>>1)&1,(s>>2)&1,(s>>3)&1];}         // a=TL,b=TR,c=BL,d=BR
+function pack4(a,b,c,d){return a|(b<<1)|(c<<2)|(d<<3);}
+function tableCW(){const t=new Uint8Array(16);for(let s=0;s<16;s++){t[s]=s;const[a,b,c,d]=bits(s);if(a+b+c+d===1)t[s]=pack4(c,a,d,b);}return t;}
+function tableCritters(){const t=new Uint8Array(16);for(let s=0;s<16;s++){const[a,b,c,d]=bits(s);const p=a+b+c+d;
+  if(p===2)t[s]=s; else if(p===3)t[s]=pack4(1-d,1-c,1-b,1-a); else t[s]=pack4(1-a,1-b,1-c,1-d);}return t;}
+function invert(t){const inv=new Uint8Array(16);for(let s=0;s<16;s++)inv[t[s]]=s;return inv;}
+const CW=tableCW(), CCW=invert(CW), CRIT=tableCritters(), CRITi=invert(CRIT);
+const RULES={
+  'single-cw':{name:'Single-rotation ↻',desc:'The A Sign in Space rule: a lone particle in a block rotates one step clockwise; count-conserving, exactly reversible.',cat:'rotation',fwd:CW,inv:CCW,conserve:true},
+  'single-ccw':{name:'Single-rotation ↺',desc:'Single rotation the other way (inverse of ↻): a lone particle rotates one step counter-clockwise.',cat:'rotation',fwd:CCW,inv:CW,conserve:true},
+  'critters':{name:'Critters',desc:"Toffoli–Margolus 'Critters': complement the block unless it has exactly two particles; a reversible life-like rule with gliders.",cat:'reversible-life',fwd:CRIT,inv:CRITi,conserve:false},
+};
+// Verified reversible-rule catalog (permutations of 0..15, distinct header demos from seed 0x0690).
+const EXTRA_RULES=[
+  {key:'rot180',name:'Rotate 180',desc:'Rotate the 2×2 block 180°: TL↔BR, TR↔BL. Point-symmetry of the block.',cat:'geometric',conserve:true,fwd:[0,8,4,12,2,10,6,14,1,9,5,13,3,11,7,15]},
+  {key:'rot90cw',name:'Rotate block 90° CW',desc:'Rigidly rotate the whole block 90° clockwise (new TL=BL, TR=TL, BR=TR, BL=BR).',cat:'geometric',conserve:true,fwd:[0,2,8,10,1,3,9,11,4,6,12,14,5,7,13,15]},
+  {key:'rot90ccw',name:'Rotate block 90° CCW',desc:'Rigidly rotate the whole block 90° counter-clockwise (inverse of rot90cw).',cat:'geometric',conserve:true,fwd:[0,4,1,5,8,12,9,13,2,6,3,7,10,14,11,15]},
+  {key:'reflectH',name:'Reflect horizontal',desc:'Mirror left/right: swap columns (TL↔TR, BL↔BR).',cat:'geometric',conserve:true,fwd:[0,2,1,3,8,10,9,11,4,6,5,7,12,14,13,15]},
+  {key:'reflectV',name:'Reflect vertical',desc:'Mirror top/bottom: swap rows (TL↔BL, TR↔BR).',cat:'geometric',conserve:true,fwd:[0,4,8,12,1,5,9,13,2,6,10,14,3,7,11,15]},
+  {key:'transpose',name:'Transpose (main diag)',desc:'Reflect across the main diagonal: swap TR↔BL, fix TL,BR.',cat:'geometric',conserve:true,fwd:[0,1,4,5,2,3,6,7,8,9,12,13,10,11,14,15]},
+  {key:'antitranspose',name:'Anti-transpose',desc:'Reflect across the anti-diagonal: swap TL↔BR, fix TR,BL.',cat:'geometric',conserve:true,fwd:[0,8,2,10,4,12,6,14,1,9,3,11,5,13,7,15]},
+  {key:'hpp',name:'HPP gas collision',desc:'HPP lattice gas: a head-on diagonal pair rotates 90° (swap 6↔9), free-streaming otherwise. Momentum-conserving.',cat:'lattice-gas',conserve:true,fwd:[0,1,2,3,4,5,9,7,8,6,10,11,12,13,14,15]},
+  {key:'bbm',name:'BBM billiard-ball',desc:'Margolus billiard-ball model: 2-particle collisions rotate 90° CW, others free-stream. A universal reversible computer.',cat:'lattice-gas',conserve:true,fwd:[0,1,2,10,4,3,9,7,8,6,12,11,5,13,14,15]},
+  {key:'tmgas',name:'TM-gas',desc:'Toffoli–Margolus reversible gas: lone particles turn to stream, axis-pair collisions bounce (vertical↔horizontal pair).',cat:'lattice-gas',conserve:true,fwd:[0,4,1,3,8,10,6,7,2,9,5,11,12,13,14,15]},
+  {key:'wall-bounce',name:'Wall bounce',desc:'Reflecting-wall collision: horizontal pair bounces (3↔12) and vertical pair bounces (5↔10); an involution.',cat:'lattice-gas',conserve:true,fwd:[0,1,2,12,4,10,6,7,8,9,5,11,3,13,14,15]},
+  {key:'tron',name:'Tron',desc:'Toffoli/Margolus Tron: invert the whole block iff it is uniform (all-0↔all-1); identity otherwise. Edge-tracing, reversible.',cat:'reversible-life',conserve:false,fwd:[15,1,2,3,4,5,6,7,8,9,10,11,12,13,14,0]},
+];
+for(const r of EXTRA_RULES){ const fwd=Uint8Array.from(r.fwd); RULES[r.key]={name:r.name,desc:r.desc,cat:r.cat,fwd,inv:invert(fwd),conserve:r.conserve}; }
+let ruleKey='single-cw';
+function step(g,off,table,n,out){ if(!out)out=new Uint8Array(n*n);   // block partition tiles every cell once → no copy needed
+  for(let by=0;by<n;by+=2){ let y0=by+off; if(y0>=n)y0-=n; let y1=y0+1; if(y1>=n)y1-=n; const r0=y0*n,r1=y1*n;
+    for(let bx=0;bx<n;bx+=2){ let x0=bx+off; if(x0>=n)x0-=n; let x1=x0+1; if(x1>=n)x1-=n;
+      const ia=r0+x0,ib=r0+x1,ic=r1+x0,id=r1+x1;
+      const v=table[g[ia]|(g[ib]<<1)|(g[ic]<<2)|(g[id]<<3)];
+      out[ia]=v&1;out[ib]=(v>>1)&1;out[ic]=(v>>2)&1;out[id]=(v>>3)&1;
+    } } return out;
+}
+function forward(g,D,rk,n){ const t=RULES[rk].fwd; let A=g.slice(),B=new Uint8Array(n*n); for(let k=0;k<D;k++){ step(A,k&1,t,n,B); const s=A;A=B;B=s; } return A; }
+function encodeBackward(target,D,rk,n){ const inv=RULES[rk].inv; let A=target.slice(),B=new Uint8Array(n*n); for(let k=D-1;k>=0;k--){ step(A,k&1,inv,n,B); const s=A;A=B;B=s; } return A; }
+
+/* ===================== GPU Margolus stepper (WebGPU compute) =====================
+   Bit-for-bit identical to step(g,off,table,n) for ANY 16-entry table — proven against the JS
+   reference (forward/backward/round-trip, CW+Critters, N 64..2048, zero diffs) in _gpu_stepper_test.html.
+   The shader is table-driven (the rule is uploaded, not hardcoded) and the offset alternates via TWO
+   pre-written uniform buffers P0/P1 — avoiding the constant-offset bug that a single shared uniform
+   rewritten before one submit would cause. Passes are chunked (<=GPU_CHUNK per submit, awaiting
+   onSubmittedWorkDone) so a long run can never exceed the OS GPU watchdog (TDR) window; every entry
+   point try/catches back to the authoritative CPU path, and a device.lost handler permanently reverts. */
+const WGSL = `
+@group(0) @binding(0) var<storage, read>       inp: array<u32>;
+@group(0) @binding(1) var<storage, read_write>  outp: array<u32>;
+@group(0) @binding(2) var<uniform>              P: vec4<u32>;        // x=off(0/1), y=N
+@group(0) @binding(3) var<storage, read>        tbl: array<u32, 16>; // rule table (fwd OR inv)
+@compute @workgroup_size(8, 8)
+fn main(@builtin(global_invocation_id) gid: vec3<u32>) {
+  let N  = P.y;
+  let bx = gid.x * 2u;
+  let by = gid.y * 2u;
+  if (bx >= N || by >= N) { return; }
+  let off = P.x;
+  let y0 = (by + off) % N; let x0 = (bx + off) % N;
+  let y1 = (y0 + 1u) % N;  let x1 = (x0 + 1u) % N;
+  let ia = y0 * N + x0; let ib = y0 * N + x1; let ic = y1 * N + x0; let id = y1 * N + x1;
+  let s = inp[ia] | (inp[ib] << 1u) | (inp[ic] << 2u) | (inp[id] << 3u);
+  let v = tbl[s];
+  outp[ia] = v & 1u; outp[ib] = (v >> 1u) & 1u; outp[ic] = (v >> 2u) & 1u; outp[id] = (v >> 3u) & 1u;
+}`;
+const GPU_CHUNK = 256;                       // max compute passes per queue.submit (stays under the ~2s TDR window)
+let GPU = { ok:false, device:null, pipeline:null };
+async function initGPU(){
+  try{
+    if(!navigator.gpu) return;
+    const adapter = await navigator.gpu.requestAdapter(); if(!adapter) return;
+    const device  = await adapter.requestDevice();
+    device.lost.then(info=>{ GPU.ok=false; GPU.device=null; GPU.pipeline=null; console.warn('WebGPU device lost → CPU', info&&info.reason); });
+    const module   = device.createShaderModule({ code: WGSL });
+    const pipeline = device.createComputePipeline({ layout:'auto', compute:{ module, entryPoint:'main' } });
+    GPU = { ok:true, device, pipeline };
+    if($('gpuBadge')){ $('gpuBadge').textContent='● GPU stepping — WebGPU'; $('gpuBadge').className='gpub on'; }
+  }catch(e){ GPU.ok=false; }
+}
+function makeStepper(N){
+  const dev=GPU.device, pl=GPU.pipeline, bytes=N*N*4;
+  const SB=GPUBufferUsage.STORAGE|GPUBufferUsage.COPY_SRC|GPUBufferUsage.COPY_DST;
+  let A=dev.createBuffer({size:bytes,usage:SB}), B=dev.createBuffer({size:bytes,usage:SB});
+  const P0=dev.createBuffer({size:16,usage:GPUBufferUsage.UNIFORM|GPUBufferUsage.COPY_DST});
+  const P1=dev.createBuffer({size:16,usage:GPUBufferUsage.UNIFORM|GPUBufferUsage.COPY_DST});
+  dev.queue.writeBuffer(P0,0,new Uint32Array([0,N,0,0])); dev.queue.writeBuffer(P1,0,new Uint32Array([1,N,0,0]));
+  const tbuf=dev.createBuffer({size:64,usage:GPUBufferUsage.STORAGE|GPUBufferUsage.COPY_DST});
+  const wg=Math.ceil(N/2/8); let scratch=new Uint32Array(N*N);
+  const done=()=> dev.queue.onSubmittedWorkDone ? dev.queue.onSubmittedWorkDone() : Promise.resolve();
+  return {
+    N,
+    upload(u8){ for(let i=0;i<N*N;i++) scratch[i]=u8[i]; dev.queue.writeBuffer(A,0,scratch); },
+    async runBatch(startGen,nSteps,tableU32,onProgress){
+      dev.queue.writeBuffer(tbuf,0,tableU32);
+      let d=0;
+      while(d<nSteps){
+        const n=Math.min(GPU_CHUNK,nSteps-d); const enc=dev.createCommandEncoder();
+        for(let j=0;j<n;j++){
+          const off=(startGen+d+j)&1; const Pbuf=off?P1:P0;
+          const bg=dev.createBindGroup({layout:pl.getBindGroupLayout(0),entries:[
+            {binding:0,resource:{buffer:A}},{binding:1,resource:{buffer:B}},{binding:2,resource:{buffer:Pbuf}},{binding:3,resource:{buffer:tbuf}}]});
+          const pass=enc.beginComputePass(); pass.setPipeline(pl); pass.setBindGroup(0,bg); pass.dispatchWorkgroups(wg,wg); pass.end();
+          const s=A;A=B;B=s;
+        }
+        dev.queue.submit([enc.finish()]); await done(); d+=n;
+        if(onProgress) onProgress(d,nSteps);
+        // hand the thread back so the counter repaints and the browser never flags the page unresponsive
+        if(d<nSteps && document.visibilityState==='visible') await new Promise(r=>setTimeout(r));
+      }
+    },
+    async readback(){
+      const read=dev.createBuffer({size:bytes,usage:GPUBufferUsage.MAP_READ|GPUBufferUsage.COPY_DST});
+      const enc=dev.createCommandEncoder(); enc.copyBufferToBuffer(A,0,read,0,bytes); dev.queue.submit([enc.finish()]);
+      await read.mapAsync(GPUMapMode.READ);
+      const res=new Uint32Array(read.getMappedRange().slice(0)); read.unmap(); read.destroy();
+      const out=new Uint8Array(N*N); for(let i=0;i<N*N;i++) out[i]=res[i]; return out;
+    },
+    destroy(){ A.destroy();B.destroy();P0.destroy();P1.destroy();tbuf.destroy(); },
+  };
+}
+/* live status line (shown in the verdict box) + async CPU stepping that never blocks the main thread */
+function prog(label,cur,total){ const pct=Math.max(0,Math.min(100,Math.round(cur/Math.max(1,total)*100)));
+  const v=$('verdict'); if(v){ v.className='verdict';
+    v.textContent=label+' — generation '+(cur|0).toLocaleString()+' / '+(total|0).toLocaleString()+' ('+pct+'%)'; }
+  const pb=$('progbar'), pf=$('progfill');
+  if(pb&&pf){ pb.classList.add('on');
+    if(prog._label!==label){ prog._label=label; pf.style.transition='none'; pf.style.width='0%'; void pf.offsetWidth; pf.style.transition=''; } // new phase → restart the sweep, no backward slide
+    pf.style.width=pct+'%'; } }
+function progDone(){ const pb=$('progbar'), pf=$('progfill'); prog._label=null; if(pf)pf.style.width='100%'; if(pb)setTimeout(()=>pb.classList.remove('on'),300); }
+async function stepChunkedCPU(g,fromGen,steps,table,n,onProgress){   // yields every 256 steps → responsive + counter
+  let A=g.slice(),B=new Uint8Array(n*n);
+  for(let k=0;k<steps;k++){ step(A,(fromGen+k)&1,table,n,B); const s=A;A=B;B=s;
+    if((k&255)===255){ if(onProgress)onProgress(k+1,steps); if(document.visibilityState==='visible') await new Promise(r=>setTimeout(r)); } }
+  return A;
+}
+async function forwardGPU(g,D,rk,n,onProgress){
+  if(GPU.ok){ let s=null;
+    try{ s=makeStepper(n); s.upload(g); await s.runBatch(0,D,Uint32Array.from(RULES[rk].fwd),onProgress); const o=await s.readback(); s.destroy(); return o; }
+    catch(e){ console.warn('forwardGPU → CPU',e); GPU.ok=false; try{if(s)s.destroy();}catch(_){} } }
+  return stepChunkedCPU(g,0,D,RULES[rk].fwd,n,onProgress);        // off=(0+k)&1 == forward()'s k&1
+}
+async function encodeBackwardGPU(target,D,rk,n,onProgress){
+  if(GPU.ok){ let s=null;
+    try{ s=makeStepper(n); s.upload(target); await s.runBatch((D-1)&1,D,Uint32Array.from(RULES[rk].inv),onProgress); const o=await s.readback(); s.destroy(); return o; }
+    catch(e){ console.warn('encodeBackwardGPU → CPU',e); GPU.ok=false; try{if(s)s.destroy();}catch(_){} } }
+  return stepChunkedCPU(target,(D-1)&1,D,RULES[rk].inv,n,onProgress);  // reproduces encodeBackward()'s descending k&1 schedule
+}
+/* forward `steps` from an arbitrary generation — for the condensation viewer (GPU, async CPU fallback). */
+async function condForward(state,fromGen,steps,rk,n,onProgress){
+  if(steps<=0) return state.slice();
+  if(GPU.ok){ let s=null;
+    try{ s=makeStepper(n); s.upload(state); await s.runBatch(fromGen,steps,Uint32Array.from(RULES[rk].fwd),onProgress); const o=await s.readback(); s.destroy(); return o; }
+    catch(e){ console.warn('condForward → CPU',e); GPU.ok=false; try{if(s)s.destroy();}catch(_){} } }
+  return stepChunkedCPU(state,fromGen,steps,RULES[rk].fwd,n,onProgress);
+}
+/* GPU blind clock: same sampled generations & gzip as the CPU loop; null → caller runs the CPU loop. */
+async function clockGPU(body,D,rk,n,sampleFn,progressFn){
+  if(!GPU.ok) return null;
+  const range=Math.min(2*D, Math.max(D+80, Math.ceil(D*1.5))), T=range+1;
+  const big=n*n>=(1<<18);
+  const stride=big ? Math.max(2, Math.ceil(T/150)) : Math.max(1, Math.ceil(T/300));
+  const tableU32=Uint32Array.from(RULES[rk].fwd);
+  let s=null, crossChecked=false;
+  try{
+    s=makeStepper(n); s.upload(body);
+    const clockX=[], clockY=[]; let cur=0;
+    for(let k=0;k<T;k++){
+      if(k%stride===0 || Math.abs(k-D)<=12){
+        if(k>cur){ await s.runBatch(cur,k-cur,tableU32); cur=k; }
+        const gk=await s.readback();
+        if(!crossChecked && k>0 && k!==D){                    // one real off-D correctness gate vs the CPU step
+          const cpu=forward(body,k,rk,n);
+          for(let i=0;i<n*n;i++) if(cpu[i]!==gk[i]) throw new Error('GPU clock off-D mismatch @'+k);
+          crossChecked=true;
+        }
+        clockX.push(k); clockY.push(await sampleFn(gk));
+        progressFn && progressFn(k,T);                       // live counter at every sample, any N
+      }
+      if(big && (k&63)===0 && document.visibilityState==='visible') await new Promise(r=>setTimeout(r));
+    }
+    s.destroy(); return { clockX, clockY, range, T };
+  }catch(e){ console.warn('clockGPU → CPU clock',e); GPU.ok=false; try{if(s)s.destroy();}catch(_){} return null; }
+}
+
+/* ===================== target grid + pixel-art editor ===================== */
+let grid=new Uint8Array(N*N);
+function paint(cv,g,rgb){ cv.width=N;cv.height=N;const c=cv.getContext('2d'),img=c.createImageData(N,N);
+  for(let i=0;i<N*N;i++){const on=g[i],o=i*4;img.data[o]=on?rgb[0]:6;img.data[o+1]=on?rgb[1]:9;img.data[o+2]=on?rgb[2]:19;img.data[o+3]=255;}c.putImageData(img,0,0);}
+
+const draw=$('draw'); let dctx, disp=0;
+let tool='pencil', brush=2, showGrid=true, mirror=false;
+let zoom=1, panX=0, panY=0;
+let undo=[], redo=[], drawing=false, startCell=null, panning=false, lastPan=null;
+function sizeCanvas(){
+  // CSS (width:100% + aspect-ratio:1) sizes the box to its column — never wider; we only match the backing store.
+  const dpr=Math.min(devicePixelRatio||1,2);
+  const w=draw.clientWidth || draw.getBoundingClientRect().width || 260;
+  disp=Math.max(120,Math.round(w));
+  draw.width=Math.round(disp*dpr); draw.height=Math.round(disp*dpr);
+  dctx=draw.getContext('2d'); dctx.setTransform(dpr,0,0,dpr,0,0); renderDraw();
+}
+// Re-fit whenever the column changes (initial layout, window resize, responsive breakpoints) — fixes the
+// canvas locking to a stale width and spilling onto the middle column.
+if(window.ResizeObserver){ new ResizeObserver(()=>sizeCanvas()).observe(draw.parentElement); }
+else { let _t; window.addEventListener('resize',()=>{ clearTimeout(_t); _t=setTimeout(sizeCanvas,120); }); }
+function clampPan(){ const vc=N/zoom; panX=Math.max(0,Math.min(Math.max(0,N-vc),panX)); panY=Math.max(0,Math.min(Math.max(0,N-vc),panY)); }
+function renderDraw(prev){ if(!dctx)return; const vc=N/zoom, cell=disp/vc, ox=panX, oy=panY;
+  dctx.clearRect(0,0,disp,disp); dctx.fillStyle='#000'; dctx.fillRect(0,0,disp,disp);
+  const x0=Math.max(0,Math.floor(ox)),y0=Math.max(0,Math.floor(oy)),x1=Math.min(N,Math.ceil(ox+vc)),y1=Math.min(N,Math.ceil(oy+vc));
+  const cw=x1-x0, ch=y1-y0; if(cw<=0||ch<=0)return;
+  // Rasterise the visible cells into a cw×ch ImageData, then nearest-scale it — O(visible cells),
+  // so even a 2048² overview (or a sub-pixel zoom) stays fast instead of millions of fillRects.
+  let bc=renderDraw._c; if(!bc){ bc=renderDraw._c=document.createElement('canvas'); renderDraw._x=bc.getContext('2d'); }
+  if(bc.width<cw)bc.width=cw; if(bc.height<ch)bc.height=ch; const bx=renderDraw._x;
+  const img=bx.createImageData(cw,ch), d=img.data;
+  const ps = prev&&prev.length ? new Set(prev.map(([x,y])=>y*N+x)) : null;
+  for(let y=0;y<ch;y++){ const row=(y0+y)*N; for(let x=0;x<cw;x++){ const gi=row+x0+x, o=(y*cw+x)*4;
+      if(ps&&ps.has(gi)){ d[o]=255;d[o+1]=200;d[o+2]=87;d[o+3]=235; }
+      else if(grid[gi]){ d[o]=255;d[o+1]=200;d[o+2]=87;d[o+3]=255; }
+      else { d[o]=6;d[o+1]=9;d[o+2]=19;d[o+3]=255; } } }
+  bx.putImageData(img,0,0);
+  dctx.imageSmoothingEnabled=false; dctx.drawImage(bc,0,0,cw,ch,(x0-ox)*cell,(y0-oy)*cell,cw*cell,ch*cell);
+  if(showGrid && cell>=3.2){ dctx.strokeStyle='rgba(82,182,232,.16)'; dctx.lineWidth=1; dctx.beginPath();
+    for(let x=x0;x<=x1;x++){const p=Math.round((x-ox)*cell)+0.5;dctx.moveTo(p,0);dctx.lineTo(p,disp);}
+    for(let y=y0;y<=y1;y++){const p=Math.round((y-oy)*cell)+0.5;dctx.moveTo(0,p);dctx.lineTo(disp,p);} dctx.stroke(); } }
+function render(prev){ renderDraw(prev); }
+function resize(){ grid=new Uint8Array(N*N); undo=[]; redo=[]; zoom=1; panX=0; panY=0; if($('zoomV'))$('zoomV').textContent='1.0×'; sizeCanvas(); }
+function snapshot(){ undo.push(grid.slice()); if(undo.length>40)undo.shift(); redo=[]; }
+function cellOf(e){ const r=draw.getBoundingClientRect(); const vc=N/zoom;
+  return [Math.floor(panX+(e.clientX-r.left)/r.width*vc), Math.floor(panY+(e.clientY-r.top)/r.height*vc)]; }
+function stamp(x,y,v){ const b=brush-1; for(let dy=-b;dy<=b;dy++)for(let dx=-b;dx<=b;dx++){const xx=x+dx,yy=y+dy;
+  if(xx>=0&&xx<N&&yy>=0&&yy<N){grid[yy*N+xx]=v; if(mirror)grid[yy*N+(N-1-xx)]=v;}} }
+function lineCells(x0,y0,x1,y1){ const pts=[]; let dx=Math.abs(x1-x0),dy=Math.abs(y1-y0),sx=x0<x1?1:-1,sy=y0<y1?1:-1,err=dx-dy,cx=x0,cy=y0;
+  for(;;){ const b=brush-1; for(let a=-b;a<=b;a++)for(let c=-b;c<=b;c++){const xx=cx+a,yy=cy+c; if(xx>=0&&xx<N&&yy>=0&&yy<N){pts.push([xx,yy]); if(mirror)pts.push([N-1-xx,yy]);}}
+    if(cx===x1&&cy===y1)break; const e2=2*err; if(e2>-dy){err-=dy;cx+=sx;} if(e2<dx){err+=dx;cy+=sy;} } return pts; }
+function rectCells(x0,y0,x1,y1){ const pts=[],ax=Math.min(x0,x1),bx=Math.max(x0,x1),ay=Math.min(y0,y1),by=Math.max(y0,y1);
+  const add=(x,y)=>{if(x>=0&&x<N&&y>=0&&y<N){pts.push([x,y]);if(mirror)pts.push([N-1-x,y]);}};
+  for(let x=ax;x<=bx;x++){add(x,ay);add(x,by);} for(let y=ay;y<=by;y++){add(ax,y);add(bx,y);} return pts; }
+function flood(x,y,v){ const from=grid[y*N+x]; if(from===v)return; const st=[y*N+x];
+  while(st.length){ const i=st.pop(); if(grid[i]!==from)continue; grid[i]=v; const cx=i%N;
+    if(cx>0)st.push(i-1); if(cx<N-1)st.push(i+1); if(i>=N)st.push(i-N); if(i<N*N-N)st.push(i+N); } }
+function setZoom(z,cx,cy){ z=Math.max(1,Math.min(N/4,z)); const old=N/zoom, nvc=N/z;
+  if(cx!=null){ panX=cx-(cx-panX)*nvc/old; panY=cy-(cy-panY)*nvc/old; }
+  zoom=z; clampPan(); if($('zoomV'))$('zoomV').textContent=zoom.toFixed(1)+'×'; render(); }
+draw.addEventListener('pointerdown',e=>{ e.preventDefault(); draw.setPointerCapture(e.pointerId);
+  if(tool==='pan'||e.button===1){ panning=true; lastPan=[e.clientX,e.clientY]; return; }
+  drawing=true; const[x,y]=cellOf(e); const er=e.shiftKey||tool==='eraser'; snapshot();
+  if(tool==='pencil'||tool==='eraser'){ stamp(x,y,er?0:1); render(); }
+  else if(tool==='fill'){ flood(x,y,er?0:1); render(); drawing=false; }
+  else startCell=[x,y]; });
+draw.addEventListener('pointermove',e=>{
+  if(panning){ const r=draw.getBoundingClientRect(),vc=N/zoom; panX-=(e.clientX-lastPan[0])/r.width*vc; panY-=(e.clientY-lastPan[1])/r.height*vc; lastPan=[e.clientX,e.clientY]; clampPan(); render(); return; }
+  if(!drawing)return; const[x,y]=cellOf(e); const er=e.shiftKey||tool==='eraser';
+  if(tool==='pencil'||tool==='eraser'){ stamp(x,y,er?0:1); render(); }
+  else if(tool==='line'&&startCell) render(lineCells(startCell[0],startCell[1],x,y));
+  else if(tool==='rect'&&startCell) render(rectCells(startCell[0],startCell[1],x,y)); });
+draw.addEventListener('pointerup',e=>{ if(panning){panning=false;return;} if(!drawing)return; drawing=false; const[x,y]=cellOf(e);
+  if(tool==='line'&&startCell) lineCells(startCell[0],startCell[1],x,y).forEach(([px,py])=>grid[py*N+px]=1);
+  if(tool==='rect'&&startCell) rectCells(startCell[0],startCell[1],x,y).forEach(([px,py])=>grid[py*N+px]=1);
+  startCell=null; render(); });
+draw.addEventListener('wheel',e=>{ e.preventDefault(); const[cx,cy]=cellOf(e); setZoom(zoom*(e.deltaY<0?1.25:1/1.25),cx+0.5,cy+0.5); },{passive:false});
+$('zoomIn').onclick=()=>setZoom(zoom*1.5,N/2,N/2);
+$('zoomOut').onclick=()=>setZoom(zoom/1.5,N/2,N/2);
+$('zoomFit').onclick=()=>{zoom=1;panX=0;panY=0;$('zoomV').textContent='1.0×';render();};
+
+/* ---- precise image → pixel art: area-average box downsample + linear-light luminance + Otsu + dithers ---- */
+const BAYER4=[0,8,2,10,12,4,14,6,3,11,1,9,15,7,13,5];
+const BAYER8=[0,32,8,40,2,34,10,42,48,16,56,24,50,18,58,26,12,44,4,36,14,46,6,38,60,28,52,20,62,30,54,22,3,35,11,43,1,33,9,41,51,19,59,27,49,17,57,25,15,47,7,39,13,45,5,37,63,31,55,23,61,29,53,21];
+function otsuThreshold(hist,total){ let sum=0; for(let i=0;i<256;i++) sum+=i*hist[i]; let sumB=0,wB=0,bestVar=-1,thr=127;
+  for(let t=0;t<256;t++){ wB+=hist[t]; if(wB===0)continue; const wF=total-wB; if(wF===0)break; sumB+=t*hist[t];
+    const mB=sumB/wB,mF=(sum-sumB)/wF,between=wB*wF*(mB-mF)*(mB-mF); if(between>bestVar){bestVar=between;thr=t;} } return thr; }
+function srgbToLinear(u){ return u<=0.04045 ? u/12.92 : Math.pow((u+0.055)/1.055,2.4); }
+function linearToSrgb(v){ return v<=0.0031308 ? v*12.92 : 1.055*Math.pow(v,1/2.4)-0.055; }
+function imageToGrid(imgOrCanvas,N,opts){ opts=opts||{};
+  const fit=opts.fit||'contain', bg=opts.bg||[255,255,255];
+  const brightness=opts.brightness||0, contrast=opts.contrast||0, gamma=opts.gamma||1;
+  const perceptual=opts.perceptual!==false, mode=opts.mode||'manual', invert=!!opts.invert, dither=opts.dither||'none';
+  const SW=imgOrCanvas.naturalWidth||imgOrCanvas.videoWidth||imgOrCanvas.width, SH=imgOrCanvas.naturalHeight||imgOrCanvas.videoHeight||imgOrCanvas.height;
+  const sc=document.createElement('canvas'); sc.width=SW; sc.height=SH; const sx=sc.getContext('2d',{willReadFrequently:true});
+  sx.imageSmoothingEnabled=false; sx.drawImage(imgOrCanvas,0,0,SW,SH); const src=sx.getImageData(0,0,SW,SH).data;
+  const bgLinY=0.2126*srgbToLinear(bg[0]/255)+0.7152*srgbToLinear(bg[1]/255)+0.0722*srgbToLinear(bg[2]/255);
+  const srcY=new Float32Array(SW*SH);
+  for(let p=0,q=0;p<srcY.length;p++,q+=4){ const a=src[q+3]/255;
+    const y=0.2126*srgbToLinear(src[q]/255)+0.7152*srgbToLinear(src[q+1]/255)+0.0722*srgbToLinear(src[q+2]/255);
+    srcY[p]= a>=1 ? y : y*a+bgLinY*(1-a); }
+  let scaleX,scaleY,offX,offY;
+  if(fit==='stretch'){ scaleX=SW/N; scaleY=SH/N; offX=0; offY=0; }
+  else { const s=(fit==='cover')?Math.max(N/SW,N/SH):Math.min(N/SW,N/SH); scaleX=scaleY=1/s; offX=(SW-N*scaleX)/2; offY=(SH-N*scaleY)/2; }
+  const lum=new Float32Array(N*N), gammaInv=1/gamma;
+  for(let ty=0;ty<N;ty++){ const v0=offY+ty*scaleY,v1=v0+scaleY;
+    for(let tx=0;tx<N;tx++){ const u0=offX+tx*scaleX,u1=u0+scaleX; let acc=0,wsum=0;
+      const iy0=Math.floor(v0),iy1=Math.ceil(v1),ix0=Math.floor(u0),ix1=Math.ceil(u1);
+      for(let iy=iy0;iy<iy1;iy++){ if(iy<0||iy>=SH)continue; const wy=Math.min(v1,iy+1)-Math.max(v0,iy); if(wy<=0)continue; const row=iy*SW;
+        for(let ix=ix0;ix<ix1;ix++){ if(ix<0||ix>=SW)continue; const wx=Math.min(u1,ix+1)-Math.max(u0,ix); if(wx<=0)continue; const w=wx*wy; acc+=srcY[row+ix]*w; wsum+=w; } }
+      const pad=scaleX*scaleY-wsum; if(pad>1e-9){ acc+=bgLinY*pad; wsum+=pad; }
+      let yLin=wsum>0?acc/wsum:bgLinY, val=perceptual?linearToSrgb(Math.max(0,Math.min(1,yLin))):yLin;
+      if(gamma!==1) val=Math.pow(Math.max(0,val),gammaInv);
+      if(contrast!==0){ const c=Math.tan((contrast+1)*Math.PI/4); val=(val-0.5)*c+0.5; }
+      if(brightness!==0) val+=brightness; val=val<0?0:val>1?1:val; lum[ty*N+tx]=val*255; } }
+  let T=(opts.threshold!=null)?opts.threshold:128;
+  if(mode==='otsu'){ const hist=new Int32Array(256); for(let i=0;i<lum.length;i++){ let b=lum[i]|0; if(b>255)b=255; if(b<0)b=0; hist[b]++; } T=otsuThreshold(hist,lum.length); }
+  const grid2=new Uint8Array(N*N);
+  if(dither==='floyd'||dither==='atkinson'){ const L=Float32Array.from(lum); const put=(x,y,e,f)=>{ if(x>=0&&x<N&&y>=0&&y<N)L[y*N+x]+=e*f; };
+    for(let y=0;y<N;y++) for(let x=0;x<N;x++){ const i=y*N+x; let old=L[i]; if(old<0)old=0; else if(old>255)old=255;
+      const nw=old<T?0:255; let on=(nw===0)?1:0; if(invert)on^=1; grid2[i]=on; const err=old-nw;
+      if(dither==='floyd'){ put(x+1,y,err,7/16); put(x-1,y+1,err,3/16); put(x,y+1,err,5/16); put(x+1,y+1,err,1/16); }
+      else { const e=err/8; put(x+1,y,e,1); put(x+2,y,e,1); put(x-1,y+1,e,1); put(x,y+1,e,1); put(x+1,y+1,e,1); put(x,y+2,e,1); } } }
+  else if(dither==='bayer4'||dither==='bayer8'){ const M=dither==='bayer4'?BAYER4:BAYER8, n=dither==='bayer4'?4:8, n2=n*n;
+    for(let y=0;y<N;y++) for(let x=0;x<N;x++){ const i=y*N+x, bias=((M[(y%n)*n+(x%n)]+0.5)/n2-0.5)*255; let on=(lum[i]<T+bias)?1:0; if(invert)on^=1; grid2[i]=on; } }
+  else { for(let i=0;i<lum.length;i++){ let on=lum[i]<T?1:0; if(invert)on^=1; grid2[i]=on; } }
+  return { grid:grid2, threshold:T, lum }; }
+
+let srcImg=null;                                        // working image (bounded to ≤1200px long side for responsive sliders)
+const imgOpts={fit:'contain',mode:'manual',dither:'none',invert:false,threshold:128,brightness:0,contrast:0,gamma:1};
+$('importBtn').onclick=()=>$('fileIn').click();
+$('fileIn').onchange=e=>{ const f=e.target.files[0]; if(!f)return; const img=new Image();
+  img.onload=()=>{ const s=Math.min(1,1200/Math.max(img.width,img.height)), w=Math.max(1,Math.round(img.width*s)), h=Math.max(1,Math.round(img.height*s));
+    const wc=document.createElement('canvas'); wc.width=w; wc.height=h; const wx=wc.getContext('2d'); wx.imageSmoothingEnabled=true; wx.imageSmoothingQuality='high'; wx.drawImage(img,0,0,w,h);
+    srcImg=wc; URL.revokeObjectURL(img.src); snapshot(); applyImage(); };
+  img.src=URL.createObjectURL(f); };
+let _imgRAF=false;
+function applyImage(){ if(!srcImg)return; if(_imgRAF)return; _imgRAF=true; requestAnimationFrame(()=>{ _imgRAF=false;
+  const r=imageToGrid(srcImg,N,imgOpts); grid=r.grid;
+  $('threshV').textContent = imgOpts.mode==='otsu' ? (r.threshold+' · otsu') : imgOpts.threshold;
+  render(); }); }
+function setSeg(id,b){ $(id).querySelectorAll('button').forEach(x=>x.classList.remove('on')); b.classList.add('on'); }
+$('imgFit').querySelectorAll('button').forEach(b=>b.onclick=()=>{ setSeg('imgFit',b); imgOpts.fit=b.dataset.f; applyImage(); });
+$('imgDither').querySelectorAll('button').forEach(b=>b.onclick=()=>{ setSeg('imgDither',b); imgOpts.dither=b.dataset.d; applyImage(); });
+$('imgInvert').onclick=()=>{ imgOpts.invert=!imgOpts.invert; $('imgInvert').classList.toggle('on',imgOpts.invert); applyImage(); };
+$('otsuBtn').onclick=()=>{ imgOpts.mode=imgOpts.mode==='otsu'?'manual':'otsu'; $('otsuBtn').classList.toggle('on',imgOpts.mode==='otsu'); $('thresh').disabled=imgOpts.mode==='otsu'; applyImage(); };
+$('thresh').oninput=e=>{ imgOpts.threshold=+e.target.value; $('threshV').textContent=e.target.value; if(imgOpts.mode==='manual')applyImage(); };
+$('bri').oninput=e=>{ imgOpts.brightness=+e.target.value/100; $('briV').textContent=e.target.value; applyImage(); };
+$('con').oninput=e=>{ imgOpts.contrast=+e.target.value/100; $('conV').textContent=e.target.value; applyImage(); };
+$('gam').oninput=e=>{ imgOpts.gamma=+e.target.value/100; $('gamV').textContent=(+e.target.value/100).toFixed(2); applyImage(); };
+$('tools').querySelectorAll('button').forEach(b=>b.onclick=()=>{$('tools').querySelectorAll('button').forEach(x=>x.classList.remove('on'));b.classList.add('on');tool=b.dataset.t;});
+$('brush').oninput=e=>{brush=+e.target.value;$('brushV').textContent=brush;};
+$('undo').onclick=()=>{ if(undo.length){redo.push(grid.slice());grid=undo.pop();render();} };
+$('redo').onclick=()=>{ if(redo.length){undo.push(grid.slice());grid=redo.pop();render();} };
+$('gridToggle').onclick=()=>{showGrid=!showGrid;$('gridToggle').classList.toggle('on',showGrid);render();};
+$('symToggle').onclick=()=>{mirror=!mirror;$('symToggle').classList.toggle('on',mirror);};
+$('invert').onclick=()=>{snapshot();for(let i=0;i<grid.length;i++)grid[i]^=1;render();};
+$('clear').onclick=()=>{snapshot();grid.fill(0);render();};
+addEventListener('resize',()=>sizeCanvas());
+
+/* ===================== presets ===================== */
+function disc(cy,cx,r){for(let dy=-r;dy<=r;dy++)for(let dx=-r;dx<=r;dx++)if(dx*dx+dy*dy<=r*r){const y=cy+dy,x=cx+dx;if(y>=0&&y<N&&x>=0&&x<N)grid[y*N+x]=1;}}
+const PRE={
+ 'kit (ASIS quincunx)':()=>{grid.fill(0);const s=N/256;const C=[[53,64,8],[77,154,7],[144,44,9],[157,202,8],[189,100,8]];
+    C.forEach(([y,x,r])=>disc(Math.round(y*N/256),Math.round(x*N/256),Math.max(2,Math.round(r*N/256*2))));
+    [[59,110],[104,188],[118,197],[160,76],[175,168],[181,145]].forEach(([y,x])=>{const yy=Math.round(y*N/256),xx=Math.round(x*N/256);if(yy<N&&xx<N)grid[yy*N+xx]=1;});render();},
+ '5 blobs':()=>{grid.fill(0);for(let k=0;k<5;k++)disc(10+Math.floor(Math.random()*(N-20)),10+Math.floor(Math.random()*(N-20)),3+Math.floor(Math.random()*3));render();},
+ 'ring':()=>{grid.fill(0);const c=N/2,R=N*0.32;for(let a=0;a<360;a++){const x=Math.round(c+R*Math.cos(a*Math.PI/180)),y=Math.round(c+R*Math.sin(a*Math.PI/180));grid[y*N+x]=1;}render();},
+ 'cross':()=>{grid.fill(0);for(let i=N*0.18;i<N*0.82;i++){grid[(N>>1)*N+(i|0)]=1;grid[(i|0)*N+(N>>1)]=1;}render();},
+};
+$('presets').innerHTML=Object.keys(PRE).map(k=>`<button data-p="${k}">${k}</button>`).join('');
+$('presets').querySelectorAll('button').forEach(b=>b.onclick=()=>{snapshot();PRE[b.dataset.p]();});
+
+/* ===================== frame / rule UI ===================== */
+$('sizes').innerHTML=[64,128,256,512,1024,2048,4096].map(s=>`<button data-s="${s}" class="${s===64?'on':''}"${s>=1024?' style="border-color:rgba(255,200,87,.4)"':''}>${s}×${s}</button>`).join('');
+$('sizes').querySelectorAll('button').forEach(b=>b.onclick=()=>{$('sizes').querySelectorAll('button').forEach(x=>x.classList.remove('on'));b.classList.add('on');N=+b.dataset.s;resize();signalNote();});
+const RULE_CATS=[['rotation','single rotation'],['reversible-life','reversible life'],['geometric','block symmetries'],['lattice-gas','lattice gases']];
+$('rules').innerHTML=RULE_CATS.map(([cat,label])=>{
+  const keys=Object.keys(RULES).filter(k=>RULES[k].cat===cat); if(!keys.length)return '';
+  return `<div class="rulecat">${label}</div><div class="seg">`+keys.map(k=>`<button data-r="${k}" title="${RULES[k].desc}" class="${k===ruleKey?'on':''}">${RULES[k].name}</button>`).join('')+`</div>`;
+}).join('');
+$('rules').querySelectorAll('button').forEach(b=>b.onclick=()=>{$('rules').querySelectorAll('button').forEach(x=>x.classList.remove('on'));b.classList.add('on');ruleKey=b.dataset.r;$('ruleDesc').textContent=RULES[ruleKey].desc;});
+$('ruleDesc').textContent=RULES[ruleKey].desc;
+function depthHint(){ const D=+$('depth').value, el=$('depthSafe'); if(!el)return;
+  if(footerSafe(D)){ el.style.color='var(--green)'; el.textContent='· footer-safe'; }
+  else { el.style.color='var(--rose)'; el.textContent='· ✗ not footer-encodable — pick another depth'; } }
+function setDepth(v){ v=Math.max(20,Math.min(10000,Math.round(+v||20))); $('depth').value=v; $('depthNum').value=v; depthHint(); }
+$('depth').oninput=e=>{ $('depthNum').value=e.target.value; depthHint(); };
+$('depthNum').oninput=e=>{ const v=Math.max(20,Math.min(10000,Math.round(+e.target.value||20))); $('depth').value=v; depthHint(); };
+$('depthNum').onchange=e=>setDepth(e.target.value);
+$('depth6625').onclick=()=>setDepth(6625);
+depthHint();
+function factorPow2(n){let e=0,m=n;while(m%2===0){m/=2;e++;}return m===1?e:null;}
+function signalNote(){const bitsN=N*N,e=factorPow2(bitsN);
+  const kb=bitsN/8/1024, bodySz = kb>=1024 ? (kb/1024).toFixed(1)+' MB' : kb.toFixed(0)+' KB';
+  const heavy = N>=512 ? ` <span style="color:#ffc857">Heavy grid — ${bodySz} body; the blind clock steps the automaton ~2× the depth over ${bitsN.toLocaleString()} cells, so <i>Encode &amp; verify</i> takes a few seconds${N>=1024?(N>=4096?' (up to minutes at 4096)':' (tens of seconds at 1024–2048)'):''}. Progress is shown live.</span>` : '';
+  $('signal').innerHTML=`Body = <b class="mono">${bitsN.toLocaleString()}</b> bits = <span class="mono">2^${e}</span> — a pure power of two, no semiprime factorisation. Like ASIS (2¹⁶), the length itself signals <b>“not a direct bitmap”</b> — unlike Arecibo (1679 = 23×73).${heavy}`;}
+signalNote();
+
+/* ===================== header / footer generation ===================== */
+function ruleDemoWords(rk,n=4){ // evolve a 4x4 seed 3 steps -> 4 words (self-describing rule demo)
+  let g=new Uint8Array(16); const seed=0x0690; for(let i=0;i<16;i++)g[i]=(seed>>(15-i))&1;
+  const words=[]; const t=RULES[rk].fwd;
+  const w=gg=>{let v=0;for(let i=0;i<16;i++)v=(v<<1)|gg[i];return v;};
+  words.push(w(g)); for(let k=0;k<3;k++){g=step(g,k&1,t,4);words.push(w(g));}
+  return words; // 4 x 16-bit
+}
+function factorize(D){ // up to 4 balanced factors whose product = D (for the footer run-lengths)
+  let best=[D];
+  const rec=(m,parts)=>{ if(parts.length>=3){parts=[...parts,m];if(parts.reduce((a,b)=>a+b,0)<best.reduce((a,b)=>a+b,0)||best.length===1)best=parts;return;}
+    for(let f=2;f<=Math.sqrt(m);f++){if(m%f===0)rec(m/f,[...parts,f]);}
+    const p=[...parts,m]; if(best.length===1||p.reduce((a,b)=>a+b,0)<best.reduce((a,b)=>a+b,0))best=p; };
+  rec(D,[]); return best;
+}
+function makeFooter(D){ // 80-bit footer: alternating 1/0 runs of the factor lengths, then a ones end-marker
+  const f=factorize(D); const b=[]; let bit=1;
+  for(const len of f){ for(let i=0;i<len;i++)b.push(bit); bit^=1; }
+  while(b.length<80-12) b.push(0);
+  while(b.length<80) b.push(1);          // 12-bit end marker (0FFF-like)
+  const bytes=new Uint8Array(10); for(let i=0;i<80;i++) if(b[i]) bytes[i>>3]|=(1<<(7-(i&7)));
+  return {bytes,factors:f};
+}
+// The footer's run-length region holds only 68 bits before the 12-bit end marker. A depth whose balanced
+// factors sum to >68 would overflow that region (no end marker → unparseable) OR alias byte-for-byte onto a
+// smaller depth's footer (silently mis-decoding). Reject those at the source so no un-invertible .bin is emitted.
+function assertDepthEncodable(D){ const f=factorize(D), sum=f.reduce((a,b)=>a+b,0);
+  if(sum>68) throw new Error('depth '+D+' is not footer-encodable (factor-sum '+sum+' = '+f.join('·')+' > 68). Pick a footer-safe depth.');
+  return f; }
+function footerSafe(D){ try{ assertDepthEncodable(D); return true; }catch(e){ return false; } }
+function makeHeader(rk){ const bytes=new Uint8Array(10); bytes[0]=0xFF;bytes[1]=0xFF;
+  const words=ruleDemoWords(rk); for(let i=0;i<4;i++){bytes[2+i*2]=(words[i]>>8)&0xFF;bytes[3+i*2]=words[i]&0xFF;}
+  return {bytes,words};
+}
+const hx=u8=>[...u8].map(b=>b.toString(16).padStart(2,'0')).join(' ');
+
+/* ===================== gzip clock + sha ===================== */
+async function gzipLen(u8){const cs=new CompressionStream('gzip');const w=cs.writable.getWriter();w.write(u8);w.close();const rd=cs.readable.getReader();let n=0;for(;;){const{done,value}=await rd.read();if(done)break;n+=value.length;}return n;}
+function pack(g){const out=new Uint8Array(Math.ceil(N*N/8));for(let i=0;i<N*N;i++)if(g[i])out[i>>3]|=(1<<(i&7));return out;}   // LSB-first, used internally by the blind clock (bit order is irrelevant to its minimum)
+// ASIS binaire.bin bit-packing: MSB-first, row-major (byte b, bit k) → pixel b*8+k = (byte>>(7-k))&1
+function packMSB(g,n){const out=new Uint8Array(Math.ceil(n*n/8));for(let i=0;i<n*n;i++)if(g[i])out[i>>3]|=(1<<(7-(i&7)));return out;}
+function unpackMSB(bytes,n,off){off=off|0;const g=new Uint8Array(n*n);for(let i=0;i<n*n;i++)g[i]=(bytes[off+(i>>3)]>>(7-(i&7)))&1;return g;}
+async function sha256(u8){const h=await crypto.subtle.digest('SHA-256',u8);return [...new Uint8Array(h)].map(b=>b.toString(16).padStart(2,'0')).join('');}
+
+/* ===================== .bin importer (parse header→rule, footer→depth, body→N) ===================== */
+function _eqBytes(a,b,aOff,bOff,len){ aOff=aOff|0;bOff=bOff|0; for(let i=0;i<len;i++) if(a[aOff+i]!==b[bOff+i]) return false; return true; }
+function identifyRule(uint8){ if(uint8.length<10||uint8[0]!==0xFF||uint8[1]!==0xFF) return null;
+  for(const rk of Object.keys(RULES)){ const words=ruleDemoWords(rk); let hit=true;
+    for(let i=0;i<4;i++){ if(uint8[2+i*2]!==((words[i]>>8)&0xFF)||uint8[3+i*2]!==(words[i]&0xFF)){ hit=false; break; } }
+    if(hit) return rk; } return null; }
+// Exact partial inverse of makeFooter — only returns ok when a candidate re-encodes to the footer byte-for-byte.
+function decodeFooter(footer){ const bits=new Array(80);
+  for(let i=0;i<80;i++) bits[i]=(footer[i>>3]>>(7-(i&7)))&1;
+  for(let i=68;i<80;i++) if(bits[i]!==1) return {ok:false, reason:'footer end marker missing (depth factor-sum > 68 — un-encodable)'};
+  if(bits[0]!==1) return {ok:false, reason:'footer must open with a ones run'};
+  const runs=[]; let cur=bits[0], len=0;
+  for(let i=0;i<68;i++){ if(bits[i]===cur) len++; else { runs.push([cur,len]); cur=bits[i]; len=1; } }
+  runs.push([cur,len]);
+  for(let i=0;i<runs.length;i++) if(runs[i][0]!==(i%2===0?1:0)) return {ok:false, reason:'footer run alternation broken'};
+  const prefix=runs.slice(0,runs.length-1).map(r=>r[1]), prefixProd=prefix.reduce((a,b)=>a*b,1)||1, lastRun=runs[runs.length-1];
+  const targetHex=hx(footer), footHex=D=>hx(makeFooter(D).bytes);
+  const candidates=[];
+  if(lastRun[0]===1){ const D=prefixProd*lastRun[1]; if(footHex(D)===targetHex) candidates.push(D); }
+  else { if(prefix.length&&footHex(prefixProd)===targetHex) candidates.push(prefixProd);
+    for(let f=2;f<=lastRun[1];f++){ const D=prefixProd*f; if(footHex(D)===targetHex) candidates.push(D); } }
+  const uniq=[...new Set(candidates)].sort((a,b)=>a-b);
+  if(!uniq.length) return {ok:false, reason:'no depth reproduces this footer'};
+  return { ok:true, candidates:uniq, pick:uniq[uniq.length-1], prefixFactors:prefix }; }
+function inferN(bodyBytes){ const bitsN=bodyBytes*8, N=Math.round(Math.sqrt(bitsN));
+  if(N*N!==bitsN||(N&(N-1))!==0||N<2) return null; return N; }
+function parseAsisBin(uint8, opts){ opts=opts||{};
+  if(!(uint8 instanceof Uint8Array)) uint8=new Uint8Array(uint8);
+  if(uint8.length<21) return {ok:false, reason:'too small to be an ASIS .bin'};
+  const header=uint8.subarray(0,10), footer=uint8.subarray(uint8.length-10);
+  const ruleKey=identifyRule(uint8); if(!ruleKey) return {ok:false, reason:'unknown rule / bad header'};
+  const N=inferN(uint8.length-20); if(!N) return {ok:false, reason:'body length '+(uint8.length-20)+' is not a power-of-two square bit-plane'};
+  const fd=decodeFooter(footer); if(!fd.ok) return {ok:false, reason:'footer: '+fd.reason};
+  let depth=fd.pick, note='depth ambiguous (footer lossy); took max candidate';
+  if(fd.candidates.length===1){ depth=fd.candidates[0]; note='depth exact'; }
+  else if(opts.depthHint!=null && fd.candidates.includes(opts.depthHint)){ depth=opts.depthHint; note='depth from hint'; }
+  const body=unpackMSB(uint8,N,10);
+  return { ok:true, N, ruleKey, depth, depthCandidates:fd.candidates, prefixFactors:fd.prefixFactors, body, header:header.slice(), footer:footer.slice(), note }; }
+// Reassemble a raw CCSDS-style APID artifact stream (e.g. BatchDrake's apid_0017.bin): records are
+// [marker:1][offset:4 BE][len:4 BE][payload:len][crc:4]; place each payload at its offset. Auto-detect the
+// marker byte, preferring the reconstruction that begins with the FFFF ASIS fiducial.
+function reconstructApidStream(data){ let best=null; const markers=new Set(); for(let k=0;k<Math.min(data.length,4000);k++) markers.add(data[k]);
+  for(const mk of markers){ const buf=new Map(); let i=0,npk=0,maxoff=-1;
+    while(i+9<=data.length){ if(data[i]!==mk){ i++; continue; }
+      const off=((data[i+1]<<24)|(data[i+2]<<16)|(data[i+3]<<8)|data[i+4])>>>0, ln=((data[i+5]<<24)|(data[i+6]<<16)|(data[i+7]<<8)|data[i+8])>>>0;
+      if(ln<=0||ln>0x4000||i+9+ln>data.length){ i++; continue; }
+      for(let j=0;j<ln;j++){ buf.set(off+j,data[i+9+j]); if(off+j>maxoff)maxoff=off+j; } i+=9+ln+4; npk++; }
+    if(maxoff<0||maxoff>8_000_000||!buf.size) continue;
+    const rec=new Uint8Array(maxoff+1); for(const [k,v] of buf) rec[k]=v;
+    const framed=rec[0]===0xFF&&rec[1]===0xFF, score=(framed?1e9:0)+npk;
+    if(!best||score>best.score) best={rec,npk,mk,score,framed}; }
+  return best; }
+let LOADED=null;
+$('loadBinBtn').onclick=()=>$('loadBin').click();
+$('loadBin').onchange=async e=>{ const file=e.target.files&&e.target.files[0]; $('loadBin').value=''; if(!file)return;
+  try{
+    const buf=new Uint8Array(await file.arrayBuffer()); let r=parseAsisBin(buf), apid=null;
+    if(!r.ok){ const rc=reconstructApidStream(buf); if(rc&&rc.framed){ const r2=parseAsisBin(rc.rec); if(r2.ok){ r=r2; apid=rc; } } }
+    if(!r.ok){ $('loadInfo').innerHTML='<span class="f">✗ '+file.name+' — '+r.reason+' (not a direct .bin, and no ASIS-framed APID stream found)</span>'; $('loadPop').disabled=true; LOADED=null; return; }
+    const target=await forwardGPU(r.body,r.depth,r.ruleKey,r.N); const ambiguous=r.depthCandidates.length>1;
+    $('loadInfo').innerHTML='<span class="b">file</span> '+file.name+' · '+buf.length.toLocaleString()+' bytes'+(apid?' <span class="ok">→ reassembled '+apid.npk+' APID packets → '+(r.N*r.N/8+20)+'-byte ASIS frame</span>':'')+'<br>'+
+      '<span class="b">header</span> <span class="h">'+hx(r.header)+'</span><br>'+
+      '<span class="b">rule</span> '+RULES[r.ruleKey].name+'<br>'+
+      '<span class="b">grid</span> '+r.N+'×'+r.N+'<br><span class="b">footer</span> <span class="f">'+hx(r.footer)+'</span><br>'+
+      '<span class="b">depth</span> <b>'+r.depth+'</b>'+(ambiguous?' <span class="f">(footer ambiguous — candidates '+r.depthCandidates.join(', ')+')</span>':' (exact)');
+    LOADED={ N:r.N, D:r.depth, rk:r.ruleKey, body:r.body.slice(), target:target.slice() };
+    mountCondense(LOADED); $('loadPop').disabled=false; toast('loaded — replaying condensation'); condStop&&condStop();
+  }catch(err){ $('loadInfo').innerHTML='<span class="f">✗ could not read file: '+(err&&err.message||err)+'</span>'; $('loadPop').disabled=true; LOADED=null; } };
+$('loadPop').onclick=()=>{ if(!LOADED)return; writeHandoff(LOADED); window.open('asis-webgpu.html','_blank'); };
+
+/* ===================== connected-component size census ===================== */
+function census(g){const lab=new Int32Array(N*N).fill(0);let cur=0;const sizes={};const st=[];
+  const nb=[[-1,-1],[-1,0],[-1,1],[0,-1],[0,1],[1,-1],[1,0],[1,1]];
+  for(let i=0;i<N*N;i++){if(g[i]&&!lab[i]){cur++;let sz=0;st.length=0;st.push(i);lab[i]=cur;
+    while(st.length){const p=st.pop();sz++;const y=(p/N)|0,x=p%N;for(const[dy,dx]of nb){const yy=y+dy,xx=x+dx;if(yy>=0&&yy<N&&xx>=0&&xx<N){const q=yy*N+xx;if(g[q]&&!lab[q]){lab[q]=cur;st.push(q);}}}}
+    sizes[sz]=(sizes[sz]||0)+1;}}
+  return sizes;
+}
+
+/* ===================== encode & verify ===================== */
+let LAST=null;
+$('encode').onclick=async()=>{
+  const D=+$('depth').value; const rk=ruleKey;
+  try{ assertDepthEncodable(D); }catch(err){ toast(err.message); $('verdict').className='verdict no'; $('verdict').textContent=err.message; return; }
+  paint($('target'),grid,[255,200,87]); $('gT').textContent=D;
+  $('verdict').className='verdict'; $('verdict').textContent='scrambling…';
+  const body=await encodeBackwardGPU(grid,D,rk,N,(c,t)=>prog('scrambling (encoding the body)',c,t));
+  paint($('encoded'),body,[82,182,232]);
+  const H=makeHeader(rk), F=makeFooter(D);
+  $('frame').innerHTML=`<span class="b">header</span> <span class="h">${hx(H.bytes)}</span><br><span class="b">body</span> <span class="b">${(N*N/8).toLocaleString()} bytes · ${N}×${N} bit-plane · MSB-first uint8 · gen 0</span><br><span class="b">footer</span> <span class="f">${hx(F.bytes)}</span> &nbsp;<span class="b">(depth ${D} = ${F.factors.join('·')})</span>`;
+  $('verdict').className='verdict';$('verdict').textContent='running blind clock…';
+  // blind compression clock — step the automaton and sample the gzip length.
+  // Range: far enough past D to expose the isolated minimum, without paying a full 2D
+  // for very large grids; gzip probes are strided (≤~300) and dense near D.
+  let range=Math.min(2*D, Math.max(D+80, Math.ceil(D*1.5))), T=range+1;
+  let clockX, clockY;
+  // GPU first (bit-identical to the CPU step, TDR-chunked); returns null on any GPU failure → CPU loop below.
+  const gc = await clockGPU(body, D, rk, N, g=>gzipLen(pack(g)),
+      (k,tt)=>prog('blind clock', k, tt));
+  if(gc){ clockX=gc.clockX; clockY=gc.clockY; range=gc.range; }
+  else {                                                    // CPU blind clock — the fallback and the reference path
+    const big=N*N>=(1<<18);
+    const stride=big ? Math.max(2, Math.ceil(T/150)) : Math.max(1, Math.ceil(T/300));
+    clockX=[]; clockY=[]; let A=body.slice(), B=new Uint8Array(N*N); const t=RULES[rk].fwd;
+    for(let k=0;k<T;k++){
+      if(k%stride===0 || Math.abs(k-D)<=12){ clockX.push(k); clockY.push(await gzipLen(pack(A))); }
+      if((k&255)===0){ prog('blind clock (CPU)', k, T);   // yield every 256 gens for ANY N → stays responsive at depth 10000
+        if(document.visibilityState==='visible') await new Promise(r=>setTimeout(r)); }
+      step(A,k&1,t,N,B); const s=A;A=B;B=s;
+    }
+  }
+  let mi=0;for(let i=1;i<clockY.length;i++)if(clockY[i]<clockY[mi])mi=i; const amin=clockX[mi];
+  const med=[...clockY].sort((a,b)=>a-b)[clockY.length>>1];
+  const unique=clockY[mi]<0.97*med && Math.abs(amin-D)<=Math.max(2,D/20);
+  drawClock(clockX,clockY,D,amin,range);
+  // exact reconstruction + SHA round-trip
+  $('verdict').className='verdict'; $('verdict').textContent='reconstructing…';
+  const recon=await forwardGPU(body,D,rk,N,(c,t)=>prog('reconstructing (verifying)',c,t)); let exact=true;for(let i=0;i<N*N;i++)if(recon[i]!==grid[i]){exact=false;break;}
+  // ASIS-format transmittable file — exactly the binaire.bin layout: 10-byte header + MSB-first body bit-plane
+  // (generation 0, the scrambled transmitted plane) + 10-byte footer. Uint8Array of length header+N*N/8+footer.
+  const bodyBytes=packMSB(body,N);
+  const file=new Uint8Array(H.bytes.length+bodyBytes.length+F.bytes.length);
+  file.set(H.bytes,0); file.set(bodyBytes,H.bytes.length); file.set(F.bytes,H.bytes.length+bodyBytes.length);
+  const digest=await sha256(file);
+  // blind-decode the ACTUAL file bytes the ASIS way (unpack MSB body → iterate D) and check it reproduces the target
+  const bodyFromFile=unpackMSB(file,N,H.bytes.length);
+  const reconFile=await forwardGPU(bodyFromFile,D,rk,N);
+  let fileOK=true; for(let i=0;i<N*N;i++) if(reconFile[i]!==grid[i]){ fileOK=false; break; }
+  $('vClock').innerHTML=unique?'<span class="ok">✓ at gen '+amin+'</span>':'<span class="no">✗ at '+amin+'</span>';
+  $('vSha').innerHTML=fileOK?'<span class="ok">✓ → target</span>':'<span class="no">✗</span>';
+  $('vExact').innerHTML=exact?'<span class="ok">✓ bit-for-bit</span>':'<span class="no">✗</span>';
+  $('shaHex').textContent='SHA-256 '+digest.slice(0,32)+'…';
+  drawCensus(census(grid));
+  progDone();
+  const ok=unique&&exact&&fileOK;
+  $('verdict').className='verdict '+(ok?'ok':'no');
+  $('verdict').innerHTML=ok?`✓ blindly decodable · self-describing · exact — a valid ASIS-class message at depth <b>${D}</b>`:`partial — clock min at ${amin} (intended ${D}); try more structure or another depth`;
+  LAST={N,D,rk,body:body.slice(),target:grid.slice(),header:H.bytes,footer:F.bytes,file,digest};
+  drawRobust(); mountCondense(LAST);
+};
+function drawClock(cx,cy,D,amin,range){const cv=$('clock'),c=cv.getContext('2d'),W=cv.width=cv.clientWidth,Hh=170;cv.height=Hh;
+  const P={l:8,r:8,t:12,b:20};let vmin=1e9,vmax=0;cy.forEach(v=>{vmin=Math.min(vmin,v);vmax=Math.max(vmax,v);});
+  const X=g=>P.l+g/(range||1)*(W-P.l-P.r),Y=v=>Hh-P.b-(v-vmin)/((vmax-vmin)||1)*(Hh-P.t-P.b);
+  c.clearRect(0,0,W,Hh);c.strokeStyle='rgba(255,200,87,.5)';c.setLineDash([4,4]);c.beginPath();c.moveTo(X(D),P.t);c.lineTo(X(D),Hh-P.b);c.stroke();c.setLineDash([]);
+  c.fillStyle='#ffc857';c.font="10px 'IBM Plex Mono',monospace";c.textAlign='center';c.fillText('intended '+D,X(D),P.t+2);
+  c.strokeStyle='#52b6e8';c.lineWidth=1.5;c.beginPath();cy.forEach((v,i)=>{i?c.lineTo(X(cx[i]),Y(v)):c.moveTo(X(cx[i]),Y(v));});c.stroke();
+  const mi=cx.indexOf(amin),my=mi>=0?cy[mi]:vmin;
+  c.fillStyle=Math.abs(amin-D)<=Math.max(2,D/20)?'#7bd88f':'#ff5db0';c.beginPath();c.arc(X(amin),Y(my),4,0,7);c.fill();
+  c.fillStyle='#93a3c7';c.fillText('generation →',W/2,Hh-5);}
+function drawCensus(sizes){const cv=$('census'),c=cv.getContext('2d'),W=cv.width=cv.clientWidth,Hh=120;cv.height=Hh;
+  const keys=Object.keys(sizes).map(Number).sort((a,b)=>a-b).slice(0,8);const max=Math.max(1,...keys.map(k=>sizes[k]));
+  c.clearRect(0,0,W,Hh);const bw=(W-20)/Math.max(1,keys.length);c.font="10px 'IBM Plex Mono',monospace";
+  keys.forEach((k,i)=>{const bh=sizes[k]/max*(Hh-30),x=10+i*bw+bw*0.15,y=Hh-22-bh;c.fillStyle='#52b6e8';c.globalAlpha=.85;c.fillRect(x,y,bw*0.7,bh);c.globalAlpha=1;
+    c.fillStyle='#93a3c7';c.textAlign='center';c.fillText(k+'px',x+bw*0.35,Hh-8);c.fillStyle='#e6ecf7';c.fillText(sizes[k],x+bw*0.35,y-4);});}
+
+/* ===================== robustness ===================== */
+$('flips').oninput=e=>{$('flipV').textContent=e.target.value;};
+$('flips').onchange=()=>drawRobust();                       // recompute on release, not on every drag pixel
+async function recover(body,D,rk,flips,target){let g=body.slice();const idx=new Set();while(idx.size<flips)idx.add(Math.floor(Math.random()*N*N));idx.forEach(i=>g[i]^=1);
+  const r=await forwardGPU(g,D,rk,N);let same=0,tot=0;for(let i=0;i<N*N;i++){if(target[i]||r[i])tot++;if(target[i]&&r[i])same++;}return tot?same/tot:1;}
+let robToken=0;
+async function drawRobust(){ if(!LAST)return; const cv=$('robust'),c=cv.getContext('2d'),W=cv.width=cv.clientWidth,Hh=150;cv.height=Hh;
+  const my=++robToken;                                       // cancels any earlier run still in flight (re-encode / flips change)
+  const msg=m=>{ c.clearRect(0,0,W,Hh); c.fillStyle='#93a3c7'; c.font="11px 'IBM Plex Mono',monospace"; c.textAlign='center'; c.textBaseline='middle'; c.fillText(m,W/2,Hh/2); };
+  msg('computing channel robustness…');
+  const F=+$('flips').value; const flipsArr=[0,1,2,4,8,16].filter(f=>f<=Math.max(F,16));
+  const deep=LAST, shallowBody=await encodeBackwardGPU(LAST.target,100,LAST.rk,N); if(my!==robToken)return;
+  const trials = deep.D>1500 ? 3 : 6;                        // fewer Monte-Carlo trials at very deep scrambles
+  const pDeep=[],pShal=[]; let jobs=0; const total=flipsArr.length*trials*2;
+  for(const f of flipsArr){ let sd=0,ss=0;
+    for(let t=0;t<trials;t++){
+      sd+=await recover(deep.body,deep.D,deep.rk,f,deep.target); if(my!==robToken)return;
+      ss+=await recover(shallowBody,100,LAST.rk,f,deep.target); if(my!==robToken)return;
+      jobs+=2; msg('channel robustness… '+Math.round(jobs/total*100)+'%');
+    }
+    pDeep.push(sd/trials); pShal.push(ss/trials);
+  }
+  c.textBaseline='alphabetic';
+  const P={l:34,r:10,t:12,b:24},fmax=flipsArr[flipsArr.length-1];
+  const X=x=>P.l+x/fmax*(W-P.l-P.r),Y=p=>Hh-P.b-p*(Hh-P.t-P.b);
+  c.clearRect(0,0,W,Hh);c.font="9.5px 'IBM Plex Mono',monospace";c.fillStyle='#93a3c7';
+  for(let i=0;i<=2;i++){const p=i/2;c.strokeStyle='#16203a';c.beginPath();c.moveTo(P.l,Y(p));c.lineTo(W-P.r,Y(p));c.globalAlpha=.4;c.stroke();c.globalAlpha=1;c.textAlign='right';c.fillText((p*100)+'%',P.l-4,Y(p)+3);}
+  const line=(arr,col)=>{c.strokeStyle=col;c.lineWidth=2;c.beginPath();flipsArr.forEach((f,i)=>{const x=X(f),y=Y(arr[i]);i?c.lineTo(x,y):c.moveTo(x,y);});c.stroke();};
+  line(pShal,'#7bd88f');line(pDeep,'#ff5db0');
+  c.textAlign='center';flipsArr.forEach(f=>c.fillText(f,X(f),Hh-8));
+  c.fillStyle='#7bd88f';c.textAlign='left';c.fillText('● depth 100',P.l+2,P.t+8);c.fillStyle='#ff5db0';c.fillText('● depth '+LAST.D,P.l+70,P.t+8);}
+
+/* ===================== export ===================== */
+function dl(url,name){const a=document.createElement('a');a.href=url;a.download=name;document.body.appendChild(a);a.click();a.remove();}
+function toast(m){const t=$('toast');t.textContent=m;t.classList.add('show');clearTimeout(t._h);t._h=setTimeout(()=>t.classList.remove('show'),1800);}
+/* ---- inline ZIP (STORE) + CRC-32, CSP-safe, no libs ---- */
+let _crcTable=null;
+function crc32(u8){ if(!_crcTable){ _crcTable=new Uint32Array(256); for(let n=0;n<256;n++){ let c=n; for(let k=0;k<8;k++) c=(c&1)?(0xEDB88320^(c>>>1)):(c>>>1); _crcTable[n]=c>>>0; } }
+  let c=0xFFFFFFFF; for(let i=0;i<u8.length;i++) c=_crcTable[(c^u8[i])&0xFF]^(c>>>8); return (c^0xFFFFFFFF)>>>0; }
+function makeZip(files){ const enc=new TextEncoder(), DOSTIME=0x0000, DOSDATE=0x0021, UTF8FLAG=0x0800; const locals=[],central=[]; let offset=0;
+  const recs=files.map(f=>{ const nameBytes=enc.encode(f.name), data=f.data, crc=crc32(data), size=data.length;
+    const lh=new Uint8Array(30+nameBytes.length), lv=new DataView(lh.buffer);
+    lv.setUint32(0,0x04034b50,true); lv.setUint16(4,20,true); lv.setUint16(6,UTF8FLAG,true); lv.setUint16(8,0,true);
+    lv.setUint16(10,DOSTIME,true); lv.setUint16(12,DOSDATE,true); lv.setUint32(14,crc,true); lv.setUint32(18,size,true); lv.setUint32(22,size,true);
+    lv.setUint16(26,nameBytes.length,true); lv.setUint16(28,0,true); lh.set(nameBytes,30); locals.push(lh,data);
+    const localOffset=offset; offset+=lh.length+size; return { nameBytes, crc, size, localOffset }; });
+  let cdSize=0;
+  recs.forEach(r=>{ const ch=new Uint8Array(46+r.nameBytes.length), cv=new DataView(ch.buffer);
+    cv.setUint32(0,0x02014b50,true); cv.setUint16(4,20,true); cv.setUint16(6,20,true); cv.setUint16(8,UTF8FLAG,true); cv.setUint16(10,0,true);
+    cv.setUint16(12,DOSTIME,true); cv.setUint16(14,DOSDATE,true); cv.setUint32(16,r.crc,true); cv.setUint32(20,r.size,true); cv.setUint32(24,r.size,true);
+    cv.setUint16(28,r.nameBytes.length,true); cv.setUint16(30,0,true); cv.setUint16(32,0,true); cv.setUint16(34,0,true); cv.setUint16(36,0,true);
+    cv.setUint32(38,0,true); cv.setUint32(42,r.localOffset,true); ch.set(r.nameBytes,46); central.push(ch); cdSize+=ch.length; });
+  const cdOffset=offset, eocd=new Uint8Array(22), ev=new DataView(eocd.buffer);
+  ev.setUint32(0,0x06054b50,true); ev.setUint16(4,0,true); ev.setUint16(6,0,true); ev.setUint16(8,recs.length,true); ev.setUint16(10,recs.length,true);
+  ev.setUint32(12,cdSize,true); ev.setUint32(16,cdOffset,true); ev.setUint16(20,0,true);
+  const total=offset+cdSize+eocd.length, out=new Uint8Array(total); let p=0;
+  for(const b of locals){ out.set(b,p); p+=b.length; } for(const b of central){ out.set(b,p); p+=b.length; } out.set(eocd,p); return out; }
+function downloadZip(files, filename){ dl(URL.createObjectURL(new Blob([makeZip(files)],{type:'application/zip'})), filename||'bundle.zip'); }
+document.querySelectorAll('.exbtns button').forEach(b=>b.onclick=()=>{ if(!LAST){toast('encode a message first');return;}
+  const x=b.dataset.x;
+  if(x==='gpu'){ writeHandoff(LAST); window.open('asis-webgpu.html','_blank'); toast('opening condense viewer…'); return; }
+  if(x==='bin'){ dl(URL.createObjectURL(new Blob([LAST.file],{type:'application/octet-stream'})),`asis_message_${N}_d${LAST.D}.bin`); toast('message .bin exported'); }
+  if(x==='json'){ const rec={signature:{author:SIG.author,role:SIG.role,email:SIG.email,site:SIG.site},design:{grid:N,rule:LAST.rk,depth:LAST.D,bit_count:N*N,self_signalling:'2^'+factorPow2(N*N)},
+      format:{layout:'header(10 B) + body(N*N/8 B) + footer(10 B)',dtype:'uint8',bit_order:'MSB-first, row-major',body:'generation 0 (scrambled transmitted plane)',total_bytes:LAST.file.length,same_as:'A Sign in Space binaire.bin'},
+      header_hex:hx(LAST.header),footer_hex:hx(LAST.footer),sha256:LAST.digest,decoder_recipe:`read header → rule ${RULES[LAST.rk].name}; unpack the ${N}×${N} body MSB-first; iterate the rule ${LAST.D} generations (from the footer run-lengths) → the image`};
+    dl('data:application/json;charset=utf-8,'+encodeURIComponent(JSON.stringify(rec,null,2)),`asis_recipe_${N}_d${LAST.D}.json`); toast('recipe .json exported'); }
+  if(x==='png'){ const s=Math.max(2,Math.floor(256/N)); const cw=N*s, W=cw*2+40, H=cw+90;
+    const o=document.createElement('canvas');o.width=W;o.height=H;const ctx=o.getContext('2d');ctx.imageSmoothingEnabled=false;
+    ctx.fillStyle='#060913';ctx.fillRect(0,0,W,H);ctx.drawImage($('target'),16,44,cw,cw);ctx.drawImage($('encoded'),cw+24,44,cw,cw);
+    ctx.imageSmoothingEnabled=true;ctx.fillStyle='#ffc857';ctx.font='16px monospace';ctx.fillText('A Sign in Space — designed message · '+N+'×'+N+' · rule '+RULES[LAST.rk].name+' · depth '+LAST.D,16,28);
+    ctx.fillStyle='#8fa1c7';ctx.font='12px monospace';ctx.fillText('target',16,44+cw+18);ctx.fillText('encoded body (transmitted)',cw+24,44+cw+18);
+    ctx.fillText(`${SIG.author} · ${SIG.role} <${SIG.email}>   ${SIG.site}`,16,H-10);
+    dl(o.toDataURL('image/png'),`asis_message_${N}_d${LAST.D}.png`); toast('figure .png exported'); }
+});
+
+/* ===================== 4b · watch it condense ===================== */
+const HANDOFF_KEY='asis_handoff';
+let CV=null;                                        // condensation-viewer state
+function mountCondense(L){
+  const scrubMax=Math.min(2*L.D, Math.ceil(1.5*L.D));
+  CV={ N:L.N, D:L.D, rk:L.rk, body:L.body.slice(), target:L.target.slice(), scrubMax,
+       gen:0, state:L.body.slice(), playing:false, ghost:false, speed:+$('condSpeed').value, busy:false, acc:0, last:0 };
+  $('condD').textContent=L.D; $('condJump').textContent='→ image ('+L.D+')';
+  const sc=$('condScrub'); sc.max=scrubMax; sc.value=0;
+  $('condConsv').textContent = RULES[L.rk].conserve ? '(conserved)' : '(non-conserving rule)';
+  $('condGhost').classList.remove('on');
+  $('condPlay').classList.remove('on'); $('condPlay').textContent='▶ play';
+  renderCond();
+}
+function renderCond(){
+  if(!CV)return; const {N,state,gen,target,ghost,D}=CV;
+  const cv=$('cond'); cv.width=N;cv.height=N; const c=cv.getContext('2d'),img=c.createImageData(N,N),d=img.data;
+  for(let i=0;i<N*N;i++){ const o=i*4;
+    if(state[i]){ d[o]=82;d[o+1]=182;d[o+2]=232;d[o+3]=255; }               // cyan — live particle
+    else if(ghost&&target[i]){ d[o]=92;d[o+1]=70;d[o+2]=22;d[o+3]=255; }    // amber ghost of the target
+    else { d[o]=6;d[o+1]=9;d[o+2]=19;d[o+3]=255; } }
+  c.putImageData(img,0,0);
+  $('condGen').textContent=gen; $('condScrub').value=Math.min(gen,CV.scrubMax);
+  let p=0;for(let i=0;i<state.length;i++)p+=state[i]; $('condPop').textContent=p.toLocaleString();
+  $('condBanner').style.display=(gen===D)?'block':'none';
+}
+async function condGoto(G){
+  if(!CV||CV.busy)return; G=Math.max(0,Math.min(CV.scrubMax,G|0)); if(G===CV.gen){renderCond();return;}
+  CV.busy=true;
+  try{
+    const fwd=G>=CV.gen, start=fwd?CV.gen:0, src=fwd?CV.state:CV.body;      // backward scrub → recompute from the body
+    CV.state = await condForward(src, start, G-start, CV.rk, CV.N, c=>{ $('condGen').textContent=(start+c).toLocaleString(); });
+    CV.gen=G;
+  } finally { CV.busy=false; }
+  renderCond();
+}
+function condLoop(ts){
+  requestAnimationFrame(condLoop);
+  if(!CV||!CV.playing||CV.busy){ if(CV)CV.last=ts; return; }
+  const dt=Math.min((ts-CV.last)/1000,0.1); CV.last=ts; CV.acc+=dt*CV.speed;
+  let n=Math.floor(CV.acc); if(n<=0)return; CV.acc-=n;
+  if(CV.gen>=CV.scrubMax){ CV.playing=false; $('condPlay').classList.remove('on'); $('condPlay').textContent='▶ play'; return; }
+  n=Math.min(n,CV.scrubMax-CV.gen); CV.busy=true;
+  condForward(CV.state,CV.gen,n,CV.rk,CV.N).then(s=>{ CV.state=s; CV.gen+=n; CV.busy=false; renderCond(); });
+}
+function condStop(){ if(CV)CV.playing=false; $('condPlay').classList.remove('on'); $('condPlay').textContent='▶ play'; }
+$('condPlay').onclick=()=>{ if(!CV)return; if(!CV.playing&&CV.gen>=CV.scrubMax){CV.gen=0;CV.state=CV.body.slice();renderCond();} CV.playing=!CV.playing; $('condPlay').classList.toggle('on',CV.playing); $('condPlay').textContent=CV.playing?'⏸ pause':'▶ play'; };
+$('condJump').onclick=async()=>{ if(!CV)return; condStop(); $('condJump').textContent='computing…'; await condGoto(CV.D); $('condJump').textContent='→ image ('+CV.D+')'; };
+$('condReset').onclick=()=>{ if(!CV)return; condStop(); CV.gen=0;CV.state=CV.body.slice(); renderCond(); };
+$('condGhost').onclick=()=>{ if(!CV)return; CV.ghost=!CV.ghost; $('condGhost').classList.toggle('on',CV.ghost); renderCond(); };
+$('condScrub').oninput=e=>{ if(!CV)return; condStop(); $('condGen').textContent=e.target.value; };
+$('condScrub').onchange=e=>condGoto(+e.target.value);
+$('condSpeed').oninput=e=>{ $('condSpV').textContent=e.target.value; if(CV)CV.speed=+e.target.value; };
+$('condPop2').onclick=()=>{ if(!LAST){toast('encode a message first');return;} writeHandoff(LAST); window.open('asis-webgpu.html','_blank'); };
+requestAnimationFrame(condLoop);
+
+/* ===================== signed figure recorder (GIF + WebM) ===================== */
+$('recRes').querySelectorAll('button').forEach(b=>b.onclick=()=>{ $('recRes').querySelectorAll('button').forEach(x=>x.classList.remove('on')); b.classList.add('on'); setFigRes(+b.dataset.r); $('recResV').textContent=b.dataset.r; });
+$('recFrames').oninput=e=>{ if(!$('recStep').checked) $('recFramesV').textContent=e.target.value; };
+$('recStep').onchange=e=>{ $('recFrames').disabled=e.target.checked;
+  $('recFramesV').textContent = e.target.checked ? (CV? (Math.min((CV.D|0)+1,STEP_CAP)+(CV.D+1>STEP_CAP?' (cap)':'')) : 'per-gen') : $('recFrames').value; };
+const PAL=[[6,9,19],[82,182,232],[255,200,87],[147,163,199],[230,236,247],[13,19,34],[34,48,80],[255,93,176]];
+let FIG=340, SIGH=58;                                  // output resolution (image area FIG×FIG + signature bar); set by the resolution picker
+function setFigRes(px){ FIG=px|0; SIGH=Math.round(px*0.17); }
+// shrink a line's font just enough to fit maxW → the signature never spills past the frame
+function fitFont(fctx,text,maxW,basePx){ fctx.font=basePx+'px "IBM Plex Mono",monospace'; const w=fctx.measureText(text).width; return w<=maxW?basePx:Math.max(6,basePx*maxW/w); }
+function quantize(imgData){ const d=imgData.data,n=imgData.width*imgData.height,idx=new Uint8Array(n),cache=new Map();
+  for(let i=0;i<n;i++){ const r=d[i*4],g=d[i*4+1],b=d[i*4+2],key=(r<<16)|(g<<8)|b; let q=cache.get(key);
+    if(q===undefined){ let best=0,bd=1e9; for(let p=0;p<PAL.length;p++){const dr=r-PAL[p][0],dg=g-PAL[p][1],db=b-PAL[p][2],dd=dr*dr+dg*dg+db*db; if(dd<bd){bd=dd;best=p;}} q=best; cache.set(key,q);} idx[i]=q; }
+  return idx; }
+// GIF LZW (variable-width codes) — integer-keyed dictionary (fast enough for 1024²-class frames).
+// Verified by decoding the produced GIF in the browser. Palette symbols are 0..clear-1 so key = prefixCode*clear + symbol is collision-free.
+function lzwEncode(minCode,data){ const clear=1<<minCode, eoi=clear+1, ALPHA=clear;
+  let size=minCode+1, dict=new Map(), next;
+  const out=[]; let buf=0,bits=0; const put=c=>{ buf|=c<<bits; bits+=size; while(bits>=8){out.push(buf&255);buf>>=8;bits-=8;} };
+  const init=()=>{ dict.clear(); next=eoi+1; size=minCode+1; };
+  init(); put(clear); let cur=data[0];
+  for(let i=1;i<data.length;i++){ const c=data[i], key=cur*ALPHA+c, f=dict.get(key);
+    if(f!==undefined){ cur=f; }
+    else { put(cur); if(next<4096){ dict.set(key,next++); if(next>(1<<size)&&size<12)size++; } else { put(clear); init(); } cur=c; } }
+  put(cur); put(eoi); while(bits>0){ out.push(buf&255); buf>>=8; bits-=8; } return out; }
+function encodeGif(frames,W,H,delayCs){ const bytes=[]; const B=(...a)=>{for(const x of a)bytes.push(x&255);}; const S=s=>{for(let i=0;i<s.length;i++)bytes.push(s.charCodeAt(i));};
+  S('GIF89a'); B(W&255,W>>8,H&255,H>>8); const gctBits=2; B(0x80|(gctBits<<4)|gctBits,0,0);
+  for(let i=0;i<8;i++){const c=PAL[i]||[0,0,0]; B(c[0],c[1],c[2]);}
+  B(0x21,0xFF,0x0B); S('NETSCAPE2.0'); B(0x03,0x01,0,0,0);
+  for(const fr of frames){ B(0x21,0xF9,0x04,0x00,delayCs&255,delayCs>>8,0,0x00); B(0x2C,0,0,0,0,W&255,W>>8,H&255,H>>8,0x00); B(3);
+    const lz=lzwEncode(3,fr); for(let i=0;i<lz.length;i+=255){ const c=lz.slice(i,i+255); B(c.length); for(const x of c)bytes.push(x&255);} B(0); }
+  B(0x3B); return new Uint8Array(bytes); }
+function drawFigure(fctx,cellsCv,state,gen,meta){ const N=meta.N;
+  const cc=cellsCv.getContext('2d'),img=cc.createImageData(N,N),d=img.data;
+  for(let i=0;i<N*N;i++){const o=i*4; if(state[i]){d[o]=82;d[o+1]=182;d[o+2]=232;d[o+3]=255;} else {d[o]=6;d[o+1]=9;d[o+2]=19;d[o+3]=255;}}
+  cc.putImageData(img,0,0);
+  const m=Math.max(6,Math.round(FIG*0.024));               // margin/fonts scale with the chosen resolution
+  fctx.fillStyle='#060913'; fctx.fillRect(0,0,FIG,FIG+SIGH); fctx.imageSmoothingEnabled=false; fctx.drawImage(cellsCv,0,0,FIG,FIG);
+  if(gen===meta.D){ fctx.strokeStyle='#ffc857'; fctx.lineWidth=Math.max(2,FIG/170); fctx.strokeRect(1,1,FIG-2,FIG-2);
+    const bfont=FIG/31, bt='■ IMAGE — generation '+meta.D+' ■', bp=fitFont(fctx,bt,FIG-2*m,bfont); fctx.font=bp+'px "IBM Plex Mono",monospace';
+    const bh=Math.round(bp*2), by=Math.round(FIG*0.024), bw=Math.min(FIG-2*m, fctx.measureText(bt).width+bp*2);
+    fctx.fillStyle='rgba(6,9,19,.78)'; fctx.fillRect(FIG/2-bw/2,by,bw,bh); fctx.strokeStyle='#ffc857'; fctx.lineWidth=1; fctx.strokeRect(FIG/2-bw/2,by,bw,bh);
+    fctx.fillStyle='#ffc857'; fctx.textAlign='center'; fctx.textBaseline='middle'; fctx.fillText(bt,FIG/2,by+bh/2); }
+  // signature bar — 3 lines, each auto-fitted so nothing overflows the frame (positions relative to SIGH)
+  fctx.fillStyle='#0d1322'; fctx.fillRect(0,FIG,FIG,SIGH); fctx.fillStyle='#223050'; fctx.fillRect(0,FIG,FIG,1);
+  fctx.textAlign='left'; fctx.textBaseline='middle';
+  const sf=FIG/32, put=(t,yf,col)=>{ const px=fitFont(fctx,t,FIG-2*m,sf); fctx.font=px+'px "IBM Plex Mono",monospace'; fctx.fillStyle=col; fctx.fillText(t,m,FIG+SIGH*yf); };
+  put('A Sign in Space · '+N+'×'+N+' · '+meta.ruleName+' · depth '+meta.D+' · gen '+gen, 0.26, '#ffc857');
+  put(SIG.author+' <'+SIG.email+'>', 0.55, '#93a3c7');
+  put(SIG.site, 0.81, '#52b6e8'); }
+async function buildFrames(F){ const meta={N:CV.N,D:CV.D,rk:CV.rk,ruleName:RULES[CV.rk].name};
+  const states=[]; let cur=CV.body.slice(), curGen=0;
+  for(let i=0;i<F;i++){ const g=Math.round(i/(F-1)*meta.D); if(g>curGen){ cur=await condForward(cur,curGen,g-curGen,meta.rk,meta.N); curGen=g; }
+    states.push({gen:g,state:cur.slice()}); $('recStatus').textContent='stepping… '+Math.round((i+1)/F*100)+'%';
+    if(document.visibilityState==='visible') await new Promise(r=>setTimeout(r)); }
+  const last=states[states.length-1].state, hold=Math.min(20,Math.max(6,Math.round(F*0.12)));
+  for(let i=0;i<hold;i++) states.push({gen:meta.D,state:last});
+  return {states,meta}; }
+const STEP_CAP=2000;   // safety cap on a true 1-frame-per-generation recording
+function frameCount(){ if($('recStep')&&$('recStep').checked) return Math.min((CV.D|0)+1, STEP_CAP); return Math.max(2,+$('recFrames').value); }
+let recBusy=false;
+function recSet(b){ recBusy=b; $('recGif').disabled=b; $('recWebm').disabled=b; }
+async function recordGif(){ if(!CV){toast('encode a message first');return;} if(recBusy)return; recSet(true);
+  try{ const F=frameCount(); const {states,meta}=await buildFrames(F);
+    const cv=document.createElement('canvas'); cv.width=FIG; cv.height=FIG+SIGH; const fctx=cv.getContext('2d');
+    const cellsCv=document.createElement('canvas'); cellsCv.width=meta.N; cellsCv.height=meta.N;
+    const gifFrames=[];
+    for(let i=0;i<states.length;i++){ drawFigure(fctx,cellsCv,states[i].state,states[i].gen,meta);
+      gifFrames.push(quantize(fctx.getImageData(0,0,cv.width,cv.height)));
+      $('recStatus').textContent='encoding gif… '+Math.round((i+1)/states.length*100)+'%'; if(document.visibilityState==='visible') await new Promise(r=>setTimeout(r)); }
+    const bytes=encodeGif(gifFrames,cv.width,cv.height,6);
+    dl(URL.createObjectURL(new Blob([bytes],{type:'image/gif'})),`asis_condense_${meta.N}_d${meta.D}.gif`);
+    $('recStatus').textContent='saved .gif · '+states.length+' frames · '+(bytes.length/1024|0)+' KB'; toast('signed .gif exported');
+  }catch(e){ console.warn(e); $('recStatus').textContent='gif failed: '+e.message; } finally{ recSet(false); } }
+async function recordWebm(){ if(!CV){toast('encode a message first');return;} if(recBusy)return;
+  if(typeof MediaRecorder==='undefined'){ toast('WebM not supported here'); return; } recSet(true);
+  try{ const F=frameCount(); const {states,meta}=await buildFrames(F);
+    const cv=document.createElement('canvas'); cv.width=FIG; cv.height=FIG+SIGH; const fctx=cv.getContext('2d');
+    const cellsCv=document.createElement('canvas'); cellsCv.width=meta.N; cellsCv.height=meta.N;
+    const types=['video/webm;codecs=vp9','video/webm;codecs=vp8','video/webm'];
+    const mime=types.find(t=>MediaRecorder.isTypeSupported&&MediaRecorder.isTypeSupported(t))||'video/webm';
+    const fps=20, stream=cv.captureStream(fps); const rec=new MediaRecorder(stream,{mimeType:mime,videoBitsPerSecond:8000000}); const chunks=[];
+    rec.ondataavailable=e=>{ if(e.data&&e.data.size)chunks.push(e.data); }; const stopped=new Promise(r=>rec.onstop=r);
+    drawFigure(fctx,cellsCv,states[0].state,states[0].gen,meta); rec.start();
+    for(let i=0;i<states.length;i++){ drawFigure(fctx,cellsCv,states[i].state,states[i].gen,meta);
+      $('recStatus').textContent='recording webm… '+Math.round((i+1)/states.length*100)+'%'; await new Promise(r=>setTimeout(r,1000/fps)); }
+    rec.stop(); await stopped;
+    dl(URL.createObjectURL(new Blob(chunks,{type:mime})),`asis_condense_${meta.N}_d${meta.D}.webm`);
+    $('recStatus').textContent='saved .webm · '+states.length+' frames'; toast('signed .webm exported');
+  }catch(e){ console.warn(e); $('recStatus').textContent='webm failed: '+e.message; } finally{ recSet(false); } }
+$('recGif').onclick=recordGif; $('recWebm').onclick=recordWebm;
+
+/* designer → standalone WebGPU viewer handoff (localStorage, one-shot, LE bit-packing) */
+function b64(u8){ let s=''; for(let i=0;i<u8.length;i+=0x8000) s+=String.fromCharCode.apply(null,u8.subarray(i,i+0x8000)); return btoa(s); }
+function packAt(g,n){ const out=new Uint8Array(Math.ceil(n*n/8)); for(let i=0;i<n*n;i++) if(g[i]) out[i>>3]|=(1<<(i&7)); return out; }
+function writeHandoff(L){
+  const n=L.N, rec={ v:1, N:n, rule:L.rk, depth:L.D,
+    bodyB64:b64(packAt(L.body,n)), targetB64:b64(packAt(L.target,n)),
+    sig:{author:SIG.author,role:SIG.role,email:SIG.email,site:SIG.site} };
+  try{ localStorage.setItem(HANDOFF_KEY, JSON.stringify(rec)); }catch(e){ toast('message too large to hand off'); }
+}
+
+/* ===================== frame-sequence + complete-mode encoders ===================== */
+async function framesFromCondensation(F){ if(!CV) throw new Error('encode a message first'); const N=CV.N,D=CV.D,rk=CV.rk,out=[];
+  let cur=CV.body.slice(),curGen=0;
+  for(let i=0;i<F;i++){ const g=Math.round(i/(F-1)*D); if(g>curGen){ cur=await condForward(cur,curGen,g-curGen,rk,N); curGen=g; } out.push({label:'gen'+g,plane:cur.slice()}); }
+  return {frames:out,N,rk,D}; }
+async function framesFromGif(fileOrBlob,N,{thresh=128,invert=false}={}){ const buf=fileOrBlob instanceof Blob?await fileOrBlob.arrayBuffer():fileOrBlob;
+  const dec=new ImageDecoder({data:buf,type:'image/gif'}); await dec.tracks.ready; const count=dec.tracks.selectedTrack.frameCount;
+  const cv=document.createElement('canvas'); cv.width=N; cv.height=N; const c=cv.getContext('2d',{willReadFrequently:true}); const out=[];
+  for(let i=0;i<count;i++){ const {image}=await dec.decode({frameIndex:i}); c.clearRect(0,0,N,N); c.drawImage(image,0,0,N,N);
+    const d=c.getImageData(0,0,N,N).data,plane=new Uint8Array(N*N);
+    for(let p=0;p<N*N;p++){ let L=0.299*d[p*4]+0.587*d[p*4+1]+0.114*d[p*4+2]; if(invert)L=255-L; plane[p]=L>=thresh?1:0; } out.push({label:'f'+String(i).padStart(4,'0'),plane}); image.close(); }
+  return {frames:out,N,count}; }
+// Video → planes: sample F evenly-spaced timestamps by seeking, run each frame through the precise imageToGrid.
+async function framesFromVideo(fileOrBlob,size,F,{onProgress=()=>{}}={}){
+  const v=document.createElement('video'); v.muted=true; v.playsInline=true; v.preload='auto'; v.src=URL.createObjectURL(fileOrBlob);
+  await new Promise((res,rej)=>{ v.onloadedmetadata=()=>res(); v.onerror=()=>rej(new Error('cannot load video')); });
+  let dur=v.duration; if(!isFinite(dur)||dur<=0){ try{ await v.play(); v.pause(); }catch(e){} dur=v.duration; }
+  if(!isFinite(dur)||dur<=0) dur=Math.max(0.001,(v.seekable&&v.seekable.length?v.seekable.end(0):1));
+  const seekTo=t=>new Promise(res=>{ const h=()=>{ v.removeEventListener('seeked',h); res(); }; v.addEventListener('seeked',h); v.currentTime=Math.min(dur-1e-3,Math.max(0,t)); });
+  const out=[];
+  for(let i=0;i<F;i++){ const t=(F<=1?0:i/(F-1))*dur; await seekTo(t);
+    const r=imageToGrid(v,size,imgOpts); out.push({label:'t'+t.toFixed(2),plane:r.grid}); onProgress(i+1,F); }
+  URL.revokeObjectURL(v.src); return {frames:out,N:size,dur}; }
+function planeToCell(plane,N,C){ const cell=new Uint8Array(C*C); for(let y=0;y<C;y++){ const sy=Math.floor(y*N/C); for(let x=0;x<C;x++){ cell[y*C+x]=plane[sy*N+Math.floor(x*N/C)]; } } return cell; }
+async function frameToBin(plane,N,D,rk,{verify=false}={}){ const body=await encodeBackwardGPU(plane,D,rk,N);
+  const H=makeHeader(rk),F=makeFooter(D),bodyBytes=packMSB(body,N); const file=new Uint8Array(H.bytes.length+bodyBytes.length+F.bytes.length);
+  file.set(H.bytes,0); file.set(bodyBytes,H.bytes.length); file.set(F.bytes,H.bytes.length+bodyBytes.length);
+  let exact=true; if(verify){ const recon=await forwardGPU(body,D,rk,N); for(let i=0;i<N*N;i++) if(recon[i]!==plane[i]){exact=false;break;} }
+  return {file,body,digest:await sha256(file),exact,bytes:file.length}; }
+async function previewFrameForming(bodyPlane,N,D,rk,canvas,samples=6){ if(!canvas)return; const c=canvas.getContext('2d'); canvas.width=N;canvas.height=N;
+  let cur=bodyPlane.slice(),gen=0; for(let s=0;s<samples;s++){ const g=Math.round(s/(samples-1)*D); if(g>gen){ cur=await condForward(cur,gen,g-gen,rk,N); gen=g; }
+    const img=c.createImageData(N,N),d=img.data; for(let i=0;i<N*N;i++){ const o=i*4; if(cur[i]){d[o]=82;d[o+1]=182;d[o+2]=232;d[o+3]=255;}else{d[o]=6;d[o+1]=9;d[o+2]=19;d[o+3]=255;} }
+    c.putImageData(img,0,0); await new Promise(r=>requestAnimationFrame(r)); } }
+async function exportFramesAsZips(source,D,rk,{onProgress=()=>{},previewCanvas=null,verify=false}={}){
+  assertDepthEncodable(D); const N=source.N,frames=source.frames,F=frames.length;
+  const files=[],allFrames=[];
+  for(let i=0;i<F;i++){ const {plane,label}=frames[i]; const {file,body,digest,exact}=await frameToBin(plane,N,D,rk,{verify});
+    if(previewCanvas) await previewFrameForming(body,N,D,rk,previewCanvas);
+    const name=`frame_${String(i).padStart(4,'0')}_${label}_${N}_d${D}.bin`; files.push({name,data:file});
+    allFrames.push({index:i,name,label,sha256:digest,verified:exact,bytes:file.length}); onProgress(i+1,F); }
+  const manifest={magic:'ASIS-FRAMESEQ/1',mode:'frame-by-frame',N,depth:D,rule:rk,ruleName:RULES[rk].name,frameCount:F,
+    header_hex:hx(makeHeader(rk).bytes),footer_hex:hx(makeFooter(D).bytes),author:SIG.author,role:SIG.role,email:SIG.email,site:SIG.site,frames:allFrames};
+  files.push({name:'manifest.json',data:new TextEncoder().encode(JSON.stringify(manifest,null,2))});
+  downloadZip(files,`asis_frames_${N}_d${D}_x${F}.zip`); toast(`${F} frame .bin(s) zipped`); return {manifest};
+}
+/* ---- complete mode: all frames tiled into ONE .bin (single header+footer) ---- */
+function planComplete(F,targetCell){ const C=targetCell|0,slots=F+1,cols=Math.ceil(Math.sqrt(slots)),rows=Math.ceil(slots/cols),raw=Math.max(cols,rows)*C;
+  let G=1; while(G<raw)G<<=1; return {F,C,cols,rows,raw,G,slots,bodyBytes:G*G/8}; }
+function slotOrigin(slot,cols,C){ const r=Math.floor(slot/cols),c=slot%cols; return {x0:c*C,y0:r*C}; }
+function writeCell(plane,G,x0,y0,C,cell){ for(let dy=0;dy<C;dy++){ const row=(y0+dy)*G+x0; for(let dx=0;dx<C;dx++) plane[row+dx]=cell[dy*C+dx]; } }
+function metaBits(plan,D){ const {F,C,cols,G}=plan; const bytes=[(0xA515>>8)&255,0xA515&255,(F>>8)&255,F&255,C&255,(cols>>8)&255,cols&255,(G>>8)&255,G&255,(D>>16)&255,(D>>8)&255,D&255];
+  let x=0; for(const b of bytes)x^=b; bytes.push(x&255); const bits=[]; for(const b of bytes) for(let k=7;k>=0;k--) bits.push((b>>k)&1); return bits; }
+function writeMetaCell(plane,plan,D){ const {C,cols,G}=plan,{x0,y0}=slotOrigin(0,cols,C),bits=metaBits(plan,D);
+  for(let bit=0;bit<bits.length;bit++){ const yy=Math.floor(bit/C),xx=bit%C; plane[(y0+yy)*G+(x0+xx)]=bits[bit]; } }
+function readMetaCell(plane,G,C){ const bits=[]; for(let bit=0;bit<104;bit++){ const yy=Math.floor(bit/C),xx=bit%C; bits.push(plane[yy*G+xx]); }
+  const bytes=[]; for(let i=0;i<13;i++){ let b=0; for(let k=0;k<8;k++) b=(b<<1)|bits[i*8+k]; bytes.push(b); }
+  const magic=(bytes[0]<<8)|bytes[1],F=(bytes[2]<<8)|bytes[3],Cv=bytes[4],cols=(bytes[5]<<8)|bytes[6],Gv=(bytes[7]<<8)|bytes[8],D=(bytes[9]<<16)|(bytes[10]<<8)|bytes[11],chk=bytes[12];
+  let x=0; for(let i=0;i<12;i++)x^=bytes[i]; return {ok:magic===0xA515&&(x&255)===chk&&Gv===G,magic,F,C:Cv,cols,G:Gv,D}; }
+function tileFrames(frames,plan,D){ const {C,cols,G}=plan,plane=new Uint8Array(G*G); writeMetaCell(plane,plan,D);
+  for(let i=0;i<frames.length;i++){ const {x0,y0}=slotOrigin(i+1,cols,C); writeCell(plane,G,x0,y0,C,frames[i]); } return plane; }
+async function encodeComplete(frames,D,rk,targetCell,{verify=false,previewCanvas=null}={}){ assertDepthEncodable(D);
+  const plan=planComplete(frames.length,targetCell),G=plan.G; if(factorPow2(G*G)===null) throw new Error('G*G not a power of two');
+  const plane=tileFrames(frames,plan,D); const body=await encodeBackwardGPU(plane,D,rk,G);
+  const H=makeHeader(rk),Ft=makeFooter(D),bodyBytes=packMSB(body,G); const file=new Uint8Array(H.bytes.length+bodyBytes.length+Ft.bytes.length);
+  file.set(H.bytes,0); file.set(bodyBytes,H.bytes.length); file.set(Ft.bytes,H.bytes.length+bodyBytes.length);
+  let exact=true; if(verify){ const recon=await forwardGPU(body,D,rk,G); for(let i=0;i<G*G;i++) if(recon[i]!==plane[i]){exact=false;break;} }
+  if(previewCanvas) await previewCompleteForming(body,G,D,rk,previewCanvas,plan);
+  dl(URL.createObjectURL(new Blob([file],{type:'application/octet-stream'})),`asis_complete_${G}_d${D}_x${frames.length}.bin`);
+  toast(`complete .bin: ${frames.length} frames @ ${plan.C}px in ${G}×${G}`); return {file,body,plane,plan,digest:await sha256(file),exact}; }
+function untile(plane,meta){ const {F,C,cols,G}=meta,frames=[]; for(let i=0;i<F;i++){ const {x0,y0}=slotOrigin(i+1,cols,C),cell=new Uint8Array(C*C);
+  for(let dy=0;dy<C;dy++) for(let dx=0;dx<C;dx++) cell[dy*C+dx]=plane[(y0+dy)*G+(x0+dx)]; frames.push(cell); } return {frames,F:meta.F,C:meta.C,cols:meta.cols,G:meta.G,D:meta.D,plane}; }
+async function decodeComplete(file){ const HLEN=10,FLEN=10,bodyBytes=file.length-HLEN-FLEN,G=Math.round(Math.sqrt(bodyBytes*8));
+  if((G&(G-1))!==0) throw new Error('body not a power-of-two square'); const rk=identifyRule(file); if(!rk) throw new Error('unknown rule / bad header');
+  const body=unpackMSB(file,G,HLEN); const fd=decodeFooter(file.subarray(file.length-FLEN)); const tryDepths=fd.ok?fd.candidates.slice().reverse():[];
+  for(const D of tryDepths){ const plane=await forwardGPU(body,D,rk,G);
+    for(const C of [64,48,32]){ const m=readMetaCell(plane,G,C); if(m.ok&&m.D===D) return untile(plane,m);
+      if(m.ok&&m.D!==D){ const p2=await forwardGPU(body,m.D,rk,G); for(const C2 of [64,48,32]){ const m2=readMetaCell(p2,G,C2); if(m2.ok) return untile(p2,m2); } } } }
+  throw new Error('complete-mode: could not recover depth from footer + slot-0 metadata'); }
+async function previewCompleteForming(body,G,D,rk,canvas,plan,samples=8){ if(!canvas)return; const c=canvas.getContext('2d'); canvas.width=G;canvas.height=G;
+  let cur=body.slice(),gen=0; for(let s=0;s<samples;s++){ const g=Math.round(s/(samples-1)*D); if(g>gen){ cur=await condForward(cur,gen,g-gen,rk,G); gen=g; }
+    const img=c.createImageData(G,G),d=img.data; for(let i=0;i<G*G;i++){ const o=i*4; if(cur[i]){d[o]=82;d[o+1]=182;d[o+2]=232;d[o+3]=255;}else{d[o]=6;d[o+1]=9;d[o+2]=19;d[o+3]=255;} }
+    c.putImageData(img,0,0); await new Promise(r=>requestAnimationFrame(r)); } }
+
+/* ---- sequence UI wiring ---- */
+let seqSource='cond', seqCell=32, seqGifBuf=null, seqVideoBuf=null;
+$('seqFrames').oninput=e=>$('seqFramesV').textContent=e.target.value;
+$('seqSrc').querySelectorAll('button').forEach(b=>b.onclick=()=>{ setSeg('seqSrc',b); seqSource=b.dataset.s; if(seqSource==='gif')$('seqGif').click(); else if(seqSource==='video')$('seqVideo').click(); });
+$('seqGif').onchange=e=>{ const f=e.target.files[0]; if(f){ seqGifBuf=f; $('seqStatus').textContent='GIF source: '+f.name; } };
+$('seqVideo').onchange=e=>{ const f=e.target.files[0]; if(f){ seqVideoBuf=f; $('seqStatus').textContent='video source: '+f.name+' — set frames = sample count'; } };
+$('seqCell').querySelectorAll('button').forEach(b=>b.onclick=()=>{ setSeg('seqCell',b); seqCell=+b.dataset.c; });
+async function seqCondFrames(F){ return await framesFromCondensation(F); }
+$('seqPerFrame').onclick=async()=>{ try{ $('seqStatus').textContent='framing…';
+    const F=+$('seqFrames').value;
+    if(seqSource==='gif'){ if(!seqGifBuf){toast('pick a GIF first');return;} const src=await framesFromGif(seqGifBuf,N);
+      const D=+$('depth').value; assertDepthEncodable(D); await exportFramesAsZips(src,D,ruleKey,{previewCanvas:$('seqPreview'),verify:true,onProgress:(i,t)=>$('seqStatus').textContent='framed '+i+'/'+t}); }
+    else if(seqSource==='video'){ if(!seqVideoBuf){toast('pick a video first');return;} const D=+$('depth').value; assertDepthEncodable(D);
+      const src=await framesFromVideo(seqVideoBuf,N,F,{onProgress:(i,t)=>$('seqStatus').textContent='sampling video '+i+'/'+t});
+      await exportFramesAsZips(src,D,ruleKey,{previewCanvas:$('seqPreview'),verify:true,onProgress:(i,t)=>$('seqStatus').textContent='framed '+i+'/'+t}); }
+    else { if(!CV){toast('encode a message first');return;} const src=await seqCondFrames(F);
+      await exportFramesAsZips(src,CV.D,CV.rk,{previewCanvas:$('seqPreview'),verify:true,onProgress:(i,t)=>$('seqStatus').textContent='framed '+i+'/'+t}); }
+    $('seqStatus').textContent='per-frame zip exported ✓';
+  }catch(err){ $('seqStatus').textContent='✗ '+err.message; toast(err.message); } };
+$('seqComplete').onclick=async()=>{ try{ $('seqStatus').textContent='tiling…';
+    const F=+$('seqFrames').value; let cells, D, rk;
+    if(seqSource==='gif'){ if(!seqGifBuf){toast('pick a GIF first');return;} const g=await framesFromGif(seqGifBuf,seqCell); cells=g.frames.map(f=>f.plane); D=+$('depth').value; rk=ruleKey; }
+    else if(seqSource==='video'){ if(!seqVideoBuf){toast('pick a video first');return;} D=+$('depth').value; rk=ruleKey;
+      const g=await framesFromVideo(seqVideoBuf,seqCell,F,{onProgress:(i,t)=>$('seqStatus').textContent='sampling video '+i+'/'+t}); cells=g.frames.map(f=>f.plane); }
+    else { if(!CV){toast('encode a message first');return;} const src=await seqCondFrames(F); cells=src.frames.map(f=>planeToCell(f.plane,src.N,seqCell)); D=CV.D; rk=CV.rk; }
+    assertDepthEncodable(D);
+    const r=await encodeComplete(cells,D,rk,seqCell,{verify:true,previewCanvas:$('seqPreview')});
+    $('seqStatus').textContent=`complete .bin: ${cells.length} frames @ ${seqCell}px in ${r.plan.G}×${r.plan.G} · exact ${r.exact?'✓':'✗'}`;
+  }catch(err){ $('seqStatus').textContent='✗ '+err.message; toast(err.message); } };
+$('seqDecodeBtn').onclick=()=>$('seqDecode').click();
+$('seqDecode').onchange=async e=>{ const f=e.target.files[0]; $('seqDecode').value=''; if(!f)return;
+  try{ $('seqStatus').textContent='decoding…'; const buf=new Uint8Array(await f.arrayBuffer()); const r=await decodeComplete(buf);
+    $('seqStatus').textContent=`decoded: ${r.F} frames @ ${r.C}px · grid ${r.G} · depth ${r.D}`;
+    const box=$('seqThumbs'); box.innerHTML=''; const S=Math.max(1,Math.floor(48/r.C));
+    for(let i=0;i<Math.min(r.F,40);i++){ const cv=document.createElement('canvas'); cv.width=r.C*S; cv.height=r.C*S; const c=cv.getContext('2d'); c.imageSmoothingEnabled=false;
+      const tmp=document.createElement('canvas'); tmp.width=r.C; tmp.height=r.C; const tc=tmp.getContext('2d'),img=tc.createImageData(r.C,r.C),d=img.data;
+      const cell=r.frames[i]; for(let p=0;p<r.C*r.C;p++){ const o=p*4; if(cell[p]){d[o]=82;d[o+1]=182;d[o+2]=232;d[o+3]=255;}else{d[o]=6;d[o+1]=9;d[o+2]=19;d[o+3]=255;} }
+      tc.putImageData(img,0,0); c.drawImage(tmp,0,0,r.C*S,r.C*S); cv.style.border='1px solid var(--line)'; box.appendChild(cv); }
+  }catch(err){ $('seqStatus').textContent='✗ '+err.message; toast(err.message); } };
+
+/* init */
+initGPU(); resize(); PRE['kit (ASIS quincunx)']();
+</script>
+<script src="asis-fx.js"></script>
+<script>try{ ASISFx.aurora({ vignette:0.4 }); }catch(e){}</script>
+</body>
+</html>

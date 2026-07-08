@@ -1,0 +1,282 @@
+{
+  "provenance": {
+    "chemistry": "ChEMBL v34 (EMBL-EBI)",
+    "literature": "PubMed",
+    "pulled": "2026-07-08"
+  },
+  "monomers": {
+    "Abu": {
+      "name": "2-aminobutyric acid",
+      "formula": "C4H9NO2",
+      "mw": 103.12,
+      "chembl": {
+        "constitution": "CHEMBL55242",
+        "L": "CHEMBL1230782",
+        "D": "CHEMBL553426"
+      },
+      "props": {
+        "alogp": -0.19,
+        "psa": 63.3,
+        "hbd": 2,
+        "hba": 2,
+        "rotb": 2,
+        "qed": 0.51
+      },
+      "abiotic": "strong",
+      "status": "Meteoritic (Murchison) + spark-discharge · C4 rung of the +CH₂ ladder",
+      "refs": [
+        "kvenvolden1971",
+        "pizzarello2000",
+        "schlesinger1983"
+      ]
+    },
+    "Nva": {
+      "name": "norvaline",
+      "formula": "C5H11NO2",
+      "mw": 117.15,
+      "chembl": {
+        "constitution": "CHEMBL55612",
+        "L": "CHEMBL55612",
+        "D": "CHEMBL1916081"
+      },
+      "props": {
+        "alogp": 0.2,
+        "psa": 63.3,
+        "hbd": 2,
+        "hba": 2,
+        "rotb": 3,
+        "qed": 0.55
+      },
+      "abiotic": "strong",
+      "status": "Meteoritic (Murchison, tentative→confirmed) + spark-discharge · C5 rung",
+      "refs": [
+        "kvenvolden1971",
+        "pizzarello2000",
+        "soini2008",
+        "apostol1997"
+      ]
+    },
+    "Nle": {
+      "name": "norleucine",
+      "formula": "C6H13NO2",
+      "mw": 131.18,
+      "chembl": {
+        "constitution": "CHEMBL292439",
+        "L": "CHEMBL292439",
+        "D": null
+      },
+      "props": {
+        "alogp": 0.59,
+        "psa": 63.3,
+        "hbd": 2,
+        "hba": 2,
+        "rotb": 4,
+        "qed": 0.59
+      },
+      "abiotic": "strong",
+      "status": "α-methyl-norleucine in Murchison; branched-chain byproduct · C6 rung",
+      "refs": [
+        "pizzarello2000",
+        "soini2008",
+        "biermann2013"
+      ]
+    },
+    "mAsp": {
+      "name": "3-methylaspartic acid",
+      "formula": "C5H9NO4",
+      "mw": 147.13,
+      "chembl": {
+        "constitution": "CHEMBL76739",
+        "L": "CHEMBL76739",
+        "D": "CHEMBL77388"
+      },
+      "props": {
+        "alogp": -0.88,
+        "psa": 100.6,
+        "hbd": 3,
+        "hba": 3,
+        "rotb": 3,
+        "qed": 0.48
+      },
+      "abiotic": "weak",
+      "status": "Not a classic Murchison/Miller product — the (2S,3S) glutamate-mutase metabolite",
+      "refs": [
+        "wetmore2001",
+        "madhavapeddi2001"
+      ]
+    },
+    "Dab": {
+      "name": "2,4-diaminobutyric acid",
+      "formula": "C4H10N2O2",
+      "mw": 118.14,
+      "chembl": {
+        "constitution": "CHEMBL307931",
+        "L": "CHEMBL321357",
+        "D": "CHEMBL102493"
+      },
+      "props": {
+        "alogp": -1.25,
+        "psa": 89.3,
+        "hbd": 3,
+        "hba": 3,
+        "rotb": 3,
+        "qed": 0.43
+      },
+      "abiotic": "moderate",
+      "status": "Non-proteinogenic, but best known biologically (cyanobacterial, a BMAA isomer)",
+      "refs": [
+        "manolidi2019",
+        "zhang2020"
+      ]
+    }
+  },
+  "references": {
+    "kvenvolden1970": {
+      "cite": "Kvenvolden et al. 1970, Nature 228:923",
+      "doi": "10.1038/228923a0",
+      "pmid": "5482102"
+    },
+    "kvenvolden1971": {
+      "cite": "Kvenvolden, Lawless & Ponnamperuma 1971, PNAS 68:486",
+      "doi": "10.1073/pnas.68.2.486",
+      "pmid": "16591908"
+    },
+    "pizzarello2000": {
+      "cite": "Pizzarello & Cronin 2000, Geochim. Cosmochim. Acta 64:329",
+      "doi": "10.1016/s0016-7037(99)00280-x",
+      "pmid": "11543420"
+    },
+    "engel1997": {
+      "cite": "Engel & Macko 1997, Nature 389:265",
+      "doi": "10.1038/38460",
+      "pmid": "9305838"
+    },
+    "pizzarello1991": {
+      "cite": "Pizzarello et al. 1991, Geochim. Cosmochim. Acta 55:905",
+      "doi": "10.1016/0016-7037(91)90350-e",
+      "pmid": "11537202"
+    },
+    "koga2017": {
+      "cite": "Koga & Naraoka 2017, Sci. Rep. 7:636",
+      "doi": "10.1038/s41598-017-00693-9",
+      "pmid": "28377577"
+    },
+    "elsila2016": {
+      "cite": "Elsila et al. 2016, ACS Cent. Sci. 2:370 (review)",
+      "doi": "10.1021/acscentsci.6b00074",
+      "pmid": "27413780"
+    },
+    "schlesinger1983": {
+      "cite": "Schlesinger & Miller 1983, J. Mol. Evol. 19:376",
+      "doi": "10.1007/BF02101642",
+      "pmid": "6417344"
+    },
+    "miller1986": {
+      "cite": "Miller 1986, Chem. Scr. 26B:5 (review)",
+      "doi": null,
+      "pmid": "11542054"
+    },
+    "parker2014": {
+      "cite": "Parker et al. 2014, JoVE (83):e51039",
+      "doi": "10.3791/51039",
+      "pmid": "24473135"
+    },
+    "soini2008": {
+      "cite": "Soini et al. 2008, Microb. Cell Fact. 7:30",
+      "doi": "10.1186/1475-2859-7-30",
+      "pmid": "18940002"
+    },
+    "biermann2013": {
+      "cite": "Biermann et al. 2013, Microb. Cell Fact. 12:116",
+      "doi": "10.1186/1475-2859-12-116",
+      "pmid": "24261588"
+    },
+    "apostol1997": {
+      "cite": "Apostol et al. 1997, J. Biol. Chem. 272:28980",
+      "doi": "10.1074/jbc.272.46.28980",
+      "pmid": "9360970"
+    },
+    "manolidi2019": {
+      "cite": "Manolidi et al. 2019, J. Hazard. Mater. 365:346",
+      "doi": "10.1016/j.jhazmat.2018.10.084",
+      "pmid": "30448548"
+    },
+    "emmons2022": {
+      "cite": "Emmons et al. 2022, J. Chromatogr. A 1685:463636",
+      "doi": "10.1016/j.chroma.2022.463636",
+      "pmid": "36401913"
+    },
+    "zhang2020": {
+      "cite": "Zhang et al. 2020, Bioorg. Med. Chem. 28:115780",
+      "doi": "10.1016/j.bmc.2020.115780",
+      "pmid": "33007560"
+    },
+    "wetmore2001": {
+      "cite": "Wetmore et al. 2001, J. Am. Chem. Soc. 123:7963",
+      "doi": "10.1021/ja004246f",
+      "pmid": "11506551"
+    },
+    "madhavapeddi2001": {
+      "cite": "Madhavapeddi & Marsh 2001, Chem. Biol. 8:1143",
+      "doi": "10.1016/s1074-5521(01)00081-3",
+      "pmid": "11755393"
+    },
+    "frenkelpinter2020": {
+      "cite": "Frenkel-Pinter et al. 2020, Chem. Rev. 120:4707 (review)",
+      "doi": "10.1021/acs.chemrev.9b00664",
+      "pmid": "32101414"
+    }
+  },
+  "groups": [
+    {
+      "title": "Extraterrestrial / meteoritic (Murchison, Murray)",
+      "ids": [
+        "kvenvolden1970",
+        "kvenvolden1971",
+        "pizzarello2000",
+        "engel1997",
+        "pizzarello1991",
+        "koga2017",
+        "elsila2016"
+      ]
+    },
+    {
+      "title": "Spark-discharge synthesis (Miller–Urey)",
+      "ids": [
+        "schlesinger1983",
+        "miller1986",
+        "parker2014"
+      ]
+    },
+    {
+      "title": "The +CH₂ ladder — Abu → Nva → Nle",
+      "ids": [
+        "soini2008",
+        "biermann2013",
+        "apostol1997"
+      ]
+    },
+    {
+      "title": "Dab · 2,4-diaminobutyric acid (non-proteinogenic)",
+      "ids": [
+        "manolidi2019",
+        "emmons2022",
+        "zhang2020"
+      ]
+    },
+    {
+      "title": "mAsp · 3-methylaspartate (metabolic, not abiotic)",
+      "ids": [
+        "wetmore2001",
+        "madhavapeddi2001"
+      ]
+    },
+    {
+      "title": "Reviews",
+      "ids": [
+        "elsila2016",
+        "frenkelpinter2020"
+      ]
+    }
+  ]
+}

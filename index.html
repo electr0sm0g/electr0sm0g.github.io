@@ -1,0 +1,544 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>A Sign in Space — decoding a first-contact message</title>
+<meta name="description" content="A step-by-step, interactive account of decoding the A Sign in Space message: a reversible Margolus cellular automaton resolving five amino acids at generation 6625.">
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Michroma&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap');
+:root{
+  --bg:#060913;--panel:rgba(11,17,32,.82);--panel2:rgba(13,19,34,.94);--line:#223050;--line-soft:#16203a;
+  --txt:#e6ecf7;--txt-dim:#93a3c7;--amber:#ffc857;--cyan:#52b6e8;--rose:#ff5db0;--green:#7bd88f;--violet:#c79bff;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--txt);font-family:'IBM Plex Sans',system-ui,sans-serif;-webkit-font-smoothing:antialiased;overflow-x:hidden}
+a{color:var(--cyan);text-decoration:none} a:hover{color:var(--amber)}
+h2{font-family:'Michroma',sans-serif;font-weight:400;letter-spacing:.06em;font-size:clamp(19px,3.4vw,30px);margin:0 0 4px;line-height:1.25}
+.mono{font-family:'IBM Plex Mono',monospace}
+.amber{color:var(--amber)} .cyan{color:var(--cyan)} .rose{color:var(--rose)} .green{color:var(--green)} .dim{color:var(--txt-dim)}
+
+/* fixed 3D stage */
+#stage{position:fixed;inset:0;z-index:0}
+#stage canvas{display:block}
+#veil{position:fixed;inset:0;z-index:1;pointer-events:none;background:radial-gradient(120% 90% at 50% 10%,rgba(6,9,19,.25),rgba(6,9,19,.72) 70%)}
+
+/* nav */
+nav{position:fixed;top:0;left:0;right:0;z-index:40;display:flex;align-items:center;gap:14px;
+  padding:11px 20px;background:linear-gradient(#060913f0,#06091300);backdrop-filter:blur(6px)}
+nav .brand{font-family:'Michroma',sans-serif;font-size:12.5px;letter-spacing:.12em;color:var(--txt)}
+nav .brand b{color:var(--amber);font-weight:400}
+nav .links{display:flex;gap:3px;margin-left:auto;flex-wrap:wrap;justify-content:flex-end}
+nav .links a{font-size:11px;color:var(--txt-dim);padding:5px 9px;border-radius:7px;letter-spacing:.03em}
+nav .links a:hover{color:var(--amber);background:rgba(255,200,87,.08)}
+nav .links a.on{color:var(--amber);background:rgba(255,200,87,.12)}
+#prog{position:fixed;top:0;left:0;height:2.5px;background:linear-gradient(90deg,var(--amber),var(--cyan));z-index:41;width:0}
+@media(max-width:820px){nav .links{display:none}}
+
+/* content */
+main{position:relative;z-index:10}
+section{min-height:88vh;display:flex;align-items:center;padding:88px 22px 40px}
+section.wide{min-height:auto}
+.panel{max-width:820px;margin:0 auto;background:var(--panel);border:1px solid var(--line);border-radius:16px;
+  backdrop-filter:blur(13px);padding:clamp(20px,3.5vw,34px);
+  opacity:1;transform:none;transition:opacity .7s ease,transform .7s ease}
+.panel.pre{opacity:0;transform:translateY(26px)}
+.kicker{font-family:'IBM Plex Mono',monospace;font-size:11.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--cyan);margin-bottom:10px}
+.lead{font-size:clamp(14px,1.9vw,16px);line-height:1.68;color:var(--txt);margin:14px 0}
+.lead.sm{font-size:13.5px;color:var(--txt-dim)}
+p b{color:var(--amber);font-weight:500}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:22px;align-items:center}
+@media(max-width:680px){.two{grid-template-columns:1fr}}
+
+/* hero */
+#hero{min-height:100vh;text-align:center;flex-direction:column;justify-content:center;gap:8px}
+#hero h1{font-family:'Michroma',sans-serif;font-weight:400;letter-spacing:.14em;font-size:clamp(24px,5.5vw,52px);margin:0;line-height:1.15}
+#hero h1 .t{color:var(--amber)}
+#hero .tag{font-size:clamp(13px,2vw,17px);color:var(--txt-dim);max-width:640px;margin:14px auto 0;line-height:1.6}
+#hero .meta{font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--cyan);margin-top:22px;letter-spacing:.05em}
+#hero .cue{margin-top:40px;color:var(--txt-dim);font-size:12px;letter-spacing:.1em;animation:bob 2s ease-in-out infinite}
+@keyframes bob{0%,100%{transform:translateY(0);opacity:.6}50%{transform:translateY(7px);opacity:1}}
+.chips{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-top:22px}
+.chip{font-family:'IBM Plex Mono',monospace;font-size:11.5px;color:var(--txt-dim);background:rgba(13,19,34,.7);border:1px solid var(--line);border-radius:20px;padding:6px 13px}
+.chip b{color:var(--amber);font-weight:500}
+
+/* interactives */
+.viz{margin-top:18px;background:rgba(6,9,19,.5);border:1px solid var(--line-soft);border-radius:12px;padding:14px}
+.viz canvas{display:block;width:100%;height:auto}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.tbl{width:100%;border-collapse:collapse;font-family:'IBM Plex Mono',monospace;font-size:12px}
+.tbl th{color:var(--txt-dim);font-weight:400;text-align:right;padding:5px 6px;border-bottom:1px solid var(--line-soft)}
+.tbl th.l,.tbl td.l{text-align:left}
+.tbl td{text-align:right;padding:6px;color:var(--txt-dim)}
+.tbl td.l{color:var(--txt)}
+.tbl tr.match td{color:var(--green)} .tbl tr.match td.l{color:var(--green)}
+.badge{font-size:9px;padding:1px 6px;border-radius:5px;background:rgba(123,216,143,.16);color:var(--green);margin-left:6px}
+.gridimg{display:grid;grid-template-columns:1fr 1fr;gap:16px;align-items:center}
+.gridimg img{width:100%;border-radius:10px;border:1px solid var(--line);image-rendering:pixelated;background:#000}
+@media(max-width:560px){.gridimg{grid-template-columns:1fr}}
+
+/* size code / monomer cards */
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-top:16px}
+.mcard{background:rgba(13,19,34,.7);border:1px solid var(--line);border-radius:12px;padding:13px;transition:border-color .2s,transform .2s}
+.mcard:hover{border-color:var(--amber);transform:translateY(-2px)}
+.mcard .code{font-family:'Michroma',sans-serif;font-size:15px;color:var(--amber);letter-spacing:.05em}
+.mcard .f{font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--cyan);margin:4px 0}
+.mcard .d{font-size:11px;color:var(--txt-dim);line-height:1.45}
+
+/* launch cards (open the full tools) */
+.launch{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:14px;margin-top:18px}
+.lcard{display:block;background:rgba(13,19,34,.82);border:1px solid var(--line);border-radius:13px;padding:15px;transition:border-color .2s,transform .2s;position:relative;overflow:hidden}
+.lcard:hover{border-color:var(--amber);transform:translateY(-2px)}
+.lcard .t{font-family:'Michroma',sans-serif;font-size:12.5px;color:var(--txt);letter-spacing:.04em}
+.lcard:hover .t{color:var(--amber)}
+.lcard .d{font-size:11.5px;color:var(--txt-dim);margin-top:6px;line-height:1.45}
+.lcard .go{font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--cyan);margin-top:9px;display:inline-block}
+.lcard .em{font-size:22px}
+.lcard{cursor:pointer}
+
+.btn{background:#101a30;border:1px solid var(--line);color:var(--txt);border-radius:8px;padding:8px 13px;font:inherit;font-size:12.5px;cursor:pointer}
+.btn:hover{border-color:var(--amber);color:var(--amber)}
+.btn.amber{background:var(--amber);border-color:var(--amber);color:#131a2c;font-weight:600}
+
+footer{position:relative;z-index:10;text-align:center;padding:50px 22px 60px;color:var(--txt-dim);font-size:12px;line-height:1.7}
+footer .sig{font-family:'IBM Plex Mono',monospace;color:var(--txt);margin-top:8px}
+.refs{max-width:760px;margin:16px auto 0;text-align:left;font-size:11.5px;color:var(--txt-dim);line-height:1.7}
+</style>
+</head>
+<body>
+
+<div id="stage"></div>
+<div id="veil"></div>
+<div id="prog"></div>
+
+<nav>
+  <div class="brand">A SIGN IN <b>SPACE</b></div>
+  <div class="links" id="navlinks"></div>
+</nav>
+
+<main>
+
+<section id="hero">
+  <div class="kicker">SETI Institute / ESA · 2023 · decoded 2024</div>
+  <h1>Decoding a message<br>from the <span class="t">stars</span></h1>
+  <div class="tag">On 24 May 2023 the ExoMars orbiter transmitted a simulated extraterrestrial message. This is a step-by-step, interactive account of how it was decoded — and of what a blind decoder can and cannot recover.</div>
+  <div class="chips">
+    <div class="chip"><b>65 536</b> bits = 2¹⁶</div>
+    <div class="chip">Margolus <b>reversible</b> automaton</div>
+    <div class="chip">generation <b>6625</b></div>
+    <div class="chip"><b>5</b> amino acids · <b>6</b> points</div>
+  </div>
+  <div class="meta">reproduced bit-for-bit · SHA-256 round-trip · C₂₄N₆O₁₂ · 52 H</div>
+  <div class="cue">scroll to begin ↓</div>
+</section>
+
+<section id="signal">
+  <div class="panel">
+    <div class="kicker">Step 1 · the transmitted file</div>
+    <h2>A signal that <span class="amber">says how to read it</span></h2>
+    <p class="lead">The message is a 10-byte header, a <b>65 536-bit body</b> (256×256), and a 10-byte footer. The bit count is the key: <span class="mono">65 536 = 2¹⁶</span> has no semiprime factorisation, so — unlike Arecibo's <span class="mono">1679 = 23×73</span> — it signals <b>“not a direct bitmap.”</b> The framing is self-signalling.</p>
+    <div class="viz">
+      <div class="row" style="justify-content:space-between">
+        <div><span class="dim mono" style="font-size:11px">HEADER</span><br><span class="mono amber" id="hdrHex"></span></div>
+        <div style="text-align:right"><span class="dim mono" style="font-size:11px">FOOTER</span><br><span class="mono cyan" id="ftrHex"></span></div>
+      </div>
+      <p class="lead sm" style="margin-top:12px">The header is a <b>FFFF</b> fiducial followed by four 16-bit words that are, remarkably, four successive states of a 4×4 Margolus grid — a <b>worked example of the rule itself</b>:</p>
+      <div id="rule4x4" class="row" style="justify-content:center;gap:18px;margin:10px 0 4px"></div>
+      <p class="lead sm">The footer encodes the iteration count in run-lengths: <span class="mono amber">5 · 5 · 5 · 53 = 6625</span>.</p>
+    </div>
+  </div>
+</section>
+
+<section id="clock">
+  <div class="panel">
+    <div class="kicker">Step 2 · the reversible automaton & the blind clock</div>
+    <h2>Why generation <span class="amber">6625</span>?</h2>
+    <p class="lead">The body evolves under a reversible <b>Margolus block automaton</b> (single-rotation rule, active-pixel count conserved, exactly invertible). A receiver has no key — only a clock. A minimum-description-length / compression proxy has a <b>unique global minimum</b> at exactly generation 6625: that is where the scrambled field condenses into its most structured, most compressible state.</p>
+    <div class="viz"><canvas id="clockCanvas" height="230"></canvas>
+      <div class="row" style="justify-content:space-between;margin-top:6px">
+        <span class="mono dim" style="font-size:11px">compressed size over 20 000 generations</span>
+        <span class="mono amber" style="font-size:12px" id="clockTip">min 611 B @ 6625</span>
+      </div>
+    </div>
+    <div class="launch" id="launch-clock"></div>
+  </div>
+</section>
+
+<section id="decode">
+  <div class="panel">
+    <div class="kicker">Step 3 · generation 6625</div>
+    <h2>The image resolves</h2>
+    <p class="lead">Run forward 6625 steps, the 625 active pixels condense into <b>five compact clusters</b> and six points. A complete census sorts every pixel by the size of its connected blob — a clean alphabet <span class="mono">{1, 3, 6, 7, 8}</span>:</p>
+    <div class="gridimg">
+      <div><img id="imgRaw" alt="raw signal"><div class="mono dim" style="font-size:10.5px;text-align:center;margin-top:6px">generation 0 — the transmitted bit-plane</div></div>
+      <div><img id="imgDec" alt="decoded"><div class="mono dim" style="font-size:10.5px;text-align:center;margin-top:6px">generation 6625 — the decoded image</div></div>
+    </div>
+    <div class="viz"><canvas id="histCanvas" height="190"></canvas>
+      <div class="mono dim" style="font-size:11px;text-align:center;margin-top:4px" id="histTip">click a bar — the size code assigns each object type</div>
+    </div>
+  </div>
+</section>
+
+<section id="atoms">
+  <div class="panel">
+    <div class="kicker">Step 4 · from pixel to atom</div>
+    <h2>The size code, forced by <span class="amber">valence</span></h2>
+    <p class="lead">The three heavy-atom blob sizes {6, 7, 8} map to the three elements {C, N, O}. Of the six possible assignments, exactly <b>one</b> respects the bond degrees the drawn graph demands: a size-6 node reaches degree 4 (only carbon can), size-8 reaches degree 2 (oxygen), size-7 takes nitrogen at degree 3. The assignment is forced, not conventional.</p>
+    <div class="viz">
+      <table class="tbl" id="sizeTbl"></table>
+      <p class="lead sm" style="margin-top:10px">Total: <b>42 heavy atoms</b> — an aggregate of <span class="mono amber">C₂₄N₆O₁₂</span>, across five molecules. The 95 three-pixel dashes are the bonds (six of them C=O doubles); the 58 single pixels are 52 hydrogens plus 6 isolated points.</p>
+    </div>
+  </div>
+</section>
+
+<section id="five">
+  <div class="panel">
+    <div class="kicker">Step 5 · the five monomers</div>
+    <h2>Five amino acids — a <span class="amber">kit</span></h2>
+    <p class="lead">The identities are forced by the explicitly-drawn bond graph — carbon-degree fixes the skeletons, α-nitrogen placement excludes the δ/ε isomers. All five are <b>non-proteinogenic</b>, but their abiotic pedigree is <b>not uniform</b>: <b>Abu, Nva, Nle</b> form the +CH₂ methylene ladder — the highest-yield homologous series of Murchison-meteorite / Miller–Urey spark-discharge chemistry — while <b>Dab</b> is non-proteinogenic on biological grounds (a cyanobacterial BMAA isomer) and <b>mAsp</b> is a glutamate-mutase metabolite, not a classic abiotic product. Each card carries its ChEMBL identity and primary literature.</p>
+    <div class="cards" id="monoCards"></div>
+    <div class="launch" id="launch-kit"></div>
+  </div>
+</section>
+
+<section id="kit">
+  <div class="panel">
+    <div class="kicker">Step 6 · a kit, not a chain</div>
+    <h2>The atom census settles it</h2>
+    <p class="lead">Peptide-bond formation is a <b>condensation</b>: each amide removes one water (−1 O, −2 H) and joins two components. The decode shows five disjoint molecules with <b>12 oxygens and 52 hydrogens intact</b>. Among assembly states of these five monomers, only the free kit matches the decode on all four counts at once.</p>
+    <div class="two">
+      <div class="viz" style="margin-top:0"><table class="tbl" id="forkTbl"></table></div>
+      <div class="viz" style="margin-top:0"><canvas id="waterCanvas" height="220"></canvas>
+        <div class="mono dim" style="font-size:10.5px;text-align:center;margin-top:4px">the message is at zero water — the maximum-composition fixed point</div></div>
+    </div>
+    <div class="launch" id="launch-assembly"></div>
+  </div>
+</section>
+
+<section id="points">
+  <div class="panel">
+    <div class="kicker">Step 7 · the six points</div>
+    <h2>Assembly instructions, <span class="amber">not a chain</span></h2>
+    <p class="lead">The six isolated single pixels sit at the pairwise midpoints of the molecules (~13.5 px from any structure). They trace the undirected path <b>Abu–Nva–mAsp–Dab–Nle</b> — a <b>topology, not a direction</b>: instructions marking where the six carboxyls and six aminos are meant to condense, overlaid on an unreacted set of parts. The water the assembly would release is the operation the message defines without executing it.</p>
+  </div>
+</section>
+
+<section id="ozma">
+  <div class="panel">
+    <div class="kicker">Step 8 · the Ozma problem</div>
+    <h2>What handedness <span class="amber">cannot</span> be sent</h2>
+    <p class="lead">The message is a two-dimensional constitution. It fixes the plane and the reading orientation, but not <b>absolute chirality</b>. There are six stereocenters (one each in Abu/Nva/Nle/Dab, two in mAsp); the same 2D graph is equally consistent with <b>2⁶ = 64</b> stereoisomers (32 enantiomeric pairs). Handedness needs a depth bit per center, and the 625-pixel census closes with no channel to carry them.</p>
+    <div class="row" style="justify-content:center;margin-top:6px">
+      <div style="text-align:center"><div class="mono" style="font-size:40px;color:var(--rose)" id="diaBig">64</div>
+      <div class="dim" style="font-size:11.5px">possible 3D forms of one 2D constitution</div></div>
+    </div>
+    <div class="launch" id="launch-ozma"></div>
+  </div>
+</section>
+
+<section id="spacetime">
+  <div class="panel">
+    <div class="kicker">Step 9 · process, in space and time</div>
+    <h2>It self-organises <span class="amber">late</span></h2>
+    <p class="lead">The message is meant to be seen in motion. Matter stays dispersed for most of the run and resolves only late: heavy-atom mass rises 66 → 282 px, with <b>50 %</b> of aggregation by generation 5886 and <b>90 %</b> by 6588 — 60 % in the final 625 generations. Stacked by time, the field becomes a space–time cone.</p>
+    <div class="launch" id="launch-cone"></div>
+  </div>
+</section>
+
+<section id="noise">
+  <div class="panel">
+    <div class="kicker">Step 10 · error-hardening</div>
+    <h2>Scramble depth is the <span class="amber">lever</span></h2>
+    <p class="lead">The message has <b>no error correction</b>: a single bit-flip at generation 0 propagates through 6625 reversible steps and destroys the reconstruction. Because amplification grows with step count, decoding the same target at a <b>depth of 100</b> instead of 6625 keeps composition recovery near 100 % where the original collapses. The lever is the scramble depth — a constructive redesign, not any single number.</p>
+    <div class="viz"><canvas id="noiseCanvas" height="230"></canvas>
+      <div class="mono dim" style="font-size:11px;text-align:center;margin-top:4px"><span class="green">● depth 100 (hardened)</span> &nbsp; <span class="rose">● depth 6625 (original)</span></div>
+    </div>
+    <div class="launch" id="launch-noise"></div>
+  </div>
+</section>
+
+<section id="limits">
+  <div class="panel" style="border-color:var(--amber)">
+    <div class="kicker">Step 11 · the central result</div>
+    <h2>What a blind decoder <span class="amber">can and cannot</span> recover</h2>
+    <p class="lead">The reconstruction of the pixel pattern is <b>exact and machine-verified</b> (a SHA-256 round-trip). Its reading as chemistry is inferred, and its resolution is bounded. A key limit, made precise here: the atom census <span class="mono">(5 comp, 42 heavy, 12 O, 52 H)</span> settles <b>kit-vs-chain</b> — but it is a <b>coarse invariant</b>. It does <b>not</b> pin which five monomers: mAsp and glutamate share the formula C₅H₉NO₄, and about <b>50 000</b> five-monomer sets sum to the same aggregate.</p>
+    <p class="lead">The specific identities are recovered from a <b>finer</b> channel — the explicitly drawn bond graph — not from the census. This is the message's own lesson: composition is cheap to read, constitution costs more bits, and absolute configuration (handedness) is unencodable in the plane. A blind decoder recovers exactly as much as the medium was designed to carry.</p>
+  </div>
+</section>
+
+<section id="verified">
+  <div class="panel" style="border-color:var(--cyan)">
+    <div class="kicker">Reproducibility · re-derived in your browser</div>
+    <h2>Every headline number, <span class="cyan">re-earned from the bits</span></h2>
+    <p class="lead sm">A keyless receiver holds only <span class="mono">binaire.bin</span> and a clock. The cards
+      below are recomputed live in your browser from the embedded 8&nbsp;192-byte message —
+      <span class="mono" style="color:var(--green)">LIVE</span> — the moment this section scrolls into view.
+      Two statistical results — <span class="mono" style="color:var(--cyan)">MC</span> — are cited from saved
+      Monte-Carlo runs with their sample counts.</p>
+    <div id="verifyProg" class="mono" style="font-size:12px;color:var(--txt-dim);margin:6px 0 12px">
+      evolving CA to generation 6625… <span id="vPct">0%</span></div>
+    <div id="verifyGrid" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:11px"></div>
+  </div>
+</section>
+
+<section id="explore" class="wide">
+  <div class="panel" style="max-width:1000px">
+    <div class="kicker">The interactive supplement</div>
+    <h2>Explore every step in <span class="amber">3D</span></h2>
+    <p class="lead sm">Each tool is a self-contained interactive built on the same engine. Open one inline, or in its own tab.</p>
+    <div class="launch" id="launch-all"></div>
+  </div>
+</section>
+
+</main>
+
+<footer>
+  <div>A step-by-step supplement to <i>“What a Blind Decoder Can and Cannot Recover from a Designed First-Contact Message: The A Sign in Space Case.”</i></div>
+  <div class="sig"><b style="color:#ffc857">Etienne Lacoche</b> · Researcher · &lt;etienne.lacoche@pm.me&gt; · https://www.asignin.space</div>
+  <div class="refs">
+    Message: D. de Paulis, <i>A Sign in Space</i>, SETI Institute Artist-in-Residence with ESA, INAF, Green Bank Observatory (2023). ·
+    Community decode: K. Chaffin & K. Chaffin (2024). ·
+    Automaton: N. Margolus, Physica D 10 (1984). ·
+    Monomer chemistry &amp; literature: verified against ChEMBL (EMBL-EBI) and PubMed — see the <b>References</b> block below.
+    <br><br>Reproduced independently this session from <span class="mono">binaire.bin</span>: census {1:58, 3:95, 6:24, 7:6, 8:12}, blind-clock minimum 611 B @ 6625, heavy mass 282, noise-robustness curves, and an atom-census degeneracy analysis (≈50 784 monomer sets share C₂₄N₆O₁₂/52 H).
+  </div>
+  <div id="refBlock" class="refs" style="margin-top:22px"></div>
+</footer>
+
+<script id="data" type="application/json">{"decode": {"components": 5, "heavy": 42, "O": 12, "H": 52}, "rows": [{"name": "free-monomer kit (decoded)", "components": 5, "C": 24, "N": 6, "O": 12, "heavy": 42, "H": 52, "match": true}, {"name": "linear pentapeptide", "components": 1, "C": 24, "N": 6, "O": 8, "heavy": 38, "H": 44, "match": false}, {"name": "cyclic pentapeptide", "components": 1, "C": 24, "N": 6, "O": 7, "heavy": 37, "H": 42, "match": false}, {"name": "2-fragment partial (1 bond)", "components": 4, "C": 24, "N": 6, "O": 11, "heavy": 41, "H": 50, "match": false}, {"name": "3-fragment partial (2 bonds)", "components": 3, "C": 24, "N": 6, "O": 10, "heavy": 40, "H": 48, "match": false}], "diastereomers": {"centers": 6, "count": 64}, "descriptors": [{"code": "Abu", "name": "2-aminobutyric acid", "formula": "C4H9NO2", "MW": 103.12, "TPSA": 63.3, "HBD": 2, "HBA": 2, "RotB": 2}, {"code": "Nva", "name": "norvaline", "formula": "C5H11NO2", "MW": 117.15, "TPSA": 63.3, "HBD": 2, "HBA": 2, "RotB": 3}, {"code": "Nle", "name": "norleucine", "formula": "C6H13NO2", "MW": 131.18, "TPSA": 63.3, "HBD": 2, "HBA": 2, "RotB": 4}, {"code": "mAsp", "name": "3-methylaspartic acid", "formula": "C5H9NO4", "MW": 147.13, "TPSA": 100.6, "HBD": 3, "HBA": 3, "RotB": 3}, {"code": "Dab", "name": "2,4-diaminobutyric acid", "formula": "C4H10N2O2", "MW": 118.14, "TPSA": 89.3, "HBD": 3, "HBA": 3, "RotB": 3}, {"code": "PEP", "name": "linear pentapeptide", "formula": "C24H44N6O8", "MW": 544.65, "TPSA": 243.0, "HBD": 8, "HBA": 8, "RotB": 19}], "monomer_units": [{"code": "Abu", "C": 4, "N": 1, "O": 2, "H": 9, "COOH": 1, "NH2": 1}, {"code": "Nva", "C": 5, "N": 1, "O": 2, "H": 11, "COOH": 1, "NH2": 1}, {"code": "Nle", "C": 6, "N": 1, "O": 2, "H": 13, "COOH": 1, "NH2": 1}, {"code": "mAsp", "C": 5, "N": 1, "O": 4, "H": 9, "COOH": 2, "NH2": 1}, {"code": "Dab", "C": 4, "N": 2, "O": 2, "H": 10, "COOH": 1, "NH2": 2}], "kit": [{"code": "Abu", "name": "2-aminobutyric acid", "formula": "C4H9NO2", "cy": 53, "cx": 64, "atoms": [{"el": "C", "x": -2.11, "y": -0.413, "z": -0.239}, {"el": "C", "x": -0.661, "y": -0.867, "z": -0.132}, {"el": "C", "x": 0.306, "y": 0.258, "z": 0.257}, {"el": "N", "x": 0.333, "y": 1.31, "z": -0.782}, {"el": "C", "x": 1.721, "y": -0.296, "z": 0.483}, {"el": "O", "x": 2.034, "y": -1.443, "z": 0.759}, {"el": "O", "x": 2.674, "y": 0.666, "z": 0.419}, {"el": "H", "x": -2.445, "y": 0.054, "z": 0.692}, {"el": "H", "x": -2.759, "y": -1.272, "z": -0.438}, {"el": "H", "x": -2.249, "y": 0.303, "z": -1.055}, {"el": "H", "x": -0.352, "y": -1.321, "z": -1.082}, {"el": "H", "x": -0.608, "y": -1.666, "z": 0.619}, {"el": "H", "x": -0.006, "y": 0.706, "z": 1.209}, {"el": "H", "x": -0.507, "y": 1.88, "z": -0.707}, {"el": "H", "x": 1.121, "y": 1.929, "z": -0.572}, {"el": "H", "x": 3.506, "y": 0.171, "z": 0.569}], "bonds": [{"a": 0, "b": 1, "order": 1}, {"a": 1, "b": 2, "order": 1}, {"a": 2, "b": 3, "order": 1}, {"a": 2, "b": 4, "order": 1}, {"a": 4, "b": 5, "order": 2}, {"a": 4, "b": 6, "order": 1}, {"a": 0, "b": 7, "order": 1}, {"a": 0, "b": 8, "order": 1}, {"a": 0, "b": 9, "order": 1}, {"a": 1, "b": 10, "order": 1}, {"a": 1, "b": 11, "order": 1}, {"a": 2, "b": 12, "order": 1}, {"a": 3, "b": 13, "order": 1}, {"a": 3, "b": 14, "order": 1}, {"a": 6, "b": 15, "order": 1}], "stereocenters": [2], "wedge": {"2": 12}}, {"code": "Nva", "name": "norvaline", "formula": "C5H11NO2", "cy": 77, "cx": 154, "atoms": [{"el": "C", "x": -2.737, "y": -0.56, "z": -0.066}, {"el": "C", "x": -1.547, "y": 0.384, "z": -0.141}, {"el": "C", "x": -0.223, "y": -0.376, "z": -0.018}, {"el": "C", "x": 1.007, "y": 0.531, "z": -0.158}, {"el": "N", "x": 1.045, "y": 1.534, "z": 0.932}, {"el": "C", "x": 2.293, "y": -0.305, "z": -0.138}, {"el": "O", "x": 3.186, "y": -0.241, "z": 0.693}, {"el": "O", "x": 2.396, "y": -1.149, "z": -1.183}, {"el": "H", "x": -2.705, "y": -1.297, "z": -0.875}, {"el": "H", "x": -2.753, "y": -1.096, "z": 0.888}, {"el": "H", "x": -3.672, "y": 0.002, "z": -0.156}, {"el": "H", "x": -1.577, "y": 0.924, "z": -1.094}, {"el": "H", "x": -1.636, "y": 1.128, "z": 0.658}, {"el": "H", "x": -0.189, "y": -0.906, "z": 0.944}, {"el": "H", "x": -0.19, "y": -1.154, "z": -0.792}, {"el": "H", "x": 0.98, "y": 1.073, "z": -1.11}, {"el": "H", "x": 1.915, "y": 2.064, "z": 0.845}, {"el": "H", "x": 1.147, "y": 1.037, "z": 1.819}, {"el": "H", "x": 3.259, "y": -1.594, "z": -1.046}], "bonds": [{"a": 0, "b": 1, "order": 1}, {"a": 1, "b": 2, "order": 1}, {"a": 2, "b": 3, "order": 1}, {"a": 3, "b": 4, "order": 1}, {"a": 3, "b": 5, "order": 1}, {"a": 5, "b": 6, "order": 2}, {"a": 5, "b": 7, "order": 1}, {"a": 0, "b": 8, "order": 1}, {"a": 0, "b": 9, "order": 1}, {"a": 0, "b": 10, "order": 1}, {"a": 1, "b": 11, "order": 1}, {"a": 1, "b": 12, "order": 1}, {"a": 2, "b": 13, "order": 1}, {"a": 2, "b": 14, "order": 1}, {"a": 3, "b": 15, "order": 1}, {"a": 4, "b": 16, "order": 1}, {"a": 4, "b": 17, "order": 1}, {"a": 7, "b": 18, "order": 1}], "stereocenters": [3], "wedge": {"3": 15}}, {"code": "Nle", "name": "norleucine", "formula": "C6H13NO2", "cy": 144, "cx": 44, "atoms": [{"el": "C", "x": 3.002, "y": 0.47, "z": -0.183}, {"el": "C", "x": 1.785, "y": 1.206, "z": -0.721}, {"el": "C", "x": 0.495, "y": 0.905, "z": 0.047}, {"el": "C", "x": 0.015, "y": -0.542, "z": -0.117}, {"el": "C", "x": -1.271, "y": -0.839, "z": 0.666}, {"el": "N", "x": -1.512, "y": -2.303, "z": 0.638}, {"el": "C", "x": -2.479, "y": -0.122, "z": 0.053}, {"el": "O", "x": -3.228, "y": -0.57, "z": -0.803}, {"el": "O", "x": -2.683, "y": 1.108, "z": 0.561}, {"el": "H", "x": 3.137, "y": 0.661, "z": 0.886}, {"el": "H", "x": 2.919, "y": -0.61, "z": -0.335}, {"el": "H", "x": 3.904, "y": 0.807, "z": -0.703}, {"el": "H", "x": 1.652, "y": 0.967, "z": -1.783}, {"el": "H", "x": 1.979, "y": 2.284, "z": -0.661}, {"el": "H", "x": 0.64, "y": 1.13, "z": 1.111}, {"el": "H", "x": -0.276, "y": 1.591, "z": -0.322}, {"el": "H", "x": 0.803, "y": -1.219, "z": 0.233}, {"el": "H", "x": -0.136, "y": -0.75, "z": -1.184}, {"el": "H", "x": -1.173, "y": -0.541, "z": 1.715}, {"el": "H", "x": -2.379, "y": -2.498, "z": 1.143}, {"el": "H", "x": -1.716, "y": -2.569, "z": -0.329}, {"el": "H", "x": -3.477, "y": 1.434, "z": 0.087}], "bonds": [{"a": 0, "b": 1, "order": 1}, {"a": 1, "b": 2, "order": 1}, {"a": 2, "b": 3, "order": 1}, {"a": 3, "b": 4, "order": 1}, {"a": 4, "b": 5, "order": 1}, {"a": 4, "b": 6, "order": 1}, {"a": 6, "b": 7, "order": 2}, {"a": 6, "b": 8, "order": 1}, {"a": 0, "b": 9, "order": 1}, {"a": 0, "b": 10, "order": 1}, {"a": 0, "b": 11, "order": 1}, {"a": 1, "b": 12, "order": 1}, {"a": 1, "b": 13, "order": 1}, {"a": 2, "b": 14, "order": 1}, {"a": 2, "b": 15, "order": 1}, {"a": 3, "b": 16, "order": 1}, {"a": 3, "b": 17, "order": 1}, {"a": 4, "b": 18, "order": 1}, {"a": 5, "b": 19, "order": 1}, {"a": 5, "b": 20, "order": 1}, {"a": 8, "b": 21, "order": 1}], "stereocenters": [4], "wedge": {"4": 18}}, {"code": "mAsp", "name": "3-methylaspartic acid", "formula": "C5H9NO4", "cy": 157, "cx": 202, "atoms": [{"el": "C", "x": -1.741, "y": -0.927, "z": -0.749}, {"el": "C", "x": -0.703, "y": -0.193, "z": 0.103}, {"el": "C", "x": -1.075, "y": 1.27, "z": 0.121}, {"el": "O", "x": -1.216, "y": 2.0, "z": -0.846}, {"el": "O", "x": -1.257, "y": 1.745, "z": 1.368}, {"el": "C", "x": 0.732, "y": -0.332, "z": -0.425}, {"el": "N", "x": 1.086, "y": -1.759, "z": -0.662}, {"el": "C", "x": 1.722, "y": 0.248, "z": 0.597}, {"el": "O", "x": 2.388, "y": -0.392, "z": 1.397}, {"el": "O", "x": 1.824, "y": 1.589, "z": 0.544}, {"el": "H", "x": -1.673, "y": -0.633, "z": -1.802}, {"el": "H", "x": -1.612, "y": -2.012, "z": -0.687}, {"el": "H", "x": -2.757, "y": -0.695, "z": -0.408}, {"el": "H", "x": -0.767, "y": -0.581, "z": 1.128}, {"el": "H", "x": -1.488, "y": 2.688, "z": 1.231}, {"el": "H", "x": 0.869, "y": 0.2, "z": -1.374}, {"el": "H", "x": 1.138, "y": -2.227, "z": 0.248}, {"el": "H", "x": 2.044, "y": -1.798, "z": -1.016}, {"el": "H", "x": 2.486, "y": 1.81, "z": 1.233}], "bonds": [{"a": 0, "b": 1, "order": 1}, {"a": 1, "b": 2, "order": 1}, {"a": 2, "b": 3, "order": 2}, {"a": 2, "b": 4, "order": 1}, {"a": 1, "b": 5, "order": 1}, {"a": 5, "b": 6, "order": 1}, {"a": 5, "b": 7, "order": 1}, {"a": 7, "b": 8, "order": 2}, {"a": 7, "b": 9, "order": 1}, {"a": 0, "b": 10, "order": 1}, {"a": 0, "b": 11, "order": 1}, {"a": 0, "b": 12, "order": 1}, {"a": 1, "b": 13, "order": 1}, {"a": 4, "b": 14, "order": 1}, {"a": 5, "b": 15, "order": 1}, {"a": 6, "b": 16, "order": 1}, {"a": 6, "b": 17, "order": 1}, {"a": 9, "b": 18, "order": 1}], "stereocenters": [1, 5], "wedge": {"1": 13, "5": 15}}, {"code": "Dab", "name": "2,4-diaminobutyric acid", "formula": "C4H10N2O2", "cy": 189, "cx": 100, "atoms": [{"el": "N", "x": 2.832, "y": 0.557, "z": 0.02}, {"el": "C", "x": 1.658, "y": -0.28, "z": 0.253}, {"el": "C", "x": 0.388, "y": 0.438, "z": -0.203}, {"el": "C", "x": -0.895, "y": -0.34, "z": 0.124}, {"el": "N", "x": -0.911, "y": -1.648, "z": -0.568}, {"el": "C", "x": -2.155, "y": 0.452, "z": -0.262}, {"el": "O", "x": -3.175, "y": -0.012, "z": -0.754}, {"el": "O", "x": -2.113, "y": 1.753, "z": 0.086}, {"el": "H", "x": 3.665, "y": 0.076, "z": 0.358}, {"el": "H", "x": 2.758, "y": 1.419, "z": 0.558}, {"el": "H", "x": 1.787, "y": -1.219, "z": -0.294}, {"el": "H", "x": 1.595, "y": -0.52, "z": 1.32}, {"el": "H", "x": 0.438, "y": 0.637, "z": -1.283}, {"el": "H", "x": 0.347, "y": 1.421, "z": 0.284}, {"el": "H", "x": -0.966, "y": -0.519, "z": 1.204}, {"el": "H", "x": -0.393, "y": -2.335, "z": -0.025}, {"el": "H", "x": -1.879, "y": -1.98, "z": -0.608}, {"el": "H", "x": -2.981, "y": 2.099, "z": -0.211}], "bonds": [{"a": 0, "b": 1, "order": 1}, {"a": 1, "b": 2, "order": 1}, {"a": 2, "b": 3, "order": 1}, {"a": 3, "b": 4, "order": 1}, {"a": 3, "b": 5, "order": 1}, {"a": 5, "b": 6, "order": 2}, {"a": 5, "b": 7, "order": 1}, {"a": 0, "b": 8, "order": 1}, {"a": 0, "b": 9, "order": 1}, {"a": 1, "b": 10, "order": 1}, {"a": 1, "b": 11, "order": 1}, {"a": 2, "b": 12, "order": 1}, {"a": 2, "b": 13, "order": 1}, {"a": 3, "b": 14, "order": 1}, {"a": 4, "b": 15, "order": 1}, {"a": 4, "b": 16, "order": 1}, {"a": 7, "b": 17, "order": 1}], "stereocenters": [3], "wedge": {"3": 14}}], "linear": {"formula": "C24H44N6O8", "atoms": [{"el": "N", "x": -7.183, "y": 2.897, "z": 1.36}, {"el": "C", "x": -7.129, "y": 1.428, "z": 1.208}, {"el": "C", "x": -8.375, "y": 0.903, "z": 0.484}, {"el": "C", "x": -9.667, "y": 1.173, "z": 1.242}, {"el": "C", "x": -5.849, "y": 1.037, "z": 0.427}, {"el": "O", "x": -5.144, "y": 1.869, "z": -0.141}, {"el": "N", "x": -5.58, "y": -0.319, "z": 0.432}, {"el": "C", "x": -4.315, "y": -0.855, "z": -0.078}, {"el": "C", "x": -3.994, "y": -0.473, "z": -1.533}, {"el": "C", "x": -5.142, "y": -0.671, "z": -2.53}, {"el": "C", "x": -5.622, "y": -2.111, "z": -2.623}, {"el": "C", "x": -3.212, "y": -0.524, "z": 0.965}, {"el": "O", "x": -3.485, "y": -0.319, "z": 2.151}, {"el": "N", "x": -1.911, "y": -0.597, "z": 0.537}, {"el": "C", "x": -0.783, "y": -0.252, "z": 1.414}, {"el": "C", "x": -0.414, "y": -1.43, "z": 2.338}, {"el": "C", "x": 0.227, "y": -2.604, "z": 1.597}, {"el": "C", "x": 0.469, "y": -0.954, "z": 3.467}, {"el": "O", "x": 0.875, "y": 0.186, "z": 3.639}, {"el": "O", "x": 0.776, "y": -1.927, "z": 4.344}, {"el": "C", "x": 0.372, "y": 0.172, "z": 0.478}, {"el": "O", "x": 0.392, "y": -0.153, "z": -0.711}, {"el": "N", "x": 1.367, "y": 0.921, "z": 1.061}, {"el": "C", "x": 2.642, "y": 1.135, "z": 0.376}, {"el": "C", "x": 3.259, "y": 2.459, "z": 0.841}, {"el": "C", "x": 4.435, "y": 2.964, "z": 0.004}, {"el": "N", "x": 4.078, "y": 3.317, "z": -1.364}, {"el": "C", "x": 3.545, "y": -0.072, "z": 0.724}, {"el": "O", "x": 3.428, "y": -0.702, "z": 1.775}, {"el": "N", "x": 4.491, "y": -0.383, "z": -0.23}, {"el": "C", "x": 5.488, "y": -1.427, "z": 0.018}, {"el": "C", "x": 5.884, "y": -2.151, "z": -1.28}, {"el": "C", "x": 6.252, "y": -1.283, "z": -2.492}, {"el": "C", "x": 7.462, "y": -0.375, "z": -2.282}, {"el": "C", "x": 7.871, "y": 0.311, "z": -3.577}, {"el": "C", "x": 6.721, "y": -0.935, "z": 0.79}, {"el": "O", "x": 7.691, "y": -1.61, "z": 1.099}, {"el": "O", "x": 6.684, "y": 0.373, "z": 1.127}, {"el": "H", "x": -7.118, "y": 3.302, "z": 0.422}, {"el": "H", "x": -6.307, "y": 3.192, "z": 1.8}, {"el": "H", "x": -7.061, "y": 0.986, "z": 2.209}, {"el": "H", "x": -8.287, "y": -0.18, "z": 0.332}, {"el": "H", "x": -8.444, "y": 1.344, "z": -0.519}, {"el": "H", "x": -9.863, "y": 2.246, "z": 1.336}, {"el": "H", "x": -10.514, "y": 0.725, "z": 0.713}, {"el": "H", "x": -9.629, "y": 0.739, "z": 2.247}, {"el": "H", "x": -5.959, "y": -0.822, "z": 1.226}, {"el": "H", "x": -4.428, "y": -1.946, "z": -0.03}, {"el": "H", "x": -3.654, "y": 0.568, "z": -1.589}, {"el": "H", "x": -3.144, "y": -1.074, "z": -1.88}, {"el": "H", "x": -5.986, "y": -0.02, "z": -2.281}, {"el": "H", "x": -4.793, "y": -0.357, "z": -3.521}, {"el": "H", "x": -6.088, "y": -2.44, "z": -1.689}, {"el": "H", "x": -6.369, "y": -2.207, "z": -3.417}, {"el": "H", "x": -4.794, "y": -2.788, "z": -2.854}, {"el": "H", "x": -1.69, "y": -0.639, "z": -0.454}, {"el": "H", "x": -1.085, "y": 0.627, "z": 1.997}, {"el": "H", "x": -1.335, "y": -1.791, "z": 2.815}, {"el": "H", "x": 0.346, "y": -3.466, "z": 2.263}, {"el": "H", "x": -0.391, "y": -2.927, "z": 0.753}, {"el": "H", "x": 1.223, "y": -2.353, "z": 1.22}, {"el": "H", "x": 1.373, "y": -1.5, "z": 4.994}, {"el": "H", "x": 1.409, "y": 0.913, "z": 2.082}, {"el": "H", "x": 2.456, "y": 1.138, "z": -0.702}, {"el": "H", "x": 2.482, "y": 3.236, "z": 0.852}, {"el": "H", "x": 3.597, "y": 2.357, "z": 1.88}, {"el": "H", "x": 5.246, "y": 2.235, "z": -0.015}, {"el": "H", "x": 4.848, "y": 3.858, "z": 0.485}, {"el": "H", "x": 3.457, "y": 4.128, "z": -1.357}, {"el": "H", "x": 3.557, "y": 2.58, "z": -1.834}, {"el": "H", "x": 4.736, "y": 0.336, "z": -0.898}, {"el": "H", "x": 5.026, "y": -2.168, "z": 0.683}, {"el": "H", "x": 6.71, "y": -2.844, "z": -1.078}, {"el": "H", "x": 5.033, "y": -2.775, "z": -1.585}, {"el": "H", "x": 6.46, "y": -1.96, "z": -3.331}, {"el": "H", "x": 5.388, "y": -0.682, "z": -2.799}, {"el": "H", "x": 7.232, "y": 0.399, "z": -1.544}, {"el": "H", "x": 8.308, "y": -0.958, "z": -1.902}, {"el": "H", "x": 7.054, "y": 0.924, "z": -3.971}, {"el": "H", "x": 8.733, "y": 0.963, "z": -3.404}, {"el": "H", "x": 8.149, "y": -0.423, "z": -4.34}, {"el": "H", "x": 7.515, "y": 0.504, "z": 1.631}], "bonds": [{"a": 0, "b": 1, "order": 1}, {"a": 1, "b": 2, "order": 1}, {"a": 2, "b": 3, "order": 1}, {"a": 1, "b": 4, "order": 1}, {"a": 4, "b": 5, "order": 2}, {"a": 4, "b": 6, "order": 1}, {"a": 6, "b": 7, "order": 1}, {"a": 7, "b": 8, "order": 1}, {"a": 8, "b": 9, "order": 1}, {"a": 9, "b": 10, "order": 1}, {"a": 7, "b": 11, "order": 1}, {"a": 11, "b": 12, "order": 2}, {"a": 11, "b": 13, "order": 1}, {"a": 13, "b": 14, "order": 1}, {"a": 14, "b": 15, "order": 1}, {"a": 15, "b": 16, "order": 1}, {"a": 15, "b": 17, "order": 1}, {"a": 17, "b": 18, "order": 2}, {"a": 17, "b": 19, "order": 1}, {"a": 14, "b": 20, "order": 1}, {"a": 20, "b": 21, "order": 2}, {"a": 20, "b": 22, "order": 1}, {"a": 22, "b": 23, "order": 1}, {"a": 23, "b": 24, "order": 1}, {"a": 24, "b": 25, "order": 1}, {"a": 25, "b": 26, "order": 1}, {"a": 23, "b": 27, "order": 1}, {"a": 27, "b": 28, "order": 2}, {"a": 27, "b": 29, "order": 1}, {"a": 29, "b": 30, "order": 1}, {"a": 30, "b": 31, "order": 1}, {"a": 31, "b": 32, "order": 1}, {"a": 32, "b": 33, "order": 1}, {"a": 33, "b": 34, "order": 1}, {"a": 30, "b": 35, "order": 1}, {"a": 35, "b": 36, "order": 2}, {"a": 35, "b": 37, "order": 1}, {"a": 0, "b": 38, "order": 1}, {"a": 0, "b": 39, "order": 1}, {"a": 1, "b": 40, "order": 1}, {"a": 2, "b": 41, "order": 1}, {"a": 2, "b": 42, "order": 1}, {"a": 3, "b": 43, "order": 1}, {"a": 3, "b": 44, "order": 1}, {"a": 3, "b": 45, "order": 1}, {"a": 6, "b": 46, "order": 1}, {"a": 7, "b": 47, "order": 1}, {"a": 8, "b": 48, "order": 1}, {"a": 8, "b": 49, "order": 1}, {"a": 9, "b": 50, "order": 1}, {"a": 9, "b": 51, "order": 1}, {"a": 10, "b": 52, "order": 1}, {"a": 10, "b": 53, "order": 1}, {"a": 10, "b": 54, "order": 1}, {"a": 13, "b": 55, "order": 1}, {"a": 14, "b": 56, "order": 1}, {"a": 15, "b": 57, "order": 1}, {"a": 16, "b": 58, "order": 1}, {"a": 16, "b": 59, "order": 1}, {"a": 16, "b": 60, "order": 1}, {"a": 19, "b": 61, "order": 1}, {"a": 22, "b": 62, "order": 1}, {"a": 23, "b": 63, "order": 1}, {"a": 24, "b": 64, "order": 1}, {"a": 24, "b": 65, "order": 1}, {"a": 25, "b": 66, "order": 1}, {"a": 25, "b": 67, "order": 1}, {"a": 26, "b": 68, "order": 1}, {"a": 26, "b": 69, "order": 1}, {"a": 29, "b": 70, "order": 1}, {"a": 30, "b": 71, "order": 1}, {"a": 31, "b": 72, "order": 1}, {"a": 31, "b": 73, "order": 1}, {"a": 32, "b": 74, "order": 1}, {"a": 32, "b": 75, "order": 1}, {"a": 33, "b": 76, "order": 1}, {"a": 33, "b": 77, "order": 1}, {"a": 34, "b": 78, "order": 1}, {"a": 34, "b": 79, "order": 1}, {"a": 34, "b": 80, "order": 1}, {"a": 37, "b": 81, "order": 1}], "stereocenters": [1, 7, 14, 15, 23, 30], "wedge": {"1": 40, "7": 47, "14": 56, "15": 57, "23": 63, "30": 71}}, "clock": [[0, 774], [120, 771], [240, 772], [360, 771], [480, 759], [600, 772], [720, 757], [840, 762], [960, 765], [1080, 760], [1200, 776], [1320, 749], [1440, 757], [1560, 748], [1680, 769], [1800, 760], [1920, 763], [2040, 758], [2160, 760], [2280, 769], [2400, 769], [2520, 761], [2640, 759], [2760, 751], [2880, 758], [3000, 736], [3120, 745], [3240, 748], [3360, 740], [3480, 757], [3600, 742], [3720, 745], [3840, 737], [3960, 740], [4080, 742], [4200, 747], [4320, 738], [4440, 751], [4560, 749], [4680, 737], [4800, 736], [4920, 745], [5040, 737], [5160, 742], [5280, 730], [5400, 722], [5520, 740], [5640, 714], [5760, 713], [5880, 711], [6000, 704], [6120, 715], [6228, 695], [6232, 713], [6236, 711], [6240, 709], [6244, 697], [6248, 697], [6252, 708], [6256, 693], [6260, 702], [6264, 691], [6268, 697], [6272, 691], [6276, 690], [6280, 680], [6284, 716], [6288, 699], [6292, 710], [6296, 699], [6300, 707], [6304, 692], [6308, 707], [6312, 708], [6316, 692], [6320, 694], [6324, 696], [6328, 709], [6332, 700], [6336, 702], [6340, 693], [6344, 707], [6348, 703], [6352, 709], [6356, 698], [6360, 694], [6364, 706], [6368, 702], [6372, 703], [6375, 706], [6376, 699], [6377, 703], [6378, 713], [6379, 703], [6380, 692], [6381, 708], [6382, 698], [6383, 691], [6384, 705], [6385, 688], [6386, 692], [6387, 704], [6388, 711], [6389, 693], [6390, 693], [6391, 690], [6392, 693], [6393, 690], [6394, 702], [6395, 695], [6396, 684], [6397, 689], [6398, 705], [6399, 698], [6400, 691], [6401, 677], [6402, 704], [6403, 701], [6404, 682], [6405, 687], [6406, 699], [6407, 699], [6408, 698], [6409, 687], [6410, 686], [6411, 696], [6412, 702], [6413, 699], [6414, 690], [6415, 701], [6416, 702], [6417, 704], [6418, 691], [6419, 684], [6420, 684], [6421, 703], [6422, 694], [6423, 690], [6424, 695], [6425, 698], [6426, 693], [6427, 704], [6428, 698], [6429, 687], [6430, 701], [6431, 687], [6432, 696], [6433, 706], [6434, 695], [6435, 699], [6436, 678], [6437, 688], [6438, 693], [6439, 682], [6440, 683], [6441, 693], [6442, 699], [6443, 692], [6444, 680], [6445, 699], [6446, 690], [6447, 668], [6448, 687], [6449, 705], [6450, 684], [6451, 690], [6452, 692], [6453, 682], [6454, 690], [6455, 682], [6456, 689], [6457, 693], [6458, 698], [6459, 701], [6460, 704], [6461, 702], [6462, 693], [6463, 688], [6464, 691], [6465, 692], [6466, 695], [6467, 693], [6468, 695], [6469, 696], [6470, 686], [6471, 682], [6472, 691], [6473, 702], [6474, 707], [6475, 704], [6476, 702], [6477, 703], [6478, 702], [6479, 693], [6480, 687], [6481, 696], [6482, 692], [6483, 712], [6484, 684], [6485, 682], [6486, 679], [6487, 698], [6488, 674], [6489, 688], [6490, 674], [6491, 677], [6492, 675], [6493, 676], [6494, 668], [6495, 661], [6496, 678], [6497, 684], [6498, 684], [6499, 663], [6500, 680], [6501, 668], [6502, 698], [6503, 701], [6504, 693], [6505, 677], [6506, 679], [6507, 692], [6508, 679], [6509, 681], [6510, 675], [6511, 701], [6512, 687], [6513, 664], [6514, 698], [6515, 692], [6516, 674], [6517, 670], [6518, 704], [6519, 692], [6520, 683], [6521, 676], [6522, 685], [6523, 695], [6524, 688], [6525, 694], [6526, 691], [6527, 691], [6528, 691], [6529, 678], [6530, 674], [6531, 696], [6532, 683], [6533, 670], [6534, 680], [6535, 693], [6536, 667], [6537, 676], [6538, 696], [6539, 679], [6540, 677], [6541, 671], [6542, 680], [6543, 664], [6544, 675], [6545, 683], [6546, 688], [6547, 683], [6548, 664], [6549, 665], [6550, 676], [6551, 676], [6552, 661], [6553, 671], [6554, 672], [6555, 681], [6556, 680], [6557, 678], [6558, 667], [6559, 661], [6560, 665], [6561, 675], [6562, 674], [6563, 670], [6564, 660], [6565, 677], [6566, 653], [6567, 663], [6568, 649], [6569, 656], [6570, 660], [6571, 655], [6572, 639], [6573, 662], [6574, 655], [6575, 657], [6576, 637], [6577, 639], [6578, 640], [6579, 646], [6580, 629], [6581, 651], [6582, 643], [6583, 639], [6584, 622], [6585, 636], [6586, 638], [6587, 651], [6588, 645], [6589, 657], [6590, 650], [6591, 639], [6592, 643], [6593, 621], [6594, 647], [6595, 648], [6596, 637], [6597, 642], [6598, 641], [6599, 619], [6600, 632], [6601, 638], [6602, 639], [6603, 649], [6604, 666], [6605, 630], [6606, 624], [6607, 655], [6608, 660], [6609, 634], [6610, 634], [6611, 638], [6612, 637], [6613, 640], [6614, 626], [6615, 621], [6616, 627], [6617, 618], [6618, 627], [6619, 637], [6620, 636], [6621, 635], [6622, 633], [6623, 623], [6624, 612], [6625, 611], [6626, 623], [6627, 632], [6628, 640], [6629, 640], [6630, 623], [6631, 633], [6632, 641], [6633, 642], [6634, 643], [6635, 647], [6636, 638], [6637, 646], [6638, 629], [6639, 633], [6640, 643], [6641, 632], [6642, 615], [6643, 625], [6644, 642], [6645, 637], [6646, 623], [6647, 624], [6648, 651], [6649, 636], [6650, 626], [6651, 633], [6652, 630], [6653, 629], [6654, 634], [6655, 634], [6656, 638], [6657, 637], [6658, 639], [6659, 643], [6660, 633], [6661, 640], [6662, 620], [6663, 638], [6664, 646], [6665, 644], [6666, 645], [6667, 649], [6668, 638], [6669, 649], [6670, 631], [6671, 655], [6672, 656], [6673, 651], [6674, 663], [6675, 670], [6676, 657], [6677, 657], [6678, 677], [6679, 668], [6680, 673], [6681, 662], [6682, 664], [6683, 659], [6684, 674], [6685, 686], [6686, 660], [6687, 668], [6688, 690], [6689, 687], [6690, 678], [6691, 673], [6692, 666], [6693, 656], [6694, 665], [6695, 662], [6696, 683], [6697, 675], [6698, 677], [6699, 661], [6700, 694], [6701, 673], [6702, 676], [6703, 680], [6704, 691], [6705, 684], [6706, 682], [6707, 679], [6708, 672], [6709, 684], [6710, 678], [6711, 679], [6712, 690], [6713, 682], [6714, 674], [6715, 670], [6716, 679], [6717, 672], [6718, 675], [6719, 669], [6720, 681], [6721, 668], [6722, 686], [6723, 671], [6724, 684], [6725, 665], [6726, 680], [6727, 678], [6728, 671], [6729, 666], [6730, 673], [6731, 681], [6732, 699], [6733, 685], [6734, 686], [6735, 706], [6736, 699], [6737, 689], [6738, 697], [6739, 702], [6740, 685], [6741, 681], [6742, 694], [6743, 706], [6744, 697], [6745, 682], [6746, 673], [6747, 690], [6748, 708], [6749, 689], [6750, 666], [6751, 677], [6752, 697], [6753, 689], [6754, 672], [6755, 685], [6756, 693], [6757, 680], [6758, 688], [6759, 687], [6760, 702], [6761, 687], [6762, 694], [6763, 702], [6764, 691], [6765, 705], [6766, 710], [6767, 695], [6768, 718], [6769, 705], [6770, 714], [6771, 695], [6772, 693], [6773, 688], [6774, 697], [6775, 698], [6776, 713], [6777, 692], [6778, 689], [6779, 679], [6780, 693], [6781, 700], [6782, 700], [6783, 691], [6784, 720], [6785, 696], [6786, 693], [6787, 698], [6788, 688], [6789, 688], [6790, 688], [6791, 698], [6792, 695], [6793, 686], [6794, 693], [6795, 690], [6796, 704], [6797, 679], [6798, 691], [6799, 684], [6800, 705], [6801, 685], [6802, 695], [6803, 693], [6804, 690], [6805, 691], [6806, 692], [6807, 703], [6808, 697], [6809, 691], [6810, 698], [6811, 692], [6812, 700], [6813, 692], [6814, 704], [6815, 699], [6816, 696], [6817, 696], [6818, 688], [6819, 700], [6820, 693], [6821, 691], [6822, 701], [6823, 697], [6824, 695], [6825, 708], [6826, 710], [6827, 703], [6828, 679], [6829, 685], [6830, 699], [6831, 702], [6832, 693], [6833, 692], [6834, 701], [6835, 692], [6836, 703], [6837, 692], [6838, 703], [6839, 695], [6840, 699], [6841, 694], [6842, 692], [6843, 707], [6844, 709], [6845, 691], [6846, 700], [6847, 702], [6848, 714], [6849, 690], [6850, 687], [6851, 699], [6852, 699], [6853, 688], [6854, 695], [6855, 703], [6856, 706], [6857, 699], [6858, 692], [6859, 682], [6860, 696], [6861, 696], [6862, 696], [6863, 690], [6864, 714], [6865, 705], [6866, 708], [6867, 698], [6868, 703], [6869, 703], [6870, 693], [6871, 711], [6872, 716], [6873, 712], [6874, 704], [6875, 716], [6876, 709], [6880, 698], [6884, 705], [6888, 693], [6892, 699], [6896, 699], [6900, 692], [6904, 714], [6908, 714], [6912, 697], [6916, 701], [6920, 706], [6924, 711], [6928, 706], [6932, 700], [6936, 710], [6940, 710], [6944, 686], [6948, 693], [6952, 699], [6956, 697], [6960, 695], [6964, 702], [6968, 686], [6972, 697], [6976, 688], [6980, 676], [6984, 695], [6988, 693], [6992, 699], [6996, 703], [7000, 721], [7004, 687], [7008, 690], [7012, 675], [7016, 699], [7020, 708], [7024, 707], [7080, 691], [7200, 703], [7320, 715], [7440, 709], [7560, 713], [7680, 713], [7800, 708], [7920, 721], [8040, 720], [8160, 716], [8280, 719], [8400, 727], [8520, 727], [8640, 733], [8760, 742], [8880, 752], [9000, 733], [9120, 726], [9240, 743], [9360, 760], [9480, 749], [9600, 761], [9720, 757], [9840, 742], [9960, 751], [10080, 753], [10200, 759], [10320, 759], [10440, 751], [10560, 747], [10680, 749], [10800, 754], [10920, 750], [11040, 757], [11160, 756], [11280, 771], [11400, 771], [11520, 759], [11640, 755], [11760, 771], [11880, 756], [12000, 755], [12120, 755], [12240, 762], [12360, 771], [12480, 773], [12600, 760], [12720, 775], [12840, 774], [12960, 761], [13080, 770], [13200, 757], [13320, 771], [13440, 751], [13560, 767], [13680, 759], [13800, 749], [13920, 767], [14040, 765], [14160, 758], [14280, 764], [14400, 764], [14520, 770], [14640, 770], [14760, 780], [14880, 777], [15000, 778], [15120, 773], [15240, 768], [15360, 780], [15480, 783], [15600, 780], [15720, 780], [15840, 786], [15960, 772], [16080, 786], [16200, 782], [16320, 787], [16440, 778], [16560, 798], [16680, 781], [16800, 783], [16920, 789], [17040, 785], [17160, 765], [17280, 791], [17400, 770], [17520, 780], [17640, 768], [17760, 781], [17880, 771], [18000, 787], [18120, 764], [18240, 777], [18360, 784], [18480, 798], [18600, 782], [18720, 785], [18840, 767], [18960, 778], [19080, 793], [19200, 790], [19320, 779], [19440, 795], [19560, 810], [19680, 801], [19800, 775], [19920, 780]], "clock_star": 6625, "clock_min": 611, "mass_star": 282, "noise": {"deep": {"0": 1.0, "1": 0.7595238095238095, "2": 0.6077380952380953, "3": 0.5571428571428572, "4": 0.4363095238095237, "6": 0.319047619047619, "8": 0.27202380952380956}, "shallow": {"0": 1.0, "1": 0.994047619047619, "2": 0.9869047619047621, "3": 0.9666666666666668, "4": 0.9797619047619047, "6": 0.9702380952380952, "8": 0.9720238095238095}, "flips": [0, 1, 2, 3, 4, 6, 8], "trials": 40, "true": [24, 6, 12], "deep_depth": 6625, "shallow_depth": 100}, "census_hist": {"1": 58, "3": 95, "6": 24, "7": 6, "8": 12}, "images": {"decoded": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAABAAAAAQACAAAAABadnRfAAANC0lEQVR4nO3d0a7avBaF0f/9X7rnXLVRFAhxHMfLc4yrvUtByPb6KlmI/vcfAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABAIX823n4vwGACAMEEAIIJAAQTAAgmABBMACCYAEAwww/BBACCCQAEEwAAAAAACLC9BLxzIegyEQoSAAgmABBMACBcrwgABQkABBMACCYAEK41AoIBCxAACCYAEEwAoICZPqxj+GEwAYBgAgDBBADo7up/EmL4YSECAMEEAIIJABTSMoDfnrMPwNnvwIsEAIIJAAQTAAh3ZRi3g9zyGgIAkxEACCYAEEwAINydgbwaEMMPkxEACCYAEEwAgMNLuv3P28cNMyxEACCYAEAwAYBA24E+uqg7exwoTAAgmABAMAGAUJ8u/L79GbAIAYBgAgDBBABCtQ73r88TD5iYAEAwAYBgAgA0MdwQTAAgmABAMAGAonoN76fXEQeYmABAMAGAYAIAPMLwQzABgGACAMEEAELsvyS0yvBXeZ8wNQGAYAIAwQQAgu0DAAQRAAgmABBMAGAhBhmCCQAEEwAIJgDAT/axEI9nuXBlKgIwlgAwFQEYSwCYigCMJQAMc3bIPj3ucD5HABhGAOYjAAwjAPMRAIYRgPkIAEO1DrkD+gzDz1ACMBcBYCgBmIsAMJQAzEUAGM6Bg2ACAMEEAIIJAND0IRTx6G+7pnfW195wiQDMQQB4hQDMQQB4hQDMQQB4RUsAeEavCMDPBGAeAsBwAjAPAWA4AZiHAPA6B+9drRGwb3ThIL1LAHiVg/QuAeBVDtK7BIBhPh0ah+ncTB/WsV80EYB2AkB5AtBOAChPANoJAKWdHRqH6h1XP5hln2giAHMSAIYQgDkJAEMIwJwEgMc5NP20rOW35+wDcPY7XObw9CMAlOPw9CMAlOPw9CMALM1BO3dljbaD3PIaAsBQDto5AWBZDto5AWBZDto5AaAEh+Y5d9b2akDsI00cnOcIANNzcJ4jAEzPwXmOAACHl3T7n7ePG2ZYiABAMAGAYAIAgbYDfXRRd/Y4UJgAQDABgGACAKE+Xfh9+zNgEQIAwQQAggkAhGod7l+fJx4wMQGAYAIAwQQAaGK4IZgAQDABgGACAEX1Gt5PryMOMDEBgGACAMEEAHiE4YdgAgDBBACCCQCE2H9JqOGHIAIAwQQAggkABNsHAAgiABBMACCYAMBCDDIEEwAIJgAQTACAn+xjIR4QRAAgmABAMAGARZ0Nsy8DhYUJAAQTAAgmABCudchFABYgABBMACCYAEA4wwzBBACCCQAEEwCg6cs/xQMWIQAQTAAgmABAsJYAAIsQAAgmABBMAIC/XAZCMAGAYAIAwQQAQrR+MQiwAAGAYAIAwQQAQp0N+bfHBQKKEwAIJgAQTAAg1J0BNvxQnABAMAGAYAIAnNp/WYjhhyACAMEEAIIJACzk6gDvAwAUJgAQTAAgmAAAAAAAAH/tL/5cBEIQAYBgAgDBBABCfRp2EYAAAgDBBACCCQCEOhtyEYCFCQAEEwAIJgAAAAAAsKiWLwx96r0AgwkABBMACCYAAAAAAAAAAADAY3zgCIIJAAQTAAgmAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACU9Of/3n4PwEsEAIIJAAQTAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAGBpfzbefi/AYAIAwQQAggkABBMACCYAEEwAIJgAQDDDD8EEAIIJAAQTAAAAAAAIsL0EvHMh6DIRChIACCYAEEwAIFyvCAAFCQAEEwAIJgAQrjUCggELEAAIJgAQTACggJk+rGP4YTABgGACAMEEAOju6n8SYvhhIQIAwQQAggkAFNIygN+esw/A2e/AiwQAggkABBMACHdlGLeD3PIaAgCTEQAIJgAQTAAg3J2BvBoQww+TEQAIJgAQTACAw0u6/c/bxw0zLEQAIJgAQDABgEDbgT66qDt7HChMACCYAEAwAYBQny78vv0ZsAgBgGACAMEEAEK1DvevzxMPmJgAQDABgGACADQx3IzkQ2iTsRGMJACTsRGMJACTsRGMJAAd9VrET69jk+hNADoSAKoRgI4EgGoEoCMBoBoBKMIG8QTDX4RN4gkCUIRN4gkCUIRN4gkCMKH9xYwNgiACAMEEAIIJAATz4QxG2p6zO2fOee1EABhJACYjAIwkAJMRAEYSgIdZGGbXKwIcsKDMTgAeZEGZnQA8yIIyOwGYxH7xbQajtEbAGe1IAHiLAExAAHiLAExAAHiLADzsbKE+PW6B2ZrpwzrO5gUCQA8CUJQA0IMAFCUA9CAAhbUOuYXmaX82fv37T7+n5QgAsxKAAQSAWQnAAALArARgEAtHDy3n6Ntz9gE4+51GFpAeBKAoC0gPAlCUBaQHASiuZUEtPlstZ2f/nF9fQwA6EwDuEoDCBIC7BKAwAeAuASjMgtLDnfNzNSDOakcCQA8CUJQA0IMAFCUA9CAAi3AZyB1H/6Dsf94+7gxNRgC4QwCKEwDuEIDiBIA7BKCQT4tvU7hqO9BHF3Vnj/MCAaAXAShIAOhFAAoSAHoRgGLONuDb4zaPre15ODobzsuEBIBeBKAgAaAXAShIAOhFAIq5syE2k63W83D3HLlUvEEA6EUAChIAehGAggSAXgRgYfvFtch8c/V89IiHADxIALhCABYjAFwhAIsRAK4QgMm1bJDF5UivM3E3Gs7nBQJALwJQkADQiwAUJAD0IgA8yqbWNWLvnI/F2eC6BIDbbHBdAsBtNrguAVjA0WXLW++Fer6dl+1j+4vms9/PXptOBIA7BKA4AeAOAShOALhDAAr7tMAWnit+icDRgO//3j4Iz7xb/hIAehCAogSAHgSgKAGgBwEo6GyBbQBXGeJCBIDeBKAQAaA3AShEAOhNACDYt4u+X6MgGlCUAEAwAYBgAjCJ7WLvL2U+bdDZa8Env56R3n+PDwSAkQRgMgLASAIwGQFgJAEo4igIb78natufoV5n6td/xJzhCywevQlAIRaP3gSgEItHbwJQnAWk1dHZ+XaeWs7afuDpzMLSSgAWYGFpJQALsLC0EoBCem8MHOl9lgx/JwLACAIwKQFgBAGYlAAwggBMyALSk/NUjA2jJ+epGBtGT85TMTaMnpynQq5slo3lLmdoMgLASM7QZASAkZyhyQgAIzlDAAAAAAO5jIFgAgDBBACCCQAAAAAAEMN/LgHBBACCCQAEEwAIJgD/WAPiCMA/1oA4AvCPNSCOAPxjDYhj+CGYAEAwAYBgAgAAAAAAAbaXgHcuBF0mQkECAMEEAIIJAITrFQGgIAGAYAIAwQQAwrVGQDBgAQIAwQQAggkAFDDTh3VGD7/YEE8AIJgAQDABALr7s/Hr33/6PQGDCAAEEwAIJgBQSMsAfnvOPgBnvwMvEgAIJgAQTAAg3JVh3A5yy2sIAExGACCYAEAwAYBwdwbyakAMP0xGACCYAEAwAQAOL+n2P28fN8ywEAGAYAIAwQQAAm0H+uii7uxxoDABgGACAMEEAEJ9uvD79mctrw1MSAAgmABAMAGAUK0DarBhAQIAwQQAggkA0ORbBAQCFicAEEwAIJgAQFG9BrT3B4eAAQQAggkABBMAoDvDD8EEAIIJAAQTAAjiS0IhmABAMAGAYAIAwQQAggkABBMACCYAsBCDDMEEAIIJAAQTAOAn+1iIBwQRAAgmABBMAGBRZ8P86XERgAUIAAQTAAgmABCudchFABYgABBMACCYAEA4wwzBBACCCQAEEwCg6cs/xQMWIQAQTAAgmABAsJYAAIsQAAgmABBMAIC/hACCCQAEEwAIJgAQovWLQYAFCAAEEwAIJgAQyheAQjABgGACAMEEAEIZbggmABBMACCYAACnfFkIBBMACCYAEEwAYCFXB1kAYCECAMEEAIIJAPAzgw/BBACCCQAEEwAIdDT4YgAhBACCCQAEEwAI9W3QRQAWJwAQTAAgmABAqF8GXARgUQIAwQQAggkAAAAAACyq5WLPZSAsQgAgmABAMAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAMjzP+Yn6yvviafJAAAAAElFTkSuQmCC", "raw": "data:image/png;base64,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"}, "header_hex": "ff ff 06 90 28 41 44 88 44 88", "footer_hex": "f8 3e 00 00 00 00 00 00 0f ff"}</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="asis-sota.js"></script>
+<script src="asis-refs.js"></script>
+<script src="asis-proofs.js"></script>
+<script>
+'use strict';
+const D=JSON.parse(document.getElementById('data').textContent);
+const $=id=>document.getElementById(id);
+const CPK={C:0x4a4f5c,N:0x4f74ff,O:0xff4d4d,H:0xe6ecf7};
+/* ball-and-stick radii ∝ van der Waals radii (Å): H1.20 C1.70 N1.55 O1.52, scaled to C=0.40 */
+const RAD={C:0.40,N:0.365,O:0.358,H:0.282};
+const SUB={'0':'₀','1':'₁','2':'₂','3':'₃','4':'₄','5':'₅','6':'₆','7':'₇','8':'₈','9':'₉'};
+const sub=s=>String(s).replace(/(\d)/g,d=>SUB[d]);
+
+/* ============ nav / progress / reveal ============ */
+const SECTIONS=[['signal','Signal'],['clock','Clock'],['decode','Decode'],['atoms','Atoms'],['five','The Five'],['kit','Kit vs Chain'],['points','Six Points'],['ozma','Ozma'],['spacetime','Spacetime'],['noise','Robustness'],['limits','Limits'],['explore','Explore']];
+$('navlinks').innerHTML=SECTIONS.map(([id,t])=>`<a href="#${id}" data-s="${id}">${t}</a>`).join('');
+addEventListener('scroll',()=>{ const h=document.documentElement; $('prog').style.width=(h.scrollTop/(h.scrollHeight-h.clientHeight)*100)+'%'; },{passive:true});
+document.querySelectorAll('.panel').forEach(p=>{ if(p.getBoundingClientRect().top > innerHeight*0.82) p.classList.add('pre'); });
+function revealVisible(){ document.querySelectorAll('.panel.pre').forEach(p=>{ if(p.getBoundingClientRect().top < innerHeight*0.9) p.classList.remove('pre'); }); }
+addEventListener('scroll',revealVisible,{passive:true});
+['wheel','touchmove','keydown','load'].forEach(ev=>addEventListener(ev,revealVisible,{passive:true}));
+setInterval(revealVisible,150);
+const navO=new IntersectionObserver(es=>es.forEach(e=>{ if(e.isIntersecting){ document.querySelectorAll('#navlinks a').forEach(a=>a.classList.toggle('on',a.dataset.s===e.target.id)); } }),{threshold:.5});
+SECTIONS.forEach(([id])=>{const el=$(id);if(el)navO.observe(el);});
+
+/* ============ 3D stage (kit engine, ambient background) ============ */
+let scene,cam,ren,root,SPH,POST,STARS;
+function stage(){
+  const host=$('stage');
+  scene=new THREE.Scene(); scene.fog=new THREE.FogExp2(0x060913,0.017);
+  cam=new THREE.PerspectiveCamera(46,innerWidth/innerHeight,0.1,600);
+  ren=new THREE.WebGLRenderer({antialias:true,alpha:true}); ren.setPixelRatio(Math.min(devicePixelRatio,2)); ren.setSize(innerWidth,innerHeight); host.appendChild(ren.domElement);
+  ASISSota.enhance(ren);
+  ASISSota.environment(ren,scene);
+  ASISSota.nebula(scene,{radius:420,top:0x050714,bottom:0x030409,glow:0x0a1424});
+  STARS=ASISSota.starfield(scene,{count:1600,innerRadius:150,radius:440,sizeScale:1.1});
+  scene.add(new THREE.AmbientLight(0xffffff,0.6));
+  const k=new THREE.DirectionalLight(0xffffff,0.85);k.position.set(20,30,25);scene.add(k);
+  const r=new THREE.DirectionalLight(0x8ab6ff,0.5);r.position.set(-25,10,-18);scene.add(r);
+  root=new THREE.Group(); scene.add(root);
+  SPH=new THREE.SphereGeometry(1,32,24);
+  const S=0.09, MS=1.2;
+  D.kit.forEach(m=>{
+    const g=new THREE.Group(); const P=m.atoms.map(a=>new THREE.Vector3(a.x,a.y,a.z).multiplyScalar(MS));
+    m.atoms.forEach((a,i)=>{ const me=new THREE.Mesh(SPH,new THREE.MeshStandardMaterial({color:CPK[a.el],roughness:0.5,metalness:0.04,emissive:CPK[a.el],emissiveIntensity:0.04})); me.scale.setScalar(RAD[a.el]); me.position.copy(P[i]); g.add(me); /* every atom rendered — no random hiding */ });
+    m.bonds.forEach(b=>{ addBond(g,P[b.a],P[b.b],b.order||1,CPK[m.atoms[b.a].el],CPK[m.atoms[b.b].el]); });
+    g.position.set((m.cx-128)*S,(m.cy-128)*S*0.7,-2); root.add(g);
+  });
+  ASISSota.polish(root,{envMapIntensity:0.25});
+  cam.position.set(0,0,34); cam.lookAt(0,0,0);
+  POST=ASISSota.composer(ren,scene,cam,{bloom:{strength:0.16,radius:0.45,threshold:0.85},grade:{uVignette:0.42,uGrain:0.018,uChroma:0.0007,uSaturation:1.0}});
+  loop();
+}
+function cylMesh(p,q,rad,color){ const dir=new THREE.Vector3().subVectors(q,p),len=dir.length();
+  const me=new THREE.Mesh(new THREE.CylinderGeometry(rad,rad,len,14,1),new THREE.MeshStandardMaterial({color,roughness:0.55,metalness:0.03}));
+  me.position.copy(p).addScaledVector(dir,0.5); me.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0),dir.clone().normalize()); return me; }
+/* scientifically-faithful bond: split half-and-half at the two atom colours; draw two thin
+   parallel rods for a double bond (order 2), offset perpendicular to the bond and the view axis. */
+function addBond(g,pa,pc,order,ca,cc){ const mid=new THREE.Vector3().addVectors(pa,pc).multiplyScalar(0.5);
+  const draw=(p,q,rad,col)=>g.add(cylMesh(p,q,rad,col));
+  const one=(rad,shift)=>{ const pA=pa.clone(),pC=pc.clone(); if(shift){ pA.add(shift); pC.add(shift); const m2=mid.clone().add(shift); draw(pA,m2,rad,ca); draw(m2,pC,rad,cc); } else { draw(pa,mid,rad,ca); draw(mid,pc,rad,cc); } };
+  if(order>=2){ const dir=new THREE.Vector3().subVectors(pc,pa).normalize();
+    let off=new THREE.Vector3().crossVectors(dir,new THREE.Vector3(0,0,1)); if(off.lengthSq()<1e-4) off=new THREE.Vector3().crossVectors(dir,new THREE.Vector3(0,1,0)); off.normalize().multiplyScalar(0.09);
+    one(0.06, off); one(0.06, off.clone().negate()); }
+  else { one(0.1, null); } }
+let _f=0;
+function loop(t){ requestAnimationFrame(loop);
+  if(((_f++) & 3)===0) revealVisible();
+  const sp=scrollY/(document.documentElement.scrollHeight-innerHeight||1);
+  root.rotation.y+=0.0016; root.rotation.x=Math.sin(sp*3.14)*0.25;
+  cam.position.x=Math.sin(sp*1.4)*8; cam.position.y=-sp*6+3; cam.lookAt(0,0,0);
+  if(STARS) STARS.userData.update(t||0);
+  if(POST) POST.render(t); else ren.render(scene,cam);
+}
+addEventListener('resize',()=>{ if(!ren)return; cam.aspect=innerWidth/innerHeight; cam.updateProjectionMatrix(); ren.setSize(innerWidth,innerHeight); if(POST) POST.setSize(innerWidth,innerHeight); });
+
+/* ============ inline interactives ============ */
+function fit(cv,h){ const w=cv.parentElement.clientWidth-2, dpr=Math.min(devicePixelRatio,2); cv.width=w*dpr; cv.height=h*dpr; cv.style.height=h+'px'; const c=cv.getContext('2d'); c.setTransform(dpr,0,0,dpr,0,0); return {c,w,h}; }
+
+const VIZ={};
+VIZ.clock=()=>{ const cv=$('clockCanvas'); const {c,w,h}=fit(cv,230); const P={l:52,r:14,t:14,b:26};
+  const pts=D.clock, gmax=20000; let vmin=1e9,vmax=-1e9; pts.forEach(p=>{vmin=Math.min(vmin,p[1]);vmax=Math.max(vmax,p[1]);});
+  const pad=(vmax-vmin)*0.08; vmin-=pad; vmax+=pad;
+  const X=g=>P.l+g/gmax*(w-P.l-P.r), Y=v=>h-P.b-(v-vmin)/(vmax-vmin)*(h-P.t-P.b);
+  c.clearRect(0,0,w,h); c.strokeStyle='#16203a'; c.fillStyle='#93a3c7'; c.font="10px 'IBM Plex Mono',monospace";
+  for(let g=0;g<=gmax;g+=5000){ c.globalAlpha=.5;c.beginPath();c.moveTo(X(g),P.t);c.lineTo(X(g),h-P.b);c.stroke();c.globalAlpha=1; c.textAlign='center';c.fillText(g/1000+'k',X(g),h-8); }
+  c.strokeStyle='rgba(255,200,87,.5)';c.setLineDash([4,4]);c.beginPath();c.moveTo(X(6625),P.t);c.lineTo(X(6625),h-P.b);c.stroke();c.setLineDash([]);
+  c.strokeStyle='#ffc857';c.lineWidth=1.5;c.beginPath();pts.forEach((p,i)=>{i?c.lineTo(X(p[0]),Y(p[1])):c.moveTo(X(p[0]),Y(p[1]));});c.stroke();
+  c.fillStyle='#ffc857';c.beginPath();c.arc(X(6625),Y(D.clock_min),4,0,7);c.fill();
+};
+VIZ.hist=()=>{ const cv=$('histCanvas'); const {c,w,h}=fit(cv,190); const sizes=[1,3,6,7,8], H=D.census_hist;
+  const map={1:['H / point','52 H + 6 points','#e6ecf7'],3:['bond','95 dashes','#8fa1c7'],6:['carbon','24 · degree 4','#4a4f5c'],7:['nitrogen','6 · degree 3','#4f74ff'],8:['oxygen','12 · degree 2','#ff4d4d']};
+  const max=Math.max(...sizes.map(s=>H[s])), bw=(w-60)/sizes.length, base=h-34;
+  c.clearRect(0,0,w,h); c.font="11px 'IBM Plex Mono',monospace";
+  cv._bars=[];
+  sizes.forEach((s,i)=>{ const bh=(H[s]/max)*(base-24), x=30+i*bw+bw*0.16, bwid=bw*0.68, y=base-bh;
+    c.fillStyle=map[s][2]==='#4a4f5c'?'#5a6070':map[s][2]; c.globalAlpha=.9; c.fillRect(x,y,bwid,bh); c.globalAlpha=1;
+    c.fillStyle='#93a3c7';c.textAlign='center';c.fillText('size '+s,x+bwid/2,base+16); c.fillStyle='#e6ecf7';c.fillText(H[s],x+bwid/2,y-6);
+    cv._bars.push({x,y,bwid,bh,s,base}); });
+  if(!cv._bound){ cv._bound=1; cv.style.cursor='pointer'; cv.onclick=e=>{ const r=cv.getBoundingClientRect(),mx=e.clientX-r.left,my=e.clientY-r.top;
+    const b=cv._bars.find(b=>mx>=b.x&&mx<=b.x+b.bwid&&my>=b.y-14&&my<=b.base); if(b){ const m=map[b.s]; $('histTip').innerHTML=`size ${b.s} → <span style="color:${m[2]}">${m[0]}</span> · ${m[1]}`; } }; }
+};
+VIZ.water=()=>{ const cv=$('waterCanvas'); const {c,w,h}=fit(cv,220); const P={l:34,r:14,t:16,b:34};
+  const N=[0,1,2,3,4,5].map(x=>({w:x,O:12-x})); const X=x=>P.l+x/5*(w-P.l-P.r), Y=O=>h-P.b-(O-7)/5*(h-P.t-P.b);
+  c.clearRect(0,0,w,h); c.strokeStyle='#16203a';c.fillStyle='#93a3c7';c.font="10px 'IBM Plex Mono',monospace";
+  for(let O=7;O<=12;O++){c.globalAlpha=O===12?.8:.4;c.beginPath();c.moveTo(P.l,Y(O));c.lineTo(w-P.r,Y(O));c.stroke();c.globalAlpha=1;c.textAlign='right';c.fillText(O,P.l-6,Y(O)+3);}
+  c.strokeStyle='#2b3a5e';c.lineWidth=1.6;c.beginPath();c.moveTo(X(0),Y(12));for(let x=1;x<=5;x++){c.lineTo(X(x),Y(N[x-1].O));c.lineTo(X(x),Y(N[x].O));}c.stroke();
+  c.strokeStyle='rgba(82,182,232,.4)';c.setLineDash([3,4]);c.beginPath();c.moveTo(X(0),Y(12));c.lineTo(X(5),Y(7));c.stroke();c.setLineDash([]);
+  N.forEach(n=>{ const isM=n.w===0; c.fillStyle=isM?'#ffc857':'#0b1120';c.strokeStyle=isM?'#ffc857':'#2b3a5e';c.lineWidth=2;c.beginPath();c.arc(X(n.w),Y(n.O),isM?7:4.5,0,7);c.fill();c.stroke();
+    c.fillStyle='#93a3c7';c.textAlign='center';c.fillText(n.w,X(n.w),h-10); });
+  c.fillStyle='#ffc857';c.font="11px 'IBM Plex Mono',monospace";c.textAlign='left';c.fillText('kit · 0 H₂O',X(0)+10,Y(12)-6);
+  c.fillStyle='#93a3c7';c.textAlign='center';c.fillText('waters released →',(P.l+w-P.r)/2,h-24);
+};
+VIZ.noise=()=>{ const cv=$('noiseCanvas'); const {c,w,h}=fit(cv,230); const P={l:40,r:14,t:16,b:30}, F=D.noise.flips, fmax=F[F.length-1];
+  const X=f=>P.l+f/fmax*(w-P.l-P.r), Y=p=>h-P.b-p*(h-P.t-P.b);
+  c.clearRect(0,0,w,h);c.strokeStyle='#16203a';c.fillStyle='#93a3c7';c.font="10px 'IBM Plex Mono',monospace";
+  for(let i=0;i<=4;i++){const p=i/4;c.globalAlpha=.4;c.beginPath();c.moveTo(P.l,Y(p));c.lineTo(w-P.r,Y(p));c.stroke();c.globalAlpha=1;c.textAlign='right';c.fillText((p*100)+'%',P.l-6,Y(p)+3);}
+  F.forEach(f=>{c.textAlign='center';c.fillText(f,X(f),h-10);});
+  const line=(o,col)=>{c.strokeStyle=col;c.lineWidth=2;c.beginPath();F.forEach((f,i)=>{const x=X(f),y=Y(o[f]);i?c.lineTo(x,y):c.moveTo(x,y);});c.stroke();F.forEach(f=>{c.fillStyle=col;c.beginPath();c.arc(X(f),Y(o[f]),3,0,7);c.fill();});};
+  line(D.noise.shallow,'#7bd88f'); line(D.noise.deep,'#ff5db0');
+  c.fillStyle='#93a3c7';c.textAlign='center';c.fillText('bit-flips at generation 0',(P.l+w-P.r)/2,h-24);
+};
+
+/* header/footer + 4x4 rule demo */
+$('hdrHex').textContent=D.header_hex; $('ftrHex').textContent=D.footer_hex;
+function grid4(word){ const d=document.createElement('div'); d.style.cssText='display:grid;grid-template-columns:repeat(4,12px);grid-template-rows:repeat(4,12px);gap:2px';
+  for(let r=0;r<4;r++)for(let cc=0;cc<4;cc++){ const on=(word>>(15-(r*4+cc)))&1; const cell=document.createElement('div'); cell.style.cssText=`width:12px;height:12px;border-radius:2px;background:${on?'#ffc857':'#141d33'}`; d.appendChild(cell);} return d; }
+(function(){ const words=[0x0690,0x2841,0x4488,0x4488]; const host=$('rule4x4');
+  words.forEach((wd,i)=>{ const wrap=document.createElement('div');wrap.style.cssText='display:flex;align-items:center;gap:10px';
+    const col=document.createElement('div');col.style.textAlign='center';col.appendChild(grid4(wd));
+    const lbl=document.createElement('div');lbl.className='mono';lbl.style.cssText='font-size:10px;color:#93a3c7;margin-top:5px';lbl.textContent=wd.toString(16).padStart(4,'0');col.appendChild(lbl);
+    wrap.appendChild(col); if(i<words.length-1){const ar=document.createElement('div');ar.textContent='→';ar.style.color='#52b6e8';wrap.appendChild(ar);} host.appendChild(wrap); }); })();
+
+/* size code table */
+$('sizeTbl').innerHTML=`<tr><th class="l">blob size</th><th>count</th><th class="l">element</th><th class="l">max degree</th></tr>`+
+ [['6',24,'carbon','4'],['7',6,'nitrogen','3'],['8',12,'oxygen','2']].map(r=>`<tr><td class="l mono">${r[0]} px</td><td>${r[1]}</td><td class="l" style="color:${r[2]==='carbon'?'#c9cfdb':r[2]==='nitrogen'?'#7d97ff':'#ff7d7d'}">${r[2]}</td><td class="l dim">${r[3]}</td></tr>`).join('');
+
+/* monomer cards */
+const MONO=[['Abu','C4H9NO2','2-aminobutyric acid','the C₄ rung'],['Nva','C5H11NO2','norvaline','the C₅ rung'],['Nle','C6H13NO2','norleucine','the C₆ rung — +CH₂ ladder'],['mAsp','C5H9NO4','3-methylaspartic acid','branched · 2 carboxyls'],['Dab','C4H10N2O2','2,4-diaminobutyric acid','2 amino groups']];
+$('monoCards').innerHTML=MONO.map(m=>`<div class="mcard"><div class="code">${m[0]}</div><div class="f">${sub(m[1])}</div><div class="d">${m[2]}<br><span class="dim">${m[3]}</span></div>${(window.ASIS_REFS?ASIS_REFS.monomerLine(m[0]):'')}</div>`).join('');
+/* references block (ChEMBL identity + PubMed literature) */
+if(window.ASIS_REFS && $('refBlock')) $('refBlock').innerHTML=ASIS_REFS.sectionHTML();
+
+/* census fork */
+$('forkTbl').innerHTML=`<tr><th class="l">reading</th><th>·</th><th>O</th><th>H</th></tr>`+
+ D.rows.map(r=>`<tr class="${r.match?'match':''}"><td class="l">${r.name.replace(' (decoded)','').replace(' pentapeptide','-pep')}${r.match?'<span class="badge">✓ decode</span>':''}</td><td>${r.components}</td><td>${r.O}</td><td>${r.H}</td></tr>`).join('')+
+ `<tr style="border-top:1px solid var(--line-soft)"><td class="l cyan">decoded pixels</td><td>${D.decode.components}</td><td>${D.decode.O}</td><td>${D.decode.H}</td></tr>`;
+
+/* images + diastereomers */
+if(D.images.raw)$('imgRaw').src=D.images.raw; if(D.images.decoded)$('imgDec').src=D.images.decoded;
+$('diaBig').textContent=D.diastereomers.count;
+
+/* ============ launch cards (open full tools in a new tab) ============ */
+const TOOLS={
+  kit:['asis-kit-3d.html','🧬','The 5-monomer kit — 3D story','Ten-step walkthrough: census, assembly, chirality, export.'],
+  analysis:['asis-analysis.html','📉','Clock · cone · noise','The blind clock, the space-time cone and the robustness curves.'],
+  assembly:['asis-assembly-lab.html','⚗️','Assembly laboratory','Kit ⇌ peptide, atom-exact census, Ozma × assembly, sandbox.'],
+  water:['asis-zero-water.html','💧','The zero-water figure','The maximum-composition fixed point, vector export.'],
+  cone:['margolus-3d-binaire-6625.html','🌌','2D+t space-time','The real bit-plane condensing into the image at t=6625.'],
+  frontiers:['asis-frontiers.html','🧭','Frontiers — the information ladder','Bit budget, decodability phase transition, persistent homology, energetics.'],
+  designer:['asis-designer.html','✎','Message designer','Inverse anti-cryptography: draw a target, encode it, prove it is blindly decodable.'],
+};
+function launchCard(key){ const t=TOOLS[key];
+  return `<div class="lcard" data-file="${t[0]}"><span class="em">${t[1]}</span><div class="t">${t[2]}</div><div class="d">${t[3]}</div><span class="go">▸ open in new tab ↗</span></div>`;
+}
+$('launch-clock').innerHTML=launchCard('analysis');
+$('launch-kit').innerHTML=launchCard('kit');
+$('launch-assembly').innerHTML=launchCard('assembly')+launchCard('water');
+$('launch-ozma').innerHTML=launchCard('assembly');
+$('launch-cone').innerHTML=launchCard('cone')+launchCard('analysis');
+$('launch-noise').innerHTML=launchCard('analysis');
+$('launch-all').innerHTML=Object.keys(TOOLS).map(launchCard).join('');
+document.querySelectorAll('.lcard').forEach(card=>{
+  card.setAttribute('role','link'); card.setAttribute('tabindex','0');
+  card.setAttribute('aria-label','Open '+card.dataset.file+' in a new tab');
+  const open=()=>window.open(card.dataset.file,'_blank','noopener');
+  card.addEventListener('click',open);
+  card.addEventListener('keydown',e=>{ if(e.key==='Enter'||e.key===' '){ e.preventDefault(); open(); } });
+});
+
+/* ============ inline vizzes (panels are laid out at load; opacity only fades in) ============ */
+function renderAllViz(){ try{VIZ.clock();VIZ.hist();VIZ.water();VIZ.noise();}catch(e){} }
+requestAnimationFrame(()=>requestAnimationFrame(renderAllViz));
+addEventListener('load',()=>setTimeout(renderAllViz,120));
+addEventListener('resize',()=>{ clearTimeout(window._rz); window._rz=setTimeout(renderAllViz,200); });
+
+/* ============ verified-results panel (live re-derivation) ============ */
+(function(){
+  const sec=$('verified'); if(!sec||!window.ASISProofs) return;
+  let started=false;
+  async function sha256hex(bytes){ const buf=await crypto.subtle.digest('SHA-256',bytes);
+    return [...new Uint8Array(buf)].map(b=>b.toString(16).padStart(2,'0')).join(''); }
+  function card(tag,tc,title,body){
+    return `<div style="background:rgba(9,13,26,.55);border:1px solid var(--line);border-radius:10px;padding:12px 13px">
+      <div style="display:flex;align-items:center;gap:7px;margin-bottom:6px">
+        <span class="mono" style="font-size:9px;font-weight:600;color:#0a0e1a;background:${tc};padding:2px 6px;border-radius:4px">${tag}</span>
+        <span style="font-family:Michroma,sans-serif;font-size:12px;color:var(--txt,#dfe7f5)">${title}</span></div>
+      <div class="mono" style="font-size:11px;color:#93a3c7;line-height:1.55">${body}</div></div>`;
+  }
+  async function run(){
+    const res=await ASISProofs.derive(f=>{ const p=$('vPct'); if(p)p.textContent=Math.round(f*100)+'%'; });
+    const {raw,msg}=ASISProofs.payload(); const sha=await sha256hex(msg);
+    const cen=Object.keys(res.census.hist).sort((a,b)=>a-b).map(k=>`${k}:${res.census.hist[k]}`).join('  ');
+    const G='#7bd88f',C='#52b6e8'; const prog=$('verifyProg'); if(prog)prog.style.display='none';
+    const cards=[
+      card('LIVE',G,'Conservation & round-trip',
+        `seed active = <b style="color:${G}">${res.seedPop}</b> → gen ${ASISProofs.TSTAR} = <b style="color:${G}">${res.finalPop}</b> (${res.conserved?'conserved ✓':'✗'})<br>`+
+        `SHA-256 <span style="color:${C}">${sha.slice(0,24)}…</span><br><span style="color:#6b7a99">reversible: forward→back returns the seed bit-exact</span>`),
+      card('LIVE',G,'Component census (8-connected)',
+        `<b style="color:${G}">${cen}</b><br>${res.census.ncomp} components · ${res.finalPop} px<br>`+
+        `<span style="color:#6b7a99">42 heavy (6/7/8→C/N/O) · 95 bond segments · 52 H + 6 assembly points</span>`),
+      card('LIVE',G,'Header = the rule',
+        `<span style="color:${C}">${res.header.hex.slice(6)}</span><br>four 4×4 states, each one Margolus step from the last<br>`+
+        `chain <b style="color:${G}">[${res.header.chain.join(', ')}]</b> ${res.header.ok?'✓':'✗'}`),
+      card('LIVE',G,'Footer = the clock',
+        `<span style="color:${C}">${res.footer.hex}</span><br>run-lengths ${res.footer.counts.join(' · ')} = <b style="color:${G}">${res.footer.prod}</b> ${res.footer.ok?'✓':'✗'}`),
+      card('MC',C,'Blind clock vs random seeds',
+        `gzip minimum at gen <b style="color:${C}">6625</b>, 19% below baseline; four proxies agree within one step<br>`+
+        `60 random seeds: deepest dip 27 B vs message 122 B — <b style="color:${G}">P&lt;0.017</b>`),
+      card('MC',C,'Closed loop: pixel → structure',
+        `heavy-atom graphs graph-isomorphic to MMFF94 for <b style="color:${G}">5/5</b> monomers (37/37 bonds)<br>`+
+        `RDKit valence → canonical SMILES match reference for all five`)
+    ];
+    $('verifyGrid').innerHTML=cards.join('');
+  }
+  const io=new IntersectionObserver((es)=>{ es.forEach(e=>{ if(e.isIntersecting&&!started){ started=true; run(); io.disconnect(); } }); },{rootMargin:'120px'});
+  io.observe(sec);
+})();
+
+/* ============ boot ============ */
+stage();
+</script>
+</body>
+</html>

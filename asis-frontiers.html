@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>A Sign in Space — frontiers: the information ladder</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Michroma&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap');
+:root{--bg:#060913;--panel:rgba(13,19,34,.92);--line:#223050;--line-soft:#16203a;--txt:#e6ecf7;--txt-dim:#93a3c7;--amber:#ffc857;--cyan:#52b6e8;--rose:#ff5db0;--green:#7bd88f;--violet:#c79bff}
+*{box-sizing:border-box}html,body{margin:0}
+body{background:var(--bg);color:var(--txt);font-family:'IBM Plex Sans',system-ui,sans-serif;-webkit-font-smoothing:antialiased;padding:26px 16px 60px}
+header{text-align:center;max-width:900px;margin:0 auto 8px}
+h1{font-family:'Michroma',sans-serif;font-weight:400;letter-spacing:.13em;font-size:clamp(17px,3.2vw,26px);margin:0}
+h1 .t{color:var(--amber)}
+.sub{font-size:12px;color:var(--txt-dim);margin-top:6px}
+.wrap{max-width:940px;margin:22px auto 0;display:flex;flex-direction:column;gap:20px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:15px;padding:clamp(16px,2.6vw,26px)}
+.kick{font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.13em;text-transform:uppercase;color:var(--cyan);margin-bottom:8px}
+h2{font-family:'Michroma',sans-serif;font-weight:400;letter-spacing:.05em;font-size:clamp(15px,2.4vw,20px);margin:0 0 6px}
+p{font-size:13px;line-height:1.62;color:var(--txt)}
+p b{color:var(--amber);font-weight:500} .mono{font-family:'IBM Plex Mono',monospace}
+.dim{color:var(--txt-dim)} .c{color:var(--cyan)} .g{color:var(--green)} .r{color:var(--rose)}
+.viz{margin-top:12px;background:rgba(6,9,19,.5);border:1px solid var(--line-soft);border-radius:12px;padding:14px}
+canvas{display:block;width:100%;height:auto}
+.legend{display:flex;gap:16px;flex-wrap:wrap;font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--txt-dim);margin-top:8px;justify-content:center}
+.legend .it{display:flex;gap:6px;align-items:center}.legend .sw{width:14px;height:4px;border-radius:2px}
+.bar{display:flex;gap:8px;margin-top:16px;justify-content:center}
+.bar button{background:#101a30;border:1px solid var(--cyan);color:var(--cyan);border-radius:8px;padding:8px 14px;font:inherit;font-size:12px;cursor:pointer}
+.bar button:hover{border-color:var(--amber);color:var(--amber)}
+.stat{display:flex;gap:20px;flex-wrap:wrap;justify-content:center;margin-top:10px;font-family:'IBM Plex Mono',monospace}
+.stat .s{text-align:center}.stat .v{font-size:22px;color:var(--amber)}.stat .k{font-size:10.5px;color:var(--txt-dim)}
+footer{text-align:center;margin-top:30px;color:var(--txt-dim);font-size:11px}
+.sig{font-family:'IBM Plex Mono',monospace;color:var(--txt);margin-top:6px}
+</style>
+</head>
+<body>
+<header>
+  <h1>A SIGN IN SPACE — <span class="t">frontiers</span></h1>
+  <div class="sub">Beyond the decode: what the census leaves open, in bits · after Lacoche, <i>What a Blind Decoder Can and Cannot Recover</i></div>
+</header>
+
+<div class="wrap">
+
+  <div class="card" id="c-ladder">
+    <div class="kick">A · the information ladder</div>
+    <h2>What the census <span class="r">cannot</span> pin, in bits</h2>
+    <p>The atom census fixes the <b>aggregate composition</b> exactly. But it is a coarse invariant: it does not determine <b>which</b> five monomers, nor their <b>handedness</b>. Reading those requires finer channels — and one of them has no channel at all. The bar shows, per layer, how many bits the census leaves undetermined, and whether the message can carry them.</p>
+    <div class="viz"><canvas id="ladder" height="250"></canvas>
+      <div class="legend"><div class="it"><span class="sw" style="background:var(--green)"></span>pinned by census</div><div class="it"><span class="sw" style="background:var(--amber)"></span>census-ambiguous · recoverable from the bond graph</div><div class="it"><span class="sw" style="background:var(--rose)"></span>absent · unencodable in 2D</div></div>
+    </div>
+    <div class="stat">
+      <div class="s"><div class="v" id="fibBits">–</div><div class="k">identity bits open (permissive fiber)</div></div>
+      <div class="s"><div class="v" id="fibN">–</div><div class="k">monomer sets sharing C₂₄N₆O₁₂·52H</div></div>
+      <div class="s"><div class="v r">6</div><div class="k">configuration bits (unencodable)</div></div>
+    </div>
+    <p class="dim" style="margin-top:12px;font-size:12px">Sensitivity: the identity ambiguity spans <b class="c" id="range">5.3–14.7</b> bits depending on the candidate space (39 quasi-natural sets → 25 856 over all amino-acid-like formulae under valence/DoU constraints). Either way, the drawn bond graph — not the census — is what fixes the specific five monomers, and the six handedness bits are structurally absent.</p>
+  </div>
+
+  <div class="card" id="c-phase">
+    <div class="kick">C · decodability phase transition</div>
+    <h2>Blind decodability, with <span class="amber">finite-size scaling</span></h2>
+    <p>Is an anti-cryptographic message always blindly decodable? Synthetic targets of increasing structural complexity were encoded (run backward a fixed depth) and tested: a target is decodable if a blind compression clock has an isolated minimum at the true depth. Recovery is <b>sharp in complexity</b> — never certain at complexity one, always by complexity five — reproducing the conjecture the paper states but does not scale.</p>
+    <div class="viz"><canvas id="phase" height="250"></canvas>
+      <div class="legend" id="phaseLeg"></div>
+    </div>
+    <p class="dim" style="font-size:12px;margin-top:10px">P(blindly decodable) vs target complexity, for grid sizes 32/48/64 (40 trials each, depth 40). The threshold near complexity 2 sharpens with size — the finite-size signature the paper flagged as future work.</p>
+  </div>
+
+  <div class="card" id="c-homology">
+    <div class="kick">extra · persistent homology (H₀)</div>
+    <h2>Eleven components, <span class="green">stable</span> across scale</h2>
+    <p>Growing a linking radius over the 625-pixel cloud, the number of connected components collapses and then holds at a wide plateau of <b>exactly 11</b> — the five molecules plus the six assembly points — across radii of <b>~3–16 px</b>. Scale-invariance is a topological fingerprint of the decode, independent of the size code.</p>
+    <div class="viz"><canvas id="homology" height="230"></canvas></div>
+  </div>
+
+  <div class="card" id="c-energy">
+    <div class="kick">extra · condensation energetics</div>
+    <h2>The <span class="cyan">water paradox</span>, made numerical</h2>
+    <p>Assembling the kit into the pentapeptide releases four waters. A gas-phase MMFF94 estimate gives <b><span id="dE">–</span> kcal</b> for kit → peptide + 4 H₂O. But in a prebiotic <i>ocean</i> the same condensation runs <b>uphill</b> — you would be shedding water into water — which is exactly why the message sends the unassembled kit and the combining rule, not a finished chain. The six points prescribe the operation the chemistry itself makes costly in bulk water.</p>
+    <div class="stat">
+      <div class="s"><div class="v" id="dE2">–</div><div class="k">gas-phase ΔE (kcal, MMFF94)</div></div>
+      <div class="s"><div class="v c">4</div><div class="k">H₂O released</div></div>
+      <div class="s"><div class="v r">↑ uphill</div><div class="k">in bulk water (the paradox)</div></div>
+    </div>
+  </div>
+
+  <div class="bar"><button id="png">Export PNG (all panels)</button></div>
+</div>
+
+<footer>
+  A step-by-step supplement to the ASIS decode · reproduced independently this session.
+  <div class="sig"><b style="color:#ffc857">Etienne Lacoche</b> · Researcher · &lt;etienne.lacoche@pm.me&gt; · https://www.asignin.space</div>
+</footer>
+
+<script id="data" type="application/json">{"bits": {"target": {"C": 24, "N": 6, "O": 12, "H": 52}, "kit_in_full_space": true, "kit_in_natural_space": true, "full": {"candidates": 710, "fiber": 25856, "ambiguity_bits": 14.66}, "natural": {"candidates": 14, "fiber": 39, "ambiguity_bits": 5.29}, "config": {"stereocenters": 6, "states": 64, "bits": 6}, "layers": [{"layer": "composition (aggregate)", "carried_by": "the atom census", "status": "fully specified", "note": "C24 N6 O12 \u00b7 52 H is pinned exactly by the 625-pixel census"}, {"layer": "identity (which 5 monomers)", "carried_by": "the drawn bond graph", "status": "census-ambiguous", "full_bits": 14.66, "natural_bits": 5.29, "note": "the census leaves this many bits open; the explicit bonds resolve it to one set"}, {"layer": "configuration (handedness)", "carried_by": "\u2014 (unencodable in 2D)", "status": "absent", "bits": 6, "note": "6 stereocenters = 6 wedge/dash bits with no channel in a 625-px 2D census"}]}, "phase": {"sizes": [32, 48, 64], "comps": [1, 2, 3, 4, 5, 6, 8, 10, 12], "depth": 40, "trials": 40, "P": {"32": [0.375, 0.85, 0.875, 0.975, 1.0, 1.0, 1.0, 1.0, 1.0], "48": [0.5, 0.65, 0.825, 1.0, 1.0, 0.975, 1.0, 1.0, 1.0], "64": [0.425, 0.7, 0.95, 0.95, 1.0, 1.0, 1.0, 1.0, 1.0]}, "critical": {"32": null, "48": null, "64": null}}, "extras": {"h0": {"curve": [[0.5, 625], [1.0, 367], [1.5, 195], [2.0, 113], [2.5, 58], [3.0, 11], [3.5, 11], [4.0, 11], [4.5, 11], [5.0, 11], [5.5, 11], [6.0, 11], [6.5, 11], [7.0, 11], [7.5, 11], [8.0, 11], [8.5, 11], [9.0, 11], [9.5, 11], [10.0, 11], [10.5, 11], [11.0, 11], [11.5, 11], [12.0, 11], [12.5, 11], [13.0, 11], [13.5, 11], [14.0, 11], [14.5, 11], [15.0, 11], [15.5, 11], [16.0, 11], [16.5, 11], [17.0, 10], [17.5, 10], [18.0, 10], [18.5, 9], [19.0, 9], [19.5, 9], [20.0, 9]], "plateau": {"components": 11, "r_from": 3.0, "r_to": 16.5, "persistence": 13.5}, "n_points": 625}, "energetics": {"E_kit": 75.5, "E_peptide": 12.0, "E_water": 0.0, "waters": 4, "dE_gasphase_kcal": -63.5, "note": "gas-phase MMFF94 \u0394E for kit -> peptide + 4 H2O; in bulk water the condensation is disfavoured (the prebiotic water paradox)."}}}</script>
+<script>
+'use strict';
+const D=JSON.parse(document.getElementById('data').textContent);
+const $=id=>document.getElementById(id);
+const SIG={author:'Etienne Lacoche', role:'Researcher',email:'etienne.lacoche@pm.me',site:'https://www.asignin.space'};
+function fit(cv,h){const w=cv.parentElement.clientWidth-2,dpr=Math.min(devicePixelRatio,2);cv.width=w*dpr;cv.height=h*dpr;cv.style.height=h+'px';const c=cv.getContext('2d');c.setTransform(dpr,0,0,dpr,0,0);return{c,w,h};}
+
+/* ---- A: information ladder ---- */
+function drawLadder(){
+  const cv=$('ladder'),{c,w,h}=fit(cv,250);
+  const b=D.bits; $('fibBits').textContent=b.full.ambiguity_bits; $('fibN').textContent=b.full.fiber.toLocaleString();
+  $('range').textContent=`${b.natural.ambiguity_bits}–${b.full.ambiguity_bits}`;
+  const rows=[
+    {name:'COMPOSITION',sub:'aggregate C₂₄N₆O₁₂ · 52 H',green:16,amber:0,red:0,tag:'pinned exactly by the census'},
+    {name:'CONSTITUTION',sub:'which five monomers',green:0,amber:b.full.ambiguity_bits,amberMin:b.natural.ambiguity_bits,red:0,tag:'resolved by the drawn bond graph'},
+    {name:'CONFIGURATION',sub:'absolute handedness',green:0,amber:0,red:b.config.bits,tag:'no channel — unencodable in 2D'},
+  ];
+  const x0=176,x1=w-24,y0=24,bh=44,gap=26,maxB=16;
+  const X=v=>x0+v/maxB*(x1-x0);
+  c.clearRect(0,0,w,h);
+  c.font="10px 'IBM Plex Mono',monospace";c.textAlign='center';
+  for(let t=0;t<=16;t+=4){c.strokeStyle='#16203a';c.beginPath();c.moveTo(X(t),y0);c.lineTo(X(t),y0+3*(bh+gap));c.globalAlpha=.4;c.stroke();c.globalAlpha=1;c.fillStyle='#93a3c7';c.fillText(t,X(t),y0+3*(bh+gap)+16);}
+  rows.forEach((r,i)=>{
+    const y=y0+i*(bh+gap);
+    c.textAlign='left';c.fillStyle='#e6ecf7';c.font="12px 'Michroma',sans-serif";c.fillText(r.name,10,y+18);
+    c.fillStyle='#93a3c7';c.font="10.5px 'IBM Plex Sans',sans-serif";c.fillText(r.sub,10,y+34);
+    let barEnd=x0, val='', valCol='';
+    if(r.green){ c.fillStyle='#7bd88f';c.fillRect(x0,y,X(r.green)-x0,bh);barEnd=X(r.green);val='✓ fully specified';valCol='#0c1a10'; }
+    if(r.amber){ c.fillStyle='rgba(255,200,87,.26)';c.fillRect(X(r.amberMin||0),y,X(r.amber)-X(r.amberMin||0),bh);
+      c.fillStyle='#ffc857';c.fillRect(x0,y,X(r.amberMin||r.amber)-x0,bh);barEnd=X(r.amber);val=`${r.amberMin}–${r.amber} bits`;valCol='#161206'; }
+    if(r.red){ c.fillStyle='#ff5db0';c.fillRect(x0,y,X(r.red)-x0,bh);barEnd=X(r.red);val=`${r.red} bits`;valCol='#22060f'; }
+    // value inside the (solid part of the) bar
+    c.fillStyle=valCol;c.font="11px 'IBM Plex Mono',monospace";c.textAlign='left';c.fillText(val,x0+10,y+bh/2+4);
+    // descriptive tag to the RIGHT of the bar, in light colour
+    if(!r.green){ c.fillStyle='#93a3c7';c.font="11px 'IBM Plex Mono',monospace";c.textAlign='left';c.fillText(r.tag,barEnd+10,y+bh/2+4); }
+  });
+}
+
+/* ---- C: phase transition ---- */
+function drawPhase(){
+  const cv=$('phase'),{c,w,h}=fit(cv,250),P=D.phase,comps=P.comps,sizes=P.sizes;
+  const cmax=comps[comps.length-1],P0={l:44,r:16,t:16,b:32};
+  const X=x=>P0.l+ (x-1)/(cmax-1)*(w-P0.l-P0.r), Y=p=>h-P0.b-p*(h-P0.t-P0.b);
+  c.clearRect(0,0,w,h);c.strokeStyle='#16203a';c.fillStyle='#93a3c7';c.font="10px 'IBM Plex Mono',monospace";
+  for(let i=0;i<=4;i++){const p=i/4;c.globalAlpha=.4;c.beginPath();c.moveTo(P0.l,Y(p));c.lineTo(w-P0.r,Y(p));c.stroke();c.globalAlpha=1;c.textAlign='right';c.fillText((p*100)+'%',P0.l-6,Y(p)+3);}
+  comps.forEach(x=>{c.textAlign='center';c.fillText(x,X(x),h-10);});
+  c.fillText('target complexity  (number of drawn features) →',(P0.l+w-P0.r)/2,h-24);
+  const cols={'32':'#52b6e8','48':'#ffc857','64':'#ff5db0'}; let leg='';
+  sizes.forEach(N=>{const row=P.P[String(N)],col=cols[String(N)];
+    c.strokeStyle=col;c.lineWidth=2;c.beginPath();comps.forEach((x,i)=>{const px=X(x),py=Y(row[i]);i?c.lineTo(px,py):c.moveTo(px,py);});c.stroke();
+    comps.forEach((x,i)=>{c.fillStyle=col;c.beginPath();c.arc(X(x),Y(row[i]),3,0,7);c.fill();});
+    leg+=`<div class="it"><span class="sw" style="background:${col}"></span>${N}×${N}</div>`;});
+  // 'complexity 5' marker
+  c.strokeStyle='rgba(123,216,143,.45)';c.setLineDash([4,4]);c.beginPath();c.moveTo(X(5),P0.t);c.lineTo(X(5),h-P0.b);c.stroke();c.setLineDash([]);
+  c.fillStyle='#7bd88f';c.textAlign='center';c.fillText('always ≥5',X(5),P0.t+12);
+  $('phaseLeg').innerHTML=leg;
+}
+
+/* ---- H0 persistence ---- */
+function drawHom(){
+  const cv=$('homology'),{c,w,h}=fit(cv,230),cur=D.extras.h0.curve,pl=D.extras.h0.plateau;
+  const rmax=cur[cur.length-1][0],P0={l:46,r:16,t:16,b:30};
+  let vmax=0;cur.forEach(p=>vmax=Math.max(vmax,p[1]));
+  const X=r=>P0.l+r/rmax*(w-P0.l-P0.r), Y=v=>h-P0.b-(Math.log10(v+1)/Math.log10(vmax+1))*(h-P0.t-P0.b);
+  c.clearRect(0,0,w,h);c.fillStyle='#93a3c7';c.font="10px 'IBM Plex Mono',monospace";c.strokeStyle='#16203a';
+  [1,11,100,vmax].forEach(v=>{if(v<=vmax){c.globalAlpha=.4;c.beginPath();c.moveTo(P0.l,Y(v));c.lineTo(w-P0.r,Y(v));c.stroke();c.globalAlpha=1;c.textAlign='right';c.fillText(v,P0.l-6,Y(v)+3);}});
+  // plateau band
+  c.fillStyle='rgba(123,216,143,.10)';c.fillRect(X(pl.r_from),P0.t,X(pl.r_to)-X(pl.r_from),h-P0.b-P0.t);
+  c.strokeStyle='#7bd88f';c.lineWidth=2;c.beginPath();cur.forEach((p,i)=>{i?c.lineTo(X(p[0]),Y(p[1])):c.moveTo(X(p[0]),Y(p[1]));});c.stroke();
+  c.fillStyle='#7bd88f';c.textAlign='center';c.font="11px 'IBM Plex Mono',monospace";
+  c.fillText('11 components · r ≈ 3–16 px',(X(pl.r_from)+X(pl.r_to))/2,P0.t+16);
+  c.fillStyle='#93a3c7';c.textAlign='center';c.font="10px 'IBM Plex Mono',monospace";c.fillText('linking radius (px) →',(P0.l+w-P0.r)/2,h-8);
+}
+
+$('dE').textContent=D.extras.energetics.dE_gasphase_kcal; $('dE2').textContent=D.extras.energetics.dE_gasphase_kcal;
+function drawAll(){drawLadder();drawPhase();drawHom();}
+drawAll(); addEventListener('resize',()=>{clearTimeout(window._r);window._r=setTimeout(drawAll,180);});
+
+$('png').onclick=()=>{
+  const scale=2, cards=['c-ladder','c-phase','c-homology','c-energy'].map(id=>$(id));
+  // simple approach: rasterize each canvas panel stacked with a header
+  const cvs=[$('ladder'),$('phase'),$('homology')];
+  let W=Math.max(...cvs.map(c=>c.width)), Hs=cvs.reduce((a,c)=>a+c.height+40,0)+120;
+  const out=document.createElement('canvas');out.width=W;out.height=Hs;const ctx=out.getContext('2d');
+  ctx.fillStyle='#060913';ctx.fillRect(0,0,W,Hs);
+  ctx.fillStyle='#ffc857';ctx.font=`${20*scale}px 'IBM Plex Mono',monospace`;ctx.fillText('A Sign in Space — frontiers: the information ladder',16*scale,30*scale);
+  let y=60*scale; ctx.fillStyle='#93a3c7';ctx.font=`${13*scale}px 'IBM Plex Mono',monospace`;
+  const titles=['A · information ladder','C · decodability phase transition','extra · H0 persistence'];
+  cvs.forEach((cv,i)=>{ctx.fillStyle='#52b6e8';ctx.fillText(titles[i],16*scale,y);y+=18*scale;ctx.drawImage(cv,0,y);y+=cv.height+30*scale;});
+  ctx.fillStyle='#93a3c7';ctx.font=`${12*scale}px 'IBM Plex Mono',monospace`;ctx.fillText(`${SIG.author} · ${SIG.role} <${SIG.email}>  ${SIG.site}`,16*scale,y);
+  const a=document.createElement('a');a.href=out.toDataURL('image/png');a.download='asis_frontiers.png';a.click();
+};
+</script>
+<script src="asis-fx.js"></script>
+<script>try{ ASISFx.aurora({ vignette:0.4 }); }catch(e){}</script>
+</body>
+</html>
